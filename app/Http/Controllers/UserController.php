@@ -65,6 +65,16 @@ class UserController extends Controller
     {
         $credentials = $request->only('email', 'password');
 
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            return new Response(['error' => 'Unauthorized'], 401);
+        }
+
+        if ($user->email_verification_code != null) {
+            return new Response(['error' => 'Email not verified'], 403);
+        }
+
         if (!$token = Auth::guard('api')->attempt($credentials)) {
             return new Response(['error' => 'Unauthorized'], 401);
         }
