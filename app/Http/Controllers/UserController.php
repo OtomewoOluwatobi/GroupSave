@@ -14,6 +14,9 @@ use Illuminate\Http\Response;
 
 class UserController extends Controller
 {
+    /**
+     * Register a new user.
+     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -32,12 +35,32 @@ class UserController extends Controller
 
         event(new Registered($user));
 
-        // Generate JWT token
-        $token = Auth::login($user);
+        // Send email verification link
+        $user->sendEmailVerificationNotification();
 
-        return response()->json(['token' => $token], 201);
+        return response()->json("user registration successfull", 201);
     }
 
+    /**
+     * Verify the user's email.
+     */
+    public function verifyEmail(Request $request, $code)
+    {
+        $user = User::where('email_verification_code', $code)->first();
+        if (!$user) {
+            return response()->json(['message' => 'Invalid verification code'], 400);
+        }
+
+        $user->email_verified_at = now();
+        $user->email_verification_code = null;
+        $user->save();
+
+        return response()->json(['message' => 'Email verified successfully'], 200);
+    }
+
+    /**
+     * Authenticate a user.
+     */
     public function login(LoginRequest $request): Response
     {
         $credentials = $request->only('email', 'password');

@@ -10,7 +10,8 @@ Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
 
 
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [UserController::class, 'store'])->name('register');
-    Route::post('/login', [UserController::class, 'login'])->name('login');
-    Route::post('/logout', [UserController::class, 'logout'])->name('logout');
+    Route::post('/register', [UserController::class, 'register']);
+    Route::get('/verify/{code}', [UserController::class, 'verifyEmail']);
+    Route::post('/login', [UserController::class, 'login']);
+    Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:api');
 });
