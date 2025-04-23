@@ -17,6 +17,37 @@ class UserController extends Controller
     /**
      * Register a new user.
      */
+
+    /**
+     * @OA\Post(
+     *     path="/api/register",
+     *     summary="Register a new user",
+     *     tags={"Authentication"},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"name","email","mobile","password","password_confirmation"},
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
+     *             @OA\Property(property="mobile", type="string", example="1234567890"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=201,
+     *         description="User registered successfully",
+     *         @OA\JsonContent(
+     *             type="string",
+     *             example="user registration successful"
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
     public function store(Request $request): JsonResponse
     {
         $request->validate([
@@ -44,6 +75,88 @@ class UserController extends Controller
     /**
      * Verify the user's email.
      */
+
+    /**
+     * @OA\Get(
+     *     path="/api/verify-email/{code}",
+     *     summary="Verify user email",
+     *     tags={"Authentication"},
+     *     @OA\Parameter(
+     *         name="code",
+     *         in="path",
+     *         required=true,
+     *         description="Email verification code",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email verified successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid verification code"
+     *     )
+     * )
+     */
+    /**
+     * Verify the user's email address.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    /**
+     * @OA\Get(
+     *     path="/api/verify-email/{code}",
+     *     summary="Verify user email",
+     *     tags={"Authentication"},
+     *     @OA\Parameter(
+     *         name="code",
+     *         in="path",
+     *         required=true,
+     *         description="Email verification code",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email verified successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid verification code"
+     *     )
+     * )
+     */
+    /**
+     * Verify the user's email address.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $code
+     * @return \Illuminate\Http\JsonResponse
+     */
+    /**
+     * @OA\Get(
+     *     path="/api/verify-email/{code}",
+     *     summary="Verify user email",
+     *     tags={"Authentication"},
+     *     @OA\Parameter(
+     *         name="code",
+     *         in="path",
+     *         required=true,
+     *         description="Email verification code",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email verified successfully"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid verification code"
+     *     )
+     * )
+     */
+
     public function verifyEmail(Request $request, $code)
     {
         $user = User::where('email_verification_code', $code)->first();
