@@ -36,7 +36,7 @@ Route::prefix('auth')->group(function () {
         ->name('auth.login');
 
     // User logout (requires authentication)
-    Route::post('/logout', [UserController::class, 'logout'])
+    Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api')
         ->name('auth.logout');
 });
