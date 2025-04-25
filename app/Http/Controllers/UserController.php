@@ -11,205 +11,297 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\Response;
+use Exception;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
     /**
      * Register a new user.
+     *
+     * @param Request $request
+     * @return JsonResponse
      */
 
     /**
      * @OA\Post(
-     *     path="/api/register",
-     *     summary="Register a new user",
-     *     tags={"Authentication"},
+     *     path="/api/store",
+     *     summary="Store a new resource",
+     *     description="Creates a new resource in the database",
+     *     tags={"Resource"},
      *     @OA\RequestBody(
      *         required=true,
+     *         description="Resource data",
      *         @OA\JsonContent(
-     *             required={"name","email","mobile","password","password_confirmation"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="email", type="string", format="email", example="john@example.com"),
-     *             @OA\Property(property="mobile", type="string", example="1234567890"),
-     *             @OA\Property(property="password", type="string", format="password", example="password123"),
-     *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
+     *             required={"field1", "field2"},
+     *             @OA\Property(property="field1", type="string", example="value1"),
+     *             @OA\Property(property="field2", type="string", example="value2")
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="User registered successfully",
+     *         description="Resource created successfully",
      *         @OA\JsonContent(
-     *             type="string",
-     *             example="user registration successful"
+     *             @OA\Property(property="message", type="string", example="Resource created successfully"),
+     *             @OA\Property(property="data", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=422,
-     *         description="Validation error"
+     *         description="Validation error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="The given data was invalid."),
+     *             @OA\Property(property="errors", type="object")
+     *         )
      *     )
      * )
      */
     public function store(Request $request): JsonResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
-            'mobile' => ['required', 'string', 'max:255'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
+        try {
+            // Validate user input
+            $validatedData = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+                'mobile' => ['required', 'string', 'max:255'],
+                'password' => ['required', 'confirmed', Password::defaults()],
+            ]);
 
-        $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'mobile' => $request->mobile,
-            'password' => Hash::make($request->password),
-        ]);
+            // Create new user
+            $user = User::create([
+                'name' => $validatedData['name'],
+                'email' => $validatedData['email'],
+                'mobile' => $validatedData['mobile'],
+                'password' => Hash::make($validatedData['password']),
+            ]);
 
-        event(new Registered($user));
+            // Trigger registered event
+            event(new Registered($user));
 
-        // Send email verification link
-        $user->sendEmailVerificationNotification();
+            // Send verification email
+            $user->sendEmailVerificationNotification();
 
-        return response()->json("user registration successfull", 201);
-    }
+            return response()->json([
+                'message' => 'User registration successful',
+                'user' => $user
+            ], 201);
 
-    /**
-     * Verify the user's email.
-     */
-
-    /**
-     * @OA\Get(
-     *     path="/api/verify-email/{code}",
-     *     summary="Verify user email",
-     *     tags={"Authentication"},
-     *     @OA\Parameter(
-     *         name="code",
-     *         in="path",
-     *         required=true,
-     *         description="Email verification code",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email verified successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid verification code"
-     *     )
-     * )
-     */
-
-    /**
-     * Verify the user's email address.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-
-    /**
-     * @OA\Get(
-     *     path="/api/verify-email/{code}",
-     *     summary="Verify user email",
-     *     tags={"Authentication"},
-     *     @OA\Parameter(
-     *         name="code",
-     *         in="path",
-     *         required=true,
-     *         description="Email verification code",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email verified successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid verification code"
-     *     )
-     * )
-     */
-
-    /**
-     * Verify the user's email address.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $code
-     * @return \Illuminate\Http\JsonResponse
-     */
-    
-    /**
-     * @OA\Get(
-     *     path="/api/verify-email/{code}",
-     *     summary="Verify user email",
-     *     tags={"Authentication"},
-     *     @OA\Parameter(
-     *         name="code",
-     *         in="path",
-     *         required=true,
-     *         description="Email verification code",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email verified successfully"
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid verification code"
-     *     )
-     * )
-     */
-
-    public function verifyEmail(Request $request, $code)
-    {
-        $user = User::where('email_verification_code', $code)->first();
-        if (!$user) {
-            return response()->json(['message' => 'Invalid verification code'], 400);
+        } catch (Exception $e) {
+            Log::error('Registration error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Registration failed',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        $user->email_verified_at = now();
-        $user->email_verification_code = null;
-        $user->save();
-
-        return response()->json(['message' => 'Email verified successfully'], 200);
     }
 
     /**
-     * Authenticate a user.
+     * Verify user's email address.
+     *
+     * @param string $code
+     * @return JsonResponse
+     */
+
+    /**
+     * @OA\Get(
+     *     path="/verify/{token}",
+     *     tags={"Authentication"},
+     *     summary="Verify user's email address",
+     *     description="Verifies a user's email address using the provided token",
+     *     @OA\Parameter(
+     *         name="token",
+     *         in="path",
+     *         required=true,
+     *         description="Email verification token",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email successfully verified",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email verified successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid or expired token",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Invalid or expired verification token")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="User not found")
+     *         )
+     *     )
+     * )
+     */
+    public function verifyEmail(string $code): JsonResponse
+    {
+        try {
+            // Find user by verification code
+            $user = User::where('email_verification_code', $code)->first();
+            
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Invalid verification code'
+                ], 400);
+            }
+
+            // Update user verification status
+            $user->email_verified_at = now();
+            $user->email_verification_code = null;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Email verified successfully'
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Email verification error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Verification failed',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Authenticate user and generate token.
+     *
+     * @param LoginRequest $request
+     * @return Response
+     */
+
+    /**
+     * @OA\Post(
+     *     path="/api/login",
+     *     tags={"Authentication"},
+     *     summary="Authenticate user and generate token",
+     *     description="Logs in a user and returns an authentication token",
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"email","password"},
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Login successful",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="token", type="string"),
+     *             @OA\Property(property="user", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Invalid credentials",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Invalid credentials")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Email not verified",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Email not verified")
+     *         )
+     *     )
+     * )
      */
     public function login(LoginRequest $request): Response
     {
-        $credentials = $request->only('email', 'password');
+        try {
+            $credentials = $request->only('email', 'password');
+            
+            // Find user by email
+            $user = User::where('email', $credentials['email'])->first();
 
-        $user = User::where('email', $credentials['email'])->first();
+            // Check if user exists and password is correct
+            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+                return new Response([
+                    'error' => 'Invalid credentials'
+                ], 401);
+            }
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return new Response(['error' => 'Unauthorized'], 401);
+            // Check if email is verified
+            if ($user->email_verification_code !== null) {
+                return new Response([
+                    'error' => 'Email not verified'
+                ], 403);
+            }
+
+            // Attempt to generate JWT token
+            $token = Auth::guard('api')->attempt($credentials);
+            if (!$token) {
+                return new Response([
+                    'error' => 'Token generation failed'
+                ], 401);
+            }
+
+            return new Response([
+                'token' => $token,
+                'user' => $user
+            ], 200);
+
+        } catch (Exception $e) {
+            Log::error('Login error: ' . $e->getMessage());
+            return new Response([
+                'error' => 'Login failed',
+                'message' => $e->getMessage()
+            ], 500);
         }
-
-        if ($user->email_verification_code != null) {
-            return new Response(['error' => 'Email not verified'], 403);
-        }
-
-        if (!$token = Auth::guard('api')->attempt($credentials)) {
-            return new Response(['error' => 'Unauthorized'], 401);
-        }
-
-        return new Response(['token' => $token], 200);
     }
 
     /**
-     * Destroy an authenticated session.
+     * Logout user and invalidate session.
+     *
+     * @param Request $request
+     * @return Response
+     */
+    /**
+     * @OA\Post(
+     *     path="/api/logout",
+     *     tags={"Authentication"},
+     *     summary="Logout user and invalidate session",
+     *     description="Logs out the authenticated user and invalidates their session",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=204,
+     *         description="Successfully logged out"
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Logout failed",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Logout failed"),
+     *             @OA\Property(property="message", type="string", example="Error message")
+     *         )
+     *     )
+     * )
      */
     public function logout(Request $request): Response
     {
-        Auth::guard('web')->logout();
+        try {
+            // Logout user
+            Auth::guard('web')->logout();
 
-        $request->session()->invalidate();
+            // Invalidate and regenerate session
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
 
-        $request->session()->regenerateToken();
+            return response()->noContent();
 
-        return response()->noContent();
+        } catch (Exception $e) {
+            Log::error('Logout error: ' . $e->getMessage());
+            return new Response([
+                'error' => 'Logout failed',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

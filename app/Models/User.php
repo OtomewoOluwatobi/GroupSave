@@ -2,36 +2,53 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
 use Tymon\JWTAuth\Contracts\JWTSubject;
+use Illuminate\Support\Facades\URL;
 
+/**
+ * User Model
+ * 
+ * This class represents the User entity in the system.
+ * It handles authentication, permissions, and user-related relationships.
+ * 
+ * @property string $name
+ * @property string $email
+ * @property string $mobile
+ * @property string $password
+ * @property \DateTime|null $email_verified_at
+ */
 class User extends Authenticatable implements JWTSubject
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** 
+     * Traits implementation
+     * HasFactory - For model factory support
+     * Notifiable - For notification handling
+     * HasRoles - For user roles and permissions
+     * HasApiTokens - For API token management
+     */
     use HasFactory, Notifiable, HasRoles, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<string>
      */
     protected $fillable = [
         'name',
         'email',
         'mobile',
         'password',
-        
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<string>
      */
     protected $hidden = [
         'password',
@@ -39,7 +56,7 @@ class User extends Authenticatable implements JWTSubject
     ];
 
     /**
-     * Get the attributes that should be cast.
+     * Define attribute casting for type consistency.
      *
      * @return array<string, string>
      */
@@ -51,18 +68,53 @@ class User extends Authenticatable implements JWTSubject
         ];
     }
 
+    /**
+     * Get the identifier that will be stored in the JWT token.
+     *
+     * @return mixed
+     */
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    public function getJWTCustomClaims()
+    /**
+     * Add custom claims to the JWT token.
+     *
+     * @return array<string, mixed>
+     */
+    public function getJWTCustomClaims(): array
     {
         return [];
     }
 
+    /**
+     * Define relationship with UserBank model.
+     * One user can have multiple bank accounts.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function userBank()
     {
         return $this->hasMany(UserBank::class);
+    }
+
+    /**
+     * Send email verification notification to user.
+     * Generates a temporary signed URL for email verification.
+     *
+     * @return void
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $verificationUrl = URL::temporarySignedRoute(
+            'verification.verify',
+            now()->addMinutes(60),
+            ['code' => $this->email_verification_code]
+        );
+
+        // TODO: Implement email sending logic
+        // Consider using Laravel's Mail facade or Notifications
+        // Example: Mail::to($this->email)->send(new VerificationEmail($verificationUrl));
     }
 }

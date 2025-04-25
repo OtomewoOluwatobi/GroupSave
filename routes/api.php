@@ -4,14 +4,40 @@ use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::middleware(['auth:sanctum'])->get('/user', function (Request $request) {
+/**
+ * API Routes Configuration
+ * 
+ * All routes in this file are prefixed with 'api/'
+ */
+
+/**
+ * Protected route to get authenticated user details
+ * Requires valid authentication token
+ */
+Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
-
+/**
+ * Authentication Routes Group
+ * Prefix: /auth
+ */
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [UserController::class, 'store']);
-    Route::get('/verify/{code}', [UserController::class, 'verifyEmail']);
-    Route::post('/login', [UserController::class, 'login']);
-    Route::post('/logout', [UserController::class, 'logout'])->middleware('auth:api');
+    // User registration
+    Route::post('/register', [UserController::class, 'store'])
+        ->name('auth.register');
+
+    // Email verification
+    Route::get('/verify/{code}', [UserController::class, 'verifyEmail'])
+        ->name('verification.verify');
+
+    // User login
+    Route::post('/login', [UserController::class, 'login'])
+        ->name('auth.login');
+
+    // User logout (requires authentication)
+    Route::post('/logout', [UserController::class, 'logout'])
+        ->middleware('auth:api')
+        ->name('auth.logout');
 });
+

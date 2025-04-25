@@ -15,45 +15,176 @@
         }
     ],
     "paths": {
-        "/api/register": {
+        "/api/store": {
+            "post": {
+                "tags": [
+                    "Resource"
+                ],
+                "summary": "Store a new resource",
+                "description": "Creates a new resource in the database",
+                "operationId": "4edeaed7dd148522c0dca74bec044b1c",
+                "requestBody": {
+                    "description": "Resource data",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "field1",
+                                    "field2"
+                                ],
+                                "properties": {
+                                    "field1": {
+                                        "type": "string",
+                                        "example": "value1"
+                                    },
+                                    "field2": {
+                                        "type": "string",
+                                        "example": "value2"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Resource created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Resource created successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/verify/{token}": {
+            "get": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Verify user's email address",
+                "description": "Verifies a user's email address using the provided token",
+                "operationId": "1402f83896e6547950772da6dcc824e5",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Email verification token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Email successfully verified",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email verified successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid or expired token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid or expired verification token"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "User not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "User not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/login": {
             "post": {
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Register a new user",
-                "operationId": "953cbd71099d3540e7e8ca0f408851d8",
+                "summary": "Authenticate user and generate token",
+                "description": "Logs in a user and returns an authentication token",
+                "operationId": "0fc9610184083ac6dddab2c63139225a",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "name",
                                     "email",
-                                    "mobile",
-                                    "password",
-                                    "password_confirmation"
+                                    "password"
                                 ],
                                 "properties": {
-                                    "name": {
-                                        "type": "string",
-                                        "example": "John Doe"
-                                    },
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "john@example.com"
-                                    },
-                                    "mobile": {
-                                        "type": "string",
-                                        "example": "1234567890"
+                                        "example": "user@example.com"
                                     },
                                     "password": {
-                                        "type": "string",
-                                        "format": "password",
-                                        "example": "password123"
-                                    },
-                                    "password_confirmation": {
                                         "type": "string",
                                         "format": "password",
                                         "example": "password123"
@@ -65,53 +196,105 @@
                     }
                 },
                 "responses": {
-                    "201": {
-                        "description": "User registered successfully",
+                    "200": {
+                        "description": "Login successful",
                         "content": {
                             "application/json": {
                                 "schema": {
-                                    "type": "string"
-                                },
-                                "example": "user registration successful"
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        },
+                                        "user": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
                             }
                         }
                     },
-                    "422": {
-                        "description": "Validation error"
+                    "401": {
+                        "description": "Invalid credentials",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Invalid credentials"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Email not verified",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Email not verified"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
                     }
                 }
             }
         },
-        "/api/verify-email/{code}": {
-            "get": {
+        "/api/logout": {
+            "post": {
                 "tags": [
                     "Authentication"
                 ],
-                "summary": "Verify user email",
-                "operationId": "151187aa24aef94d4c070f6075bf29d7",
-                "parameters": [
-                    {
-                        "name": "code",
-                        "in": "path",
-                        "description": "Email verification code",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                "summary": "Logout user and invalidate session",
+                "description": "Logs out the authenticated user and invalidates their session",
+                "operationId": "67d5147477c548bfbc3f982833bbc7bd",
+                "responses": {
+                    "204": {
+                        "description": "Successfully logged out"
+                    },
+                    "500": {
+                        "description": "Logout failed",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Logout failed"
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Error message"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
                         }
                     }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Email verified successfully"
-                    },
-                    "400": {
-                        "description": "Invalid verification code"
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
                     }
-                }
+                ]
             }
         }
     },
     "tags": [
+        {
+            "name": "Resource",
+            "description": "Resource"
+        },
         {
             "name": "Authentication",
             "description": "Authentication"
