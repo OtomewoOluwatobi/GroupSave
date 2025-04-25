@@ -98,6 +98,7 @@ class UserController extends Controller
      *     )
      * )
      */
+
     /**
      * Verify the user's email address.
      *
@@ -105,6 +106,7 @@ class UserController extends Controller
      * @param  string  $code
      * @return \Illuminate\Http\JsonResponse
      */
+
     /**
      * @OA\Get(
      *     path="/api/verify-email/{code}",
@@ -127,6 +129,7 @@ class UserController extends Controller
      *     )
      * )
      */
+
     /**
      * Verify the user's email address.
      *
@@ -134,6 +137,7 @@ class UserController extends Controller
      * @param  string  $code
      * @return \Illuminate\Http\JsonResponse
      */
+    
     /**
      * @OA\Get(
      *     path="/api/verify-email/{code}",
