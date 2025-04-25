@@ -15,32 +15,49 @@
         }
     ],
     "paths": {
-        "/api/store": {
+        "/api/register": {
             "post": {
                 "tags": [
-                    "Resource"
+                    "Authentication"
                 ],
-                "summary": "Store a new resource",
-                "description": "Creates a new resource in the database",
-                "operationId": "4edeaed7dd148522c0dca74bec044b1c",
+                "summary": "Register a new user",
+                "description": "Creates a new user account",
+                "operationId": "953cbd71099d3540e7e8ca0f408851d8",
                 "requestBody": {
-                    "description": "Resource data",
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "field1",
-                                    "field2"
+                                    "name",
+                                    "email",
+                                    "mobile",
+                                    "password",
+                                    "password_confirmation"
                                 ],
                                 "properties": {
-                                    "field1": {
+                                    "name": {
                                         "type": "string",
-                                        "example": "value1"
+                                        "example": "John Doe"
                                     },
-                                    "field2": {
+                                    "email": {
                                         "type": "string",
-                                        "example": "value2"
+                                        "format": "email",
+                                        "example": "user@example.com"
+                                    },
+                                    "mobile": {
+                                        "type": "string",
+                                        "example": "+1234567890"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
                                     }
                                 },
                                 "type": "object"
@@ -50,16 +67,16 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Resource created successfully",
+                        "description": "User registered successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
                                         "message": {
                                             "type": "string",
-                                            "example": "Resource created successfully"
+                                            "example": "User registration successful"
                                         },
-                                        "data": {
+                                        "user": {
                                             "type": "object"
                                         }
                                     },
@@ -80,6 +97,25 @@
                                         },
                                         "errors": {
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "500": {
+                        "description": "Server error",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "error": {
+                                            "type": "string",
+                                            "example": "Registration failed"
+                                        },
+                                        "message": {
+                                            "type": "string"
                                         }
                                     },
                                     "type": "object"
@@ -291,10 +327,6 @@
         }
     },
     "tags": [
-        {
-            "name": "Resource",
-            "description": "Resource"
-        },
         {
             "name": "Authentication",
             "description": "Authentication"

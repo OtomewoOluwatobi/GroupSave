@@ -25,25 +25,27 @@ class UserController extends Controller
 
     /**
      * @OA\Post(
-     *     path="/api/store",
-     *     summary="Store a new resource",
-     *     description="Creates a new resource in the database",
-     *     tags={"Resource"},
+     *     path="/api/register",
+     *     tags={"Authentication"},
+     *     summary="Register a new user",
+     *     description="Creates a new user account",
      *     @OA\RequestBody(
      *         required=true,
-     *         description="Resource data",
      *         @OA\JsonContent(
-     *             required={"field1", "field2"},
-     *             @OA\Property(property="field1", type="string", example="value1"),
-     *             @OA\Property(property="field2", type="string", example="value2")
+     *             required={"name","email","mobile","password","password_confirmation"},
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="user@example.com"),
+     *             @OA\Property(property="mobile", type="string", example="+1234567890"),
+     *             @OA\Property(property="password", type="string", format="password", example="password123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="password123")
      *         )
      *     ),
      *     @OA\Response(
      *         response=201,
-     *         description="Resource created successfully",
+     *         description="User registered successfully",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Resource created successfully"),
-     *             @OA\Property(property="data", type="object")
+     *             @OA\Property(property="message", type="string", example="User registration successful"),
+     *             @OA\Property(property="user", type="object")
      *         )
      *     ),
      *     @OA\Response(
@@ -52,6 +54,14 @@ class UserController extends Controller
      *         @OA\JsonContent(
      *             @OA\Property(property="message", type="string", example="The given data was invalid."),
      *             @OA\Property(property="errors", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=500,
+     *         description="Server error",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Registration failed"),
+     *             @OA\Property(property="message", type="string")
      *         )
      *     )
      * )
@@ -67,12 +77,16 @@ class UserController extends Controller
                 'password' => ['required', 'confirmed', Password::defaults()],
             ]);
 
+            // Generate a unique verification code
+            $verificationCode = bin2hex(random_bytes(16));
+
             // Create new user
             $user = User::create([
                 'name' => $validatedData['name'],
                 'email' => $validatedData['email'],
                 'mobile' => $validatedData['mobile'],
                 'password' => Hash::make($validatedData['password']),
+                'email_verification_code' => $verificationCode, // Save the verification code
             ]);
 
             // Trigger registered event
@@ -85,7 +99,6 @@ class UserController extends Controller
                 'message' => 'User registration successful',
                 'user' => $user
             ], 201);
-
         } catch (Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
             return response()->json([
@@ -143,7 +156,7 @@ class UserController extends Controller
         try {
             // Find user by verification code
             $user = User::where('email_verification_code', $code)->first();
-            
+
             if (!$user) {
                 return response()->json([
                     'message' => 'Invalid verification code'
@@ -158,7 +171,6 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Email verified successfully'
             ], 200);
-
         } catch (Exception $e) {
             Log::error('Email verification error: ' . $e->getMessage());
             return response()->json([
@@ -217,7 +229,7 @@ class UserController extends Controller
     {
         try {
             $credentials = $request->only('email', 'password');
-            
+
             // Find user by email
             $user = User::where('email', $credentials['email'])->first();
 
@@ -247,7 +259,6 @@ class UserController extends Controller
                 'token' => $token,
                 'user' => $user
             ], 200);
-
         } catch (Exception $e) {
             Log::error('Login error: ' . $e->getMessage());
             return new Response([
@@ -295,7 +306,6 @@ class UserController extends Controller
             $request->session()->regenerateToken();
 
             return response()->noContent();
-
         } catch (Exception $e) {
             Log::error('Logout error: ' . $e->getMessage());
             return new Response([
