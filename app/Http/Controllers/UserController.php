@@ -93,7 +93,7 @@ class UserController extends Controller
             event(new Registered($user));
 
             // Send verification email
-            $user->sendEmailVerificationNotification();
+            // $user->sendEmailVerificationNotification();
 
             return response()->json([
                 'message' => 'User registration successful',

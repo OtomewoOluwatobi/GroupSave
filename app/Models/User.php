@@ -98,23 +98,4 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(UserBank::class);
     }
-
-    /**
-     * Send email verification notification to user.
-     * Generates a temporary signed URL for email verification.
-     *
-     * @return void
-     */
-    public function sendEmailVerificationNotification(): void
-    {
-        $verificationUrl = URL::temporarySignedRoute(
-            'verification.verify',
-            now()->addMinutes(60),
-            ['code' => $this->email_verification_code]
-        );
-
-        // TODO: Implement email sending logic
-        // Consider using Laravel's Mail facade or Notifications
-        // Example: Mail::to($this->email)->send(new VerificationEmail($verificationUrl));
-    }
 }
