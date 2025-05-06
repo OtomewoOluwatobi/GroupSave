@@ -255,7 +255,7 @@ class UserController extends Controller
             }
 
             return new Response([
-                'token' => $token,
+                'token' => $credentials,
                 'user' => $user
             ], 200);
         } catch (Exception $e) {
