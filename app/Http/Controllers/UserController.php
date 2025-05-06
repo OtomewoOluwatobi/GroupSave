@@ -248,7 +248,7 @@ class UserController extends Controller
             }
 
             // Use JWT guard specifically
-            if (!$token = auth('api')->attempt($user)) {
+            if (!$token = auth('api')->attempt($credentials)) {
                 return new Response([
                     'error' => 'Invalid credentials'
                 ], 401);
