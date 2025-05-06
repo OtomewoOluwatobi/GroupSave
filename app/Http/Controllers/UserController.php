@@ -247,8 +247,12 @@ class UserController extends Controller
                 ], 403);
             }
 
-            // Attempt to generate JWT token
-            $token = Auth::guard()->attempt($credentials);
+            // Use JWT guard specifically
+            if (!$token = auth('api')->attempt($credentials)) {
+                return new Response([
+                    'error' => 'Invalid credentials'
+                ], 401);
+            }
 
             return new Response([
                 'token' => $token,
