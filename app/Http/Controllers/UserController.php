@@ -256,7 +256,8 @@ class UserController extends Controller
 
             return new Response([
                 'token' => $token,
-                'user' => $user
+                'user' => $user,
+                'expires_in' => config('jwt.ttl') * 60,
             ], 200);
         } catch (Exception $e) {
             Log::error('Login error: ' . $e->getMessage());
