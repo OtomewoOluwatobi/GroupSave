@@ -104,7 +104,7 @@ class UserController extends Controller
             return response()->json([
                 'error' => 'Registration failed',
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
@@ -176,7 +176,7 @@ class UserController extends Controller
             return response()->json([
                 'error' => 'Verification failed',
                 'message' => $e->getMessage()
-            ], 400);
+            ], 500);
         }
     }
 
