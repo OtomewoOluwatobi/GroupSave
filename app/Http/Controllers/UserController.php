@@ -176,7 +176,7 @@ class UserController extends Controller
             return response()->json([
                 'error' => 'Verification failed',
                 'message' => $e->getMessage()
-            ], 500);
+            ], 400);
         }
     }
 
