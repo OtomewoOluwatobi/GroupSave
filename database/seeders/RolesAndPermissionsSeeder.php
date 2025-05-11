@@ -2,79 +2,99 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 use App\Models\User;
 
 class RolesAndPermissionsSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     * This seeder creates default roles and permissions for the application
-     * and sets up initial admin users.
-     *
-     * @return void
-     */
     public function run(): void
     {
-        // Reset cached roles and permissions to ensure fresh seeding
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        // Clear the permission cache
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
-        // Define all available permissions in the system
+        // Define permissions
         $permissions = [
-            'create group',    // Permission to create new groups
-            'edit group',      // Permission to modify existing groups
-            'delete group',    // Permission to remove groups
-            'view group',      // Permission to view group details
-            'manage members',    // Permission to manage user accounts
-            'approve transactions', // Permission to approve financial transactions
-            'send notifications'   // Permission to send system notifications
+            'create group',
+            'edit group',
+            'delete group',
+            'view group',
+            'join groups',
+            'leave groups',
+            'manage group members',
+            'approve transactions',
+            'send notifications',
+            'make payments',
+            'view payments',
+            'manage payments',
+            'manage users',
+            'view users',
+            'delete users',
+            'edit profile',
+            'view profile',
         ];
 
-        // Create permissions if they don't exist
+        // Create permissions
         foreach ($permissions as $permission) {
             Permission::firstOrCreate(['name' => $permission]);
         }
 
-        // Create and configure basic user role
-        $userRole = Role::firstOrCreate(['name' => 'group-admin']);
-        $userRole->syncPermissions([
-            'create group', 
-            'view group',
-            'edit group',
-            'manage members',
-            'approve transactions',
-            'send notifications'
-        ]); // Basic users get limited permissions
+        // Define roles and assign permissions
+        $roles = [
+            'group-admin' => [
+                'create group',
+                'edit group',
+                'view group',
+                'manage group members',
+                'approve transactions',
+                'send notifications',
+                'make payments',
+            ],
+            'user' => [
+                'join groups',
+                'leave groups',
+                'view group',
+                'make payments',
+                'view payments',
+                'edit profile',
+                'view profile',
+            ],
+            'super-admin' => Permission::pluck('name')->toArray(), // All permissions
+        ];
 
-        // Create and configure super-admin role
-        $superAdminRole = Role::firstOrCreate(['name' => 'super-admin']);
-        $superAdminRole->syncPermissions(Permission::all()); // Super admins get all permissions
+        foreach ($roles as $roleName => $rolePermissions) {
+            $role = Role::firstOrCreate(['name' => $roleName]);
+            $role->syncPermissions($rolePermissions);
+        }
 
-        // Create default admin user
-        $groupAdmin = User::firstOrCreate(
-            ['email' => 'otomewooluwatobi@gmail.com'],
+        // Create default users and assign roles
+        $defaultUsers = [
             [
                 'name' => 'Otomewo Oluwatobi',
+                'email' => 'otomewooluwatobi@gmail.com',
                 'password' => bcrypt('password'),
-                'phone' => '1234567890',
+                'mobile' => '1234567890',
                 'status' => 'active',
-            ]
-        );
-        $groupAdmin->assignRole('group-admin');
-
-        // Create default super admin user
-        $superAdmin = User::firstOrCreate(
-            ['email' => 'admin@example.com'],
+                'role' => 'group-admin',
+            ],
             [
                 'name' => 'Super Admin',
+                'email' => 'admin@example.com',
                 'password' => bcrypt('password@1'),
-                'phone' => '1234567899',
+                'mobile' => '1234567899',
                 'status' => 'active',
-            ]
-        );
-        $superAdmin->assignRole('super-admin');
+                'role' => 'super-admin',
+            ],
+        ];
+
+        foreach ($defaultUsers as $userData) {
+            $user = User::firstOrCreate(
+                ['email' => $userData['email']],
+                collect($userData)->except('role')->toArray()
+            );
+            $user->assignRole($userData['role']);
+        }
     }
 }

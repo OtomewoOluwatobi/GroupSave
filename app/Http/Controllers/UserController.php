@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
+use App\Models\Group;
 use Illuminate\Http\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -97,7 +98,7 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'User registration successful',
-                'user' => $user
+                'user' => $user,
             ], 201);
         } catch (Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
@@ -256,7 +257,7 @@ class UserController extends Controller
 
             return new Response([
                 'token' => $token,
-                'user' => $user,
+                'user' => $user->load('ownedGroups'),
                 'expires_in' => config('jwt.ttl') * 60,
             ], 200);
         } catch (Exception $e) {
@@ -266,6 +267,32 @@ class UserController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    public function dashboard(Request $request)
+    {
+        // Check if the user is authenticated
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        // Get the authenticated user
+        $user = Auth::user();
+
+        $ownedGroups = $user->ownedGroups()
+            ->withCount('members')
+            ->get();
+
+        $allGroups = Group::withCount('members')->get();
+
+
+        return response()->json([
+            'message' => 'User dashboard',
+            'user' => $user,
+            'owned_groups' => $ownedGroups,
+            'all_groups' => $allGroups,
+            'user_banks' => $user->userBank,
+        ], 200);
     }
 
     /**
@@ -299,15 +326,10 @@ class UserController extends Controller
     {
         try {
             // Logout user
-            Auth::guard('web')->logout();
-
-            // Invalidate and regenerate session
-            $request->session()->invalidate();
-            $request->session()->regenerateToken();
+            Auth::guard('api')->logout();
 
             return response()->noContent();
         } catch (Exception $e) {
-            Log::error('Logout error: ' . $e->getMessage());
             return new Response([
                 'error' => 'Logout failed',
                 'message' => $e->getMessage()

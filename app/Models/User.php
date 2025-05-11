@@ -7,8 +7,9 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Tymon\JWTAuth\Contracts\JWTSubject;
-use Illuminate\Support\Facades\URL;
 
 /**
  * User Model
@@ -92,5 +93,32 @@ class User extends Authenticatable implements JWTSubject
     public function userBank()
     {
         return $this->hasMany(UserBank::class);
+    }
+
+    /**
+     * Get groups owned by the user
+     */
+    public function ownedGroups(): HasMany
+    {
+        return $this->hasMany(Group::class, 'owner_id');
+    }
+
+    /**
+     * Get groups user is a member of
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class)
+            ->using(GroupUser::class)
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Get group memberships
+     */
+    public function groupMemberships(): HasMany
+    {
+        return $this->hasMany(GroupUser::class);
     }
 }

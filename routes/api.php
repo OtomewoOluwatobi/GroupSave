@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\GroupController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -41,3 +42,11 @@ Route::prefix('auth')->group(function () {
         ->name('auth.logout');
 });
 
+Route::prefix('user')->group(function () {
+    Route::get('/dashboard', [UserController::class, 'dashboard']);
+    Route::prefix('group')->group(function () {
+        Route::get('/', [GroupController::class, 'index']);
+        Route::get('/{id}', [GroupController::class, 'show']);
+        Route::post('/store', [GroupController::class, 'store']);
+    });
+});
