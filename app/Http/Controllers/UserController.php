@@ -283,7 +283,7 @@ class UserController extends Controller
             ->withCount('members')
             ->get();
 
-        $allGroups = Group::withCount('members')->get();
+        $allGroups = Group::withCount('members')->inRandomOrder()->limit(10)->get();
 
 
         return response()->json([
