@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('groups', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('owner_id')->constrained()->onDelete('cascade');
-            $table->string('title')->unique();
+            $table->string('title');
             $table->integer('total_users')->default(0);
             $table->decimal('target_amount', 10, 2);
             $table->decimal('payable_amount', 10, 2);
