@@ -26,7 +26,7 @@ class GroupController extends Controller
             'target_amount' => 'required|numeric|min:0',
             'expected_start_date' => 'required|date|after:today',
             'payment_out_day' => 'required|integer|min:1|max:31',
-            'membersEmails' => 'sometimes|array',
+            'membersEmails' => 'required|array',
             'membersEmails.*' => 'email'
         ]);
 
