@@ -33,7 +33,7 @@ class GroupController extends Controller
         // Calculate payable amount and expected end date
         $payableAmount = (float) $validated['target_amount'] / (int) $validated['total_users'];
         $expectedEndDate = \Carbon\Carbon::parse($validated['expected_start_date'])
-            ->addDays((int) $validated['total_users'])
+            ->addMonths($validated['total_users'])
             ->format('Y-m-d');
 
         try {
