@@ -18,7 +18,7 @@ class GroupController extends Controller
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
-
+        
         // Validate request data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -26,8 +26,8 @@ class GroupController extends Controller
             'target_amount' => 'required|numeric|min:0',
             'expected_start_date' => 'required|date|after:today',
             'payment_out_day' => 'required|integer|min:1|max:31',
-            'membersEmails' => 'required|array',
-            'membersEmails.*' => 'email'
+            'membersEmails' => 'array',
+            'membersEmails.*' => 'required|email'
         ]);
 
         // Calculate payable amount and expected end date
@@ -58,27 +58,27 @@ class GroupController extends Controller
                 'is_active' => true
             ]);
 
-            // Ensure the User model is imported: use App\Models\User;
-            foreach ($validated['membersEmails'] as $email) {
-                // Skip if the email belongs to the creator
-                if ($email === Auth::user()->email) {
-                    continue;
-                }
+                // Ensure the User model is imported: use App\Models\User;
+                foreach ($validated['membersEmails'] as $email) {
+                    // Skip if the email belongs to the creator
+                    if ($email === Auth::user()->email) {
+                        continue;
+                    }
 
-                // Register the user if not exists
-                $user = User::firstOrCreate(
-                    ['email' => $email],
-                    [
-                        'name' => explode('@', $email)[0], // Use the part before '@' as name
-                        'password' => Hash::make(random_bytes(10))
-                    ]
-                );
+                    // Register the user if not exists
+                    $user = User::firstOrCreate(
+                        ['email' => $email],
+                        [
+                            'name' => explode('@', $email)[0], // Use the part before '@' as name
+                            'password' => Hash::make(random_bytes(10))
+                        ]
+                    );
 
-                // Attach user to the group with default member role (inactive until confirmation, if needed)
-                $group->users()->attach($user->id, [
-                    'role' => 'member',
-                    'is_active' => false
-                ]);
+                    // Attach user to the group with default member role (inactive until confirmation, if needed)
+                    $group->users()->attach($user->id, [
+                        'role' => 'member',
+                        'is_active' => false
+                    ]);
             }
 
             DB::commit();
