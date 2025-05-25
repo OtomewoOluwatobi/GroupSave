@@ -279,7 +279,7 @@ class UserController extends Controller
         // Get the authenticated user
         $user = Auth::user();
 
-        $ownedGroups = $user->ownedGroups()
+        $ownedGroups = $user->ownedGroups
             ->withCount('members')
             ->get();
 
