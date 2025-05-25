@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Group;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class GroupController extends Controller
 {
@@ -16,6 +18,7 @@ class GroupController extends Controller
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
+        
         // Validate request data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
@@ -23,6 +26,8 @@ class GroupController extends Controller
             'target_amount' => 'required|numeric|min:0',
             'expected_start_date' => 'required|date|after:today',
             'payment_out_day' => 'required|integer|min:1|max:31',
+            'membersEmails' => 'sometimes|array',
+            'membersEmails.*' => 'email'
         ]);
 
         // Calculate payable amount and expected end date
@@ -52,6 +57,33 @@ class GroupController extends Controller
                 'role' => 'admin',
                 'is_active' => true
             ]);
+
+            // Process additional member emails if provided
+            if (isset($validated['membersEmails'])) {
+                // Ensure the User model is imported: use App\Models\User;
+                foreach ($validated['membersEmails'] as $email) {
+                    // Skip if the email belongs to the creator
+                    if ($email === Auth::user()->email) {
+                        continue;
+                    }
+
+                    // Register the user if not exists
+                    $user = User::firstOrCreate(
+                        ['email' => $email],
+                        [
+                            'name' => explode('@', $email)[0], // Use the part before '@' as name
+                            'password' => Hash::make(random_bytes(10))
+                        ]
+                    );
+
+                    // Attach user to the group with default member role (inactive until confirmation, if needed)
+                    $group->users()->attach($user->id, [
+                        'role' => 'member',
+                        'is_active' => false
+                    ]);
+                }
+            }
+
             DB::commit();
 
             return response()->json([
