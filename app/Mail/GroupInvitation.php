@@ -14,11 +14,13 @@ class GroupInvitation extends Mailable
 
     public $group;
     public $user;
+    public $generatedPassword;
 
-    public function __construct(Group $group, User $user)
+    public function __construct(Group $group, User $user, $generatedPassword)
     {
         $this->group = $group;
         $this->user = $user;
+        $this->generatedPassword = $generatedPassword;
     }
 
     public function build()
@@ -28,7 +30,8 @@ class GroupInvitation extends Mailable
             ->with([
                 'group' => $this->group,
                 'user' => $this->user,
-                'inviter' => auth()->guard()->user()
+                'inviter' => auth()->guard()->user(),
+                'generatedPassword' => $this->generatedPassword,
             ]);
     }
 }

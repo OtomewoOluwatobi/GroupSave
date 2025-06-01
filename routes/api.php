@@ -48,5 +48,6 @@ Route::prefix('user')->group(function () {
         Route::get('/', [GroupController::class, 'index']);
         Route::get('/{id}', [GroupController::class, 'show']);
         Route::post('/store', [GroupController::class, 'store']);
+        Route::get('/accept-invitation/{id}', [GroupController::class, 'acceptInvitation']);
     });
 });

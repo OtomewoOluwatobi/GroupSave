@@ -11,6 +11,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Group;
+use App\Models\GroupUser;
 use Illuminate\Http\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -285,12 +286,19 @@ class UserController extends Controller
 
         $allGroups = Group::withCount('members')->inRandomOrder()->limit(10)->get();
 
+        $userGroups = GroupUser::with(['group' => function ($query) {
+            $query->withCount('members');
+        }])
+            ->where('user_id', $user->id)
+            ->get();
+
 
         return response()->json([
             'message' => 'User dashboard',
             'user' => $user,
             'owned_groups' => $ownedGroups,
             'all_groups' => $allGroups,
+            'user_groups' => $userGroups,
             'user_banks' => $user->userBank,
         ], 200);
     }
