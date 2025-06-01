@@ -1,7 +1,6 @@
 <?php
 
 return [
-
     /*
     |--------------------------------------------------------------------------
     | Authentication Defaults
@@ -41,7 +40,7 @@ return [
             'provider' => 'users',
         ],
         'api' => [
-            'driver' => 'jwt', // Use 'jwt' if you are using JWT for API authentication
+            'driver' => 'jwt',
             'provider' => 'users',
         ],
     ],
@@ -115,5 +114,4 @@ return [
     */
 
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
-
 ];

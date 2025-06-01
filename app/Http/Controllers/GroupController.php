@@ -8,38 +8,36 @@ use App\Models\Group;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class GroupController extends Controller
 {
 
     public function store(Request $request)
     {
+        Log::info('Request reached controller', ['request' => $request->all()]);
         // Check if the user is authenticated
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
         
-        // Validate request data
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'total_users' => 'required|integer|min:2|max:300',
             'target_amount' => 'required|numeric|min:0',
             'expected_start_date' => 'required|date|after:today',
             'payment_out_day' => 'required|integer|min:1|max:31',
-            'membersEmails' => 'array',
+            'membersEmails' => 'required|array',
             'membersEmails.*' => 'required|email'
         ]);
-
-        // Calculate payable amount and expected end date
+        
         $payableAmount = (float) $validated['target_amount'] / (int) $validated['total_users'];
         $expectedEndDate = \Carbon\Carbon::parse($validated['expected_start_date'])
             ->addMonths($validated['total_users'])
             ->format('Y-m-d');
-
+        
         try {
-            DB::beginTransaction();
-
-            // Create the group
+            $group = DB::transaction(function () use ($validated, $payableAmount, $expectedEndDate) {
             $group = Group::create([
                 'title' => $validated['title'],
                 'total_users' => (int) $validated['total_users'],
@@ -51,48 +49,43 @@ class GroupController extends Controller
                 'owner_id' => Auth::id(),
                 'status' => 'active'
             ]);
-
-            // Attach the creator as the first member
+            
             $group->users()->attach(Auth::id(), [
                 'role' => 'admin',
                 'is_active' => true
             ]);
-
-                // Ensure the User model is imported: use App\Models\User;
-                foreach ($validated['membersEmails'] as $email) {
-                    // Skip if the email belongs to the creator
-                    if ($email === Auth::user()->email) {
-                        continue;
-                    }
-
-                    // Register the user if not exists
-                    $user = User::firstOrCreate(
-                        ['email' => $email],
-                        [
-                            'name' => explode('@', $email)[0], // Use the part before '@' as name
-                            'password' => Hash::make(random_bytes(10))
-                        ]
-                    );
-
-                    // Attach user to the group with default member role (inactive until confirmation, if needed)
-                    $group->users()->attach($user->id, [
-                        'role' => 'member',
-                        'is_active' => false
-                    ]);
+            
+            foreach ($validated['membersEmails'] as $email) {
+                if ($email === Auth::user()->email) {
+                continue;
+                }
+                
+                $user = User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => strstr($email, '@', true),
+                    'password' => Hash::make(\Illuminate\Support\Str::random(10))
+                ]
+                );
+                
+                $group->users()->attach($user->id, [
+                'role' => 'member',
+                'is_active' => false
+                ]);
             }
-
-            DB::commit();
-
+            
+            return $group;
+            });
+            
             return response()->json([
-                'message' => 'Group created successfully',
-                'data' => $group
+            'message' => 'Group created successfully',
+            'data' => $group
             ], 201);
         } catch (\Exception $e) {
-            DB::rollBack();
-
+            Log::error('Group creation failed', ['error' => $e->getMessage()]);
             return response()->json([
-                'message' => 'Group creation failed',
-                'error' => $e->getMessage()
+            'message' => 'Group creation failed',
+            'error' => $e->getMessage()
             ], 500);
         }
     }
