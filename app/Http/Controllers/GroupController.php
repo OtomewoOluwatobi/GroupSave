@@ -15,8 +15,7 @@ class GroupController extends Controller
 
     public function store(Request $request)
     {
-        Log::info('Request reached controller', ['request' => $request->all()]);
-        // Check if the user is authenticated
+       // Check if the user is authenticated
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
         }
