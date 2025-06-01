@@ -21,7 +21,6 @@ return new class extends Migration
             $table->date('expected_start_date');
             $table->date('expected_end_date');
             $table->integer('payment_out_day')->default(1);
-            $table->string('membersEmails');
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
 

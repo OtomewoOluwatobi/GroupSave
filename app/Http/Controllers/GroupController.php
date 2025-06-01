@@ -9,6 +9,9 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\GroupInvitation;
+use App\Events\GroupCreated;
 
 class GroupController extends Controller
 {
@@ -26,8 +29,8 @@ class GroupController extends Controller
             'target_amount' => 'required|numeric|min:0',
             'expected_start_date' => 'required|date|after:today',
             'payment_out_day' => 'required|integer|min:1|max:31',
-            'membersEmails' => 'required|array',
-            'membersEmails.*' => 'required|email'
+            'members_emails' => 'required|array', // Changed from members_emails
+            'members_emails.*' => 'required|email' // Changed from members_emails.*
         ]);
         
         $payableAmount = (float) $validated['target_amount'] / (int) $validated['total_users'];
@@ -54,38 +57,77 @@ class GroupController extends Controller
                 'is_active' => true
             ]);
             
-            foreach ($validated['membersEmails'] as $email) {
-                if ($email === Auth::user()->email) {
-                continue;
-                }
-                
-                $user = User::firstOrCreate(
-                ['email' => $email],
-                [
-                    'name' => strstr($email, '@', true),
-                    'password' => Hash::make(\Illuminate\Support\Str::random(10))
-                ]
-                );
-                
-                $group->users()->attach($user->id, [
-                'role' => 'member',
-                'is_active' => false
-                ]);
-            }
+            $this->inviteMembers($group, $validated['members_emails']);
             
             return $group;
             });
+            
+            // Dispatch event after successful group creation
+            event(new GroupCreated($group));
             
             return response()->json([
             'message' => 'Group created successfully',
             'data' => $group
             ], 201);
         } catch (\Exception $e) {
-            Log::error('Group creation failed', ['error' => $e->getMessage()]);
+            Log::error('Group creation failed', [
+            'error' => $e->getMessage(),
+            'user_id' => Auth::id()
+            ]);
             return response()->json([
             'message' => 'Group creation failed',
             'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Handle member invitations
+     *
+     * @param Group $group
+     * @param array $emails
+     * @return void
+     */
+    private function inviteMembers(Group $group, array $emails)
+    {
+        // Get creator's email
+        $creatorEmail = Auth::user()->email;
+
+        // Filter out creator's email from the array
+        $memberEmails = array_filter($emails, function($email) use ($creatorEmail) {
+            return $email !== $creatorEmail;
+        });
+
+        foreach ($memberEmails as $email) {
+            $user = User::firstOrCreate(
+                ['email' => $email],
+                [
+                    'name' => strstr($email, '@', true),
+                    'password' => Hash::make(\Illuminate\Support\Str::random(10))
+                ]
+            );
+            
+            $group->users()->attach($user->id, [
+                'role' => 'member',
+                'is_active' => false
+            ]);
+
+            $this->sendInvitationEmail($group, $user);
+        }
+    }
+
+    /**
+     * Send invitation email to user
+     *
+     * @param Group $group
+     * @param User $user
+     * @return void
+     */
+    private function sendInvitationEmail(Group $group, User $user)
+    {
+        // Double check to ensure we're not sending to the creator
+        if ($user->id !== Auth::id()) {
+            Mail::to($user->email)->send(new GroupInvitation($group, $user));
         }
     }
 
