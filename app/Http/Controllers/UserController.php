@@ -284,9 +284,7 @@ class UserController extends Controller
             ->withCount('members')
             ->get();
 
-        $allGroups = Group::withCount('members')->inRandomOrder()->limit(10)->get();
-
-        $userGroups = GroupUser::with(['group' => function ($query) {
+        $allGroups = GroupUser::with(['group' => function ($query) {
             $query->withCount('members');
         }])
             ->where('user_id', $user->id)
@@ -298,7 +296,6 @@ class UserController extends Controller
             'user' => $user,
             'owned_groups' => $ownedGroups,
             'all_groups' => $allGroups,
-            'user_groups' => $userGroups,
             'user_banks' => $user->userBank,
         ], 200);
     }
