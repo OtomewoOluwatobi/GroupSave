@@ -281,12 +281,22 @@ class UserController extends Controller
         $user = Auth::user();
 
         $ownedGroups = GroupUser::with(['group' => function ($query) {
-            $query->withCount('members');
+            $query->withCount([
+                'members',
+                'members as active_members_count' => function ($query) {
+                    $query->where('is_active', true);
+                }
+            ]);
         }])
             ->where('user_id', $user->id)
             ->get();
 
-        $allGroups = Group::withCount('members')->inRandomOrder()->limit(10)->get();
+        $allGroups = Group::withCount([
+            'members',
+            'members as active_members_count' => function ($query) {
+                $query->where('is_active', true);
+            }
+        ])->inRandomOrder()->limit(10)->get();
 
         return response()->json([
             'message' => 'User dashboard',
