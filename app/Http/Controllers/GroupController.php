@@ -97,9 +97,9 @@ class GroupController extends Controller
 
         foreach ($memberEmails as $email) {
             try {
-                DB::transaction(function() use ($group, $email) {
+                DB::transaction(function () use ($group, $email) {
                     $generatedPassword = Str::random(10);
-                    
+
                     // Create user if they don't already exist
                     $user = User::firstOrCreate(
                         ['email' => $email],
@@ -117,7 +117,7 @@ class GroupController extends Controller
                         ]);
 
                         $this->sendInvitationEmail($group, $user, $generatedPassword);
-                        
+
                         Log::info('User invited to group', [
                             'user_id' => $user->id,
                             'group_id' => $group->id,
@@ -131,7 +131,7 @@ class GroupController extends Controller
                     'group_id' => $group->id,
                     'error' => $e->getMessage()
                 ]);
-                
+
                 // Continue with next email instead of breaking the entire process
                 continue;
             }
@@ -226,7 +226,11 @@ class GroupController extends Controller
         }
 
         // Find the group by ID
-        $group = Group::with('users')->find($id);
+        $group = Group::with('users')
+            ->withCount(['users as active_users_count' => function ($query) {
+                $query->where('group_user.is_active', true);
+            }])
+            ->find($id);
 
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
