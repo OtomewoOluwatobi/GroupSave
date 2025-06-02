@@ -226,7 +226,7 @@ class GroupController extends Controller
         }
 
         // Find the group by ID
-        $group = Group::with('users', 'members')->find($id);
+        $group = Group::with('users')->find($id);
 
         if (!$group) {
             return response()->json(['message' => 'Group not found'], 404);
