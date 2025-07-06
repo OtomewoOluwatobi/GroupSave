@@ -277,34 +277,137 @@ class UserController extends Controller
             return response()->json(['message' => 'Unauthorized'], 401);
         }
 
-        // Get the authenticated user
-        $user = Auth::user();
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
 
-        $ownedGroups = GroupUser::with(['group' => function ($query) {
-            $query->withCount([
-                'members',
-                'members as active_members_count' => function ($query) {
-                    $query->where('is_active', true);
-                }
+            // Get user's groups (both owned and member)
+            $userGroups = Group::with(['users' => function ($query) {
+                    $query->select('users.id', 'users.name', 'users.email');
+                }])
+                ->withCount([
+                    'users as total_members',
+                    'users as active_members_count' => function ($query) {
+                        $query->where('group_user.is_active', true);
+                    }
+                ])
+                ->where(function($query) use ($user) {
+                    $query->where('owner_id', $user->id)
+                          ->orWhereHas('users', function($q) use ($user) {
+                              $q->where('user_id', $user->id);
+                          });
+                })
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function ($group) use ($user) {
+                    $userRole = $group->users->where('id', $user->id)->first()?->pivot?->role ?? 'member';
+                    $isActive = $group->users->where('id', $user->id)->first()?->pivot?->is_active ?? false;
+                    
+                    return [
+                        'id' => $group->id,
+                        'title' => $group->title,
+                        'target_amount' => $group->target_amount,
+                        'payable_amount' => $group->payable_amount,
+                        'expected_start_date' => $group->expected_start_date,
+                        'expected_end_date' => $group->expected_end_date,
+                        'payment_out_day' => $group->payment_out_day,
+                        'status' => $group->status,
+                        'total_members' => $group->total_members,
+                        'active_members' => $group->active_members_count,
+                        'user_role' => $userRole,
+                        'is_active' => $isActive,
+                        'is_owner' => $group->owner_id === $user->id,
+                        'created_at' => $group->created_at,
+                    };
+                });
+
+            // Get suggested groups (random groups user is not part of)
+            $suggestedGroups = Group::with(['users' => function ($query) {
+                    $query->select('users.id', 'users.name');
+                }])
+                ->withCount([
+                    'users as total_members',
+                    'users as active_members_count' => function ($query) {
+                        $query->where('group_user.is_active', true);
+                    }
+                ])
+                ->whereDoesntHave('users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                })
+                ->where('status', 'active')
+                ->inRandomOrder()
+                ->limit(5)
+                ->get()
+                ->map(function ($group) {
+                    return [
+                        'id' => $group->id,
+                        'title' => $group->title,
+                        'target_amount' => $group->target_amount,
+                        'payable_amount' => $group->payable_amount,
+                        'total_members' => $group->total_members,
+                        'active_members' => $group->active_members_count,
+                        'expected_start_date' => $group->expected_start_date,
+                        'payment_out_day' => $group->payment_out_day,
+                        'owner' => $group->users->where('pivot.role', 'admin')->first()?->name,
+                    ];
+                });
+
+            // Get pending invitations
+            $pendingInvitations = Group::with(['users' => function ($query) {
+                    $query->where('group_user.role', 'admin');
+                }])
+                ->whereHas('users', function ($query) use ($user) {
+                    $query->where('user_id', $user->id)
+                          ->where('group_user.is_active', false);
+                })
+                ->get()
+                ->map(function ($group) {
+                    return [
+                        'id' => $group->id,
+                        'title' => $group->title,
+                        'target_amount' => $group->target_amount,
+                        'payable_amount' => $group->payable_amount,
+                        'invited_by' => $group->users->first()?->name,
+                        'created_at' => $group->created_at,
+                    ];
+                });
+
+            // Dashboard statistics
+            $stats = [
+                'total_groups' => $userGroups->count(),
+                'owned_groups' => $userGroups->where('is_owner', true)->count(),
+                'member_groups' => $userGroups->where('is_owner', false)->count(),
+                'pending_invitations' => $pendingInvitations->count(),
+                'active_groups' => $userGroups->where('status', 'active')->count(),
+            ];
+
+            return response()->json([
+                'message' => 'Dashboard data retrieved successfully',
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'mobile' => $user->mobile,
+                    'created_at' => $user->created_at,
+                ],
+                'stats' => $stats,
+                'user_groups' => $userGroups,
+                'suggested_groups' => $suggestedGroups,
+                'pending_invitations' => $pendingInvitations,
+                'user_banks' => $user->userBank ?? [],
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Dashboard error', [
+                'user_id' => Auth::id(),
+                'error' => $e->getMessage()
             ]);
-        }])
-            ->where('user_id', $user->id)
-            ->get();
 
-        $allGroups = Group::withCount([
-            'members',
-            'members as active_members_count' => function ($query) {
-                $query->where('is_active', true);
-            }
-        ])->inRandomOrder()->limit(10)->get();
-
-        return response()->json([
-            'message' => 'User dashboard',
-            'user' => $user,
-            'owned_groups' => $ownedGroups,
-            'all_groups' => $allGroups,
-            'user_banks' => $user->userBank,
-        ], 200);
+            return response()->json([
+                'message' => 'Failed to load dashboard data',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
