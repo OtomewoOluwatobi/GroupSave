@@ -318,7 +318,7 @@ class UserController extends Controller
                         'is_active' => $isActive,
                         'is_owner' => $group->owner_id === $user->id,
                         'created_at' => $group->created_at,
-                    };
+                    ];
                 });
 
             // Get suggested groups (random groups user is not part of)

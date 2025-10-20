@@ -19,6 +19,10 @@ Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/ping', function () {
+    return response()->json(['message' => 'pong'], 200);
+});
+
 /**
  * Authentication Routes Group
  * Prefix: /auth
