@@ -25,21 +25,17 @@ Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
  */
 Route::prefix('auth')->group(function () {
     // User registration
-    Route::post('/register', [UserController::class, 'store'])
-        ->name('auth.register');
+    Route::post('/register', [UserController::class, 'store']);
 
     // Email verification
-    Route::get('/verify/{code}', [UserController::class, 'verifyEmail'])
-        ->name('verification.verify');
+    Route::get('/verify/{code}', [UserController::class, 'verifyEmail']);
 
     // User login
-    Route::post('/login', [UserController::class, 'login'])
-        ->name('auth.login');
+    Route::post('/login', [UserController::class, 'login']);
 
     // User logout (requires authentication)
     Route::get('/logout', [UserController::class, 'logout'])
-        ->middleware('auth:api')
-        ->name('auth.logout');
+        ->middleware('auth:api');
 });
 
 Route::prefix('user')->group(function () {
