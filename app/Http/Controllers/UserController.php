@@ -11,7 +11,6 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
 use App\Models\Group;
-use App\Models\GroupUser;
 use Illuminate\Http\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -95,7 +94,7 @@ class UserController extends Controller
             event(new Registered($user));
 
             // Send verification email
-            // $user->sendEmailVerificationNotification();
+            $user->sendEmailVerificationNotification();
 
             return response()->json([
                 'message' => 'User registration successful',
@@ -293,9 +292,9 @@ class UserController extends Controller
                 ])
                 ->where(function($query) use ($user) {
                     $query->where('owner_id', $user->id)
-                          ->orWhereHas('users', function($q) use ($user) {
-                              $q->where('user_id', $user->id);
-                          });
+                        ->orWhereHas('users', function($q) use ($user) {
+                            $q->where('user_id', $user->id);
+                        });
                 })
                 ->orderBy('created_at', 'desc')
                 ->get()
@@ -422,7 +421,7 @@ class UserController extends Controller
      *     tags={"Authentication"},
      *     summary="Logout user and invalidate session",
      *     description="Logs out the authenticated user and invalidates their session",
-     *     security={{"bearerAuth":{}}},
+     *     security={{ "bearerAuth":{ }}},
      *     @OA\Response(
      *         response=204,
      *         description="Successfully logged out"
