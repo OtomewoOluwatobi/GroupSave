@@ -15,17 +15,21 @@ class GroupInvitation extends Mailable
     public $group;
     public $user;
     public $generatedPassword;
+    public $cc;
+    public $bcc;
 
-    public function __construct(Group $group, User $user, $generatedPassword)
+    public function __construct(Group $group, User $user, $generatedPassword, $cc = null, $bcc = null)
     {
         $this->group = $group;
         $this->user = $user;
         $this->generatedPassword = $generatedPassword;
+        $this->cc = $cc;
+        $this->bcc = $bcc;
     }
 
     public function build()
     {
-        return $this->view('emails.group-invitation')
+        $mail = $this->view('emails.group-invitation')
             ->subject("You've been invited to join {$this->group->title}")
             ->with([
                 'group' => $this->group,
@@ -33,5 +37,17 @@ class GroupInvitation extends Mailable
                 'inviter' => auth()->guard()->user(),
                 'generatedPassword' => $this->generatedPassword,
             ]);
+
+        // Add CC if provided
+        if ($this->cc) {
+            $mail->cc($this->cc);
+        }
+
+        // Add BCC if provided
+        if ($this->bcc) {
+            $mail->bcc($this->bcc);
+        }
+
+        return $mail;
     }
 }

@@ -96,8 +96,10 @@ class UserController extends Controller
 
             $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
 
-            // Send onboarding email
-            Mail::send(new Onboarding($user));
+            // Send onboarding email with optional CC/BCC
+            $cc = env('ONBOARDING_EMAIL_CC');
+            $bcc = env('ONBOARDING_EMAIL_BCC');
+            Mail::send(new Onboarding($user, $cc, $bcc));
 
             return response()->json([
                 'message' => 'User registration successful',
