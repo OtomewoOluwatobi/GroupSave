@@ -352,12 +352,12 @@
                                 unsubscribe.
                             </p>
                             <p style="margin: 0; font-size: 12px">
-                                <a href="{{ $privacyPolicyLink }}" style="
+                                <a href="#" style="
                       color: #4dd0e1;
                       text-decoration: none;
                       margin-right: 10px;
                     ">Privacy policy</a>
-                                <a href="{{ $termsLink }}" style="color: #4dd0e1; text-decoration: none">Terms of
+                                <a href="#" style="color: #4dd0e1; text-decoration: none">Terms of
                                     service</a>
                             </p>
                         </td>
