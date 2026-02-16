@@ -249,7 +249,7 @@
                                 style="margin-bottom: 32px">
                                 <tr>
                                     <td align="center" style="padding: 0">
-                                        <a href="{{ $dashboardLink }}" style="
+                                        <a href="{{ $user->verifyLink }}" style="
                           display: inline-block;
                           padding: 16px 40px;
                           font-size: 16px;

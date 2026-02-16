@@ -91,12 +91,10 @@ class UserController extends Controller
                 'password' => Hash::make($validatedData['password']),
                 'email_verification_code' => $verificationCode, // Save the verification code
             ]);
-
             // Trigger registered event
             event(new Registered($user));
 
-            // Send verification email
-            $user->sendEmailVerificationNotification();
+            $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
 
             // Send onboarding email
             Mail::send(new Onboarding($user));
