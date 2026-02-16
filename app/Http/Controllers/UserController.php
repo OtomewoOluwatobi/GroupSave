@@ -14,6 +14,8 @@ use App\Models\Group;
 use Illuminate\Http\Response;
 use Exception;
 use Illuminate\Support\Facades\Log;
+use App\Mail\Onboarding;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -95,6 +97,9 @@ class UserController extends Controller
 
             // Send verification email
             $user->sendEmailVerificationNotification();
+
+            // Send onboarding email
+            Mail::send(new Onboarding($user));
 
             return response()->json([
                 'message' => 'User registration successful',
