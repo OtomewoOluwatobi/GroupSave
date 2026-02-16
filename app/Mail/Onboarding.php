@@ -25,6 +25,7 @@ class Onboarding extends Mailable
     public function build()
     {
         $mail = $this->view('emails.onboading')
+            ->to($this->user->email)
             ->subject('Welcome to GroupSave!')
             ->with([
                 'user' => $this->user,

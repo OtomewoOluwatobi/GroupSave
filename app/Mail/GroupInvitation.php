@@ -30,6 +30,7 @@ class GroupInvitation extends Mailable
     public function build()
     {
         $mail = $this->view('emails.group-invitation')
+            ->to($this->user->email)
             ->subject("You've been invited to join {$this->group->title}")
             ->with([
                 'group' => $this->group,
