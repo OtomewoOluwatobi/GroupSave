@@ -83,7 +83,7 @@ class UserController extends Controller
             // Generate a unique verification code
             $verificationCode = bin2hex(random_bytes(16));
 
-            // Wrap user creation and notification in a database transaction
+            // Wrap user creation in a database transaction
             $user = DB::transaction(function () use ($validatedData, $verificationCode) {
                 // Create new user
                 $user = User::create([
@@ -94,16 +94,13 @@ class UserController extends Controller
                     'email_verification_code' => $verificationCode, // Save the verification code
                 ]);
 
-                // Trigger registered event
-                event(new Registered($user));
-
-                $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
-
-                // Send onboarding notification
-                $user->notify(new UserOnboardingNotification($user));
-
                 return $user;
             });
+
+            // Send onboarding notification (outside transaction)
+            $user->notify(new UserOnboardingNotification($user));
+
+            $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
 
             return response()->json([
                 'message' => 'User registration successful',
