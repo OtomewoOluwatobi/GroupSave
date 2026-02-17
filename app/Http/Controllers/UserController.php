@@ -99,10 +99,8 @@ class UserController extends Controller
 
                 $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
 
-                // Send onboarding notification with optional CC/BCC
-                $cc = env('ONBOARDING_EMAIL_CC');
-                $bcc = env('ONBOARDING_EMAIL_BCC');
-                $user->notify(new UserOnboardingNotification($user, $cc, $bcc));
+                // Send onboarding notification
+                $user->notify(new UserOnboardingNotification($user));
 
                 return $user;
             });

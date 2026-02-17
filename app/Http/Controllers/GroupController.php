@@ -148,9 +148,7 @@ class GroupController extends Controller
     {
         // Double check to ensure we're not sending to the creator
         if ($user->id !== Auth::id()) {
-            $cc = env('GROUP_INVITATION_EMAIL_CC');
-            $bcc = env('GROUP_INVITATION_EMAIL_BCC');
-            $user->notify(new GroupInvitationNotification($group, $user, $generatedPassword, $cc, $bcc));
+            $user->notify(new GroupInvitationNotification($group, $user, $generatedPassword));
         }
     }
 

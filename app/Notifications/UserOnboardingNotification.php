@@ -12,21 +12,15 @@ class UserOnboardingNotification extends Notification
     use Queueable;
 
     protected $user;
-    protected $cc;
-    protected $bcc;
 
     /**
      * Create a new notification instance.
      *
      * @param User $user
-     * @param string|null $cc
-     * @param string|null $bcc
      */
-    public function __construct(User $user, $cc = null, $bcc = null)
+    public function __construct(User $user)
     {
         $this->user = $user;
-        $this->cc = $cc;
-        $this->bcc = $bcc;
     }
 
     /**
@@ -48,7 +42,7 @@ class UserOnboardingNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new Onboarding($this->user, $this->cc, $this->bcc);
+        return new Onboarding($this->user);
     }
 
     /**
@@ -66,4 +60,5 @@ class UserOnboardingNotification extends Notification
         ];
     }
 }
+
 

@@ -15,8 +15,6 @@ class GroupInvitationNotification extends Notification
     protected $group;
     protected $invitee;
     protected $generatedPassword;
-    protected $cc;
-    protected $bcc;
 
     /**
      * Create a new notification instance.
@@ -24,16 +22,12 @@ class GroupInvitationNotification extends Notification
      * @param Group $group
      * @param User $invitee
      * @param string $generatedPassword
-     * @param string|null $cc
-     * @param string|null $bcc
      */
-    public function __construct(Group $group, User $invitee, $generatedPassword, $cc = null, $bcc = null)
+    public function __construct(Group $group, User $invitee, $generatedPassword)
     {
         $this->group = $group;
         $this->invitee = $invitee;
         $this->generatedPassword = $generatedPassword;
-        $this->cc = $cc;
-        $this->bcc = $bcc;
     }
 
     /**
@@ -55,7 +49,7 @@ class GroupInvitationNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new GroupInvitation($this->group, $this->invitee, $this->generatedPassword, $this->cc, $this->bcc);
+        return new GroupInvitation($this->group, $this->invitee, $this->generatedPassword);
     }
 
     /**
@@ -74,4 +68,5 @@ class GroupInvitationNotification extends Notification
         ];
     }
 }
+
 
