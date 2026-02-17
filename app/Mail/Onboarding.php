@@ -12,8 +12,8 @@ class Onboarding extends Mailable
     use Queueable, SerializesModels;
 
     public $user;
-    public $cc;
-    public $bcc;
+    private $cc;
+    private $bcc;
 
     public function __construct(User $user, $cc = null, $bcc = null)
     {
@@ -31,12 +31,12 @@ class Onboarding extends Mailable
                 'user' => $this->user,
             ]);
 
-        // Add CC if provided (must be non-null)
+        // Add CC if provided (must be non-null and non-empty)
         if (!is_null($this->cc) && !empty($this->cc)) {
             $mail = $mail->cc($this->cc);
         }
 
-        // Add BCC if provided (must be non-null)
+        // Add BCC if provided (must be non-null and non-empty)
         if (!is_null($this->bcc) && !empty($this->bcc)) {
             $mail = $mail->bcc($this->bcc);
         }

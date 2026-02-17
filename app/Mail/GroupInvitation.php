@@ -15,8 +15,8 @@ class GroupInvitation extends Mailable
     public $group;
     public $user;
     public $generatedPassword;
-    public $cc;
-    public $bcc;
+    private $cc;
+    private $bcc;
 
     public function __construct(Group $group, User $user, $generatedPassword, $cc = null, $bcc = null)
     {
@@ -39,12 +39,12 @@ class GroupInvitation extends Mailable
                 'generatedPassword' => $this->generatedPassword,
             ]);
 
-        // Add CC if provided (must be non-null)
+        // Add CC if provided (must be non-null and non-empty)
         if (!is_null($this->cc) && !empty($this->cc)) {
             $mail = $mail->cc($this->cc);
         }
 
-        // Add BCC if provided (must be non-null)
+        // Add BCC if provided (must be non-null and non-empty)
         if (!is_null($this->bcc) && !empty($this->bcc)) {
             $mail = $mail->bcc($this->bcc);
         }
