@@ -97,8 +97,21 @@ class UserController extends Controller
                 return $user;
             });
 
+            try {
+                // Trigger registered event (outside transaction)
+                event(new Registered($user));
+            } catch (Exception $eventError) {
+                Log::warning('Registered event error: ' . $eventError->getMessage());
+                // Continue - event error shouldn't block registration
+            }
+
             // Send onboarding notification (outside transaction)
-            $user->notify(new UserOnboardingNotification($user));
+            try {
+                $user->notify(new UserOnboardingNotification($user));
+            } catch (Exception $notifyError) {
+                Log::warning('Notification error: ' . $notifyError->getMessage());
+                // Continue - notification error shouldn't block registration
+            }
 
             $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
 
