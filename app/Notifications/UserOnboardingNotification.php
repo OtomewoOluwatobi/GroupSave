@@ -3,9 +3,9 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Mail\Onboarding;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
 
 class UserOnboardingNotification extends Notification
 {
@@ -44,29 +44,11 @@ class UserOnboardingNotification extends Notification
      * Get the mail representation of the notification.
      *
      * @param mixed $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @return \Illuminate\Mail\Mailable
      */
     public function toMail($notifiable)
     {
-        $mail = new MailMessage();
-        
-        $mail->to($notifiable->email)
-            ->view('emails.onboading', [
-                'user' => $this->user,
-            ])
-            ->subject('Welcome to GroupSave!');
-
-        // Add CC if provided
-        if ($this->cc) {
-            $mail->cc($this->cc);
-        }
-
-        // Add BCC if provided
-        if ($this->bcc) {
-            $mail->bcc($this->bcc);
-        }
-
-        return $mail;
+        return new Onboarding($this->user, $this->cc, $this->bcc);
     }
 
     /**
@@ -84,3 +66,4 @@ class UserOnboardingNotification extends Notification
         ];
     }
 }
+

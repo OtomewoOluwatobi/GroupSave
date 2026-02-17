@@ -4,9 +4,9 @@ namespace App\Notifications;
 
 use App\Models\Group;
 use App\Models\User;
+use App\Mail\GroupInvitation;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
-use Illuminate\Notifications\Messages\MailMessage;
 
 class GroupInvitationNotification extends Notification
 {
@@ -51,32 +51,11 @@ class GroupInvitationNotification extends Notification
      * Get the mail representation of the notification.
      *
      * @param mixed $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
+     * @return \Illuminate\Mail\Mailable
      */
     public function toMail($notifiable)
     {
-        $mail = new MailMessage();
-        
-        $mail->to($notifiable->email)
-            ->view('emails.group-invitation', [
-                'group' => $this->group,
-                'user' => $this->invitee,
-                'inviter' => auth()->guard()->user(),
-                'generatedPassword' => $this->generatedPassword,
-            ])
-            ->subject("You've been invited to join {$this->group->title}");
-
-        // Add CC if provided
-        if ($this->cc) {
-            $mail->cc($this->cc);
-        }
-
-        // Add BCC if provided
-        if ($this->bcc) {
-            $mail->bcc($this->bcc);
-        }
-
-        return $mail;
+        return new GroupInvitation($this->group, $this->invitee, $this->generatedPassword, $this->cc, $this->bcc);
     }
 
     /**
@@ -95,3 +74,4 @@ class GroupInvitationNotification extends Notification
         ];
     }
 }
+
