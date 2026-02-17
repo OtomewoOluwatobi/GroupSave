@@ -31,14 +31,14 @@ class Onboarding extends Mailable
                 'user' => $this->user,
             ]);
 
-        // Add CC if provided
-        if ($this->cc) {
-            $mail->cc($this->cc);
+        // Add CC if provided (must be non-null)
+        if (!is_null($this->cc) && !empty($this->cc)) {
+            $mail = $mail->cc($this->cc);
         }
 
-        // Add BCC if provided
-        if ($this->bcc) {
-            $mail->bcc($this->bcc);
+        // Add BCC if provided (must be non-null)
+        if (!is_null($this->bcc) && !empty($this->bcc)) {
+            $mail = $mail->bcc($this->bcc);
         }
 
         return $mail;
