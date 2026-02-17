@@ -113,8 +113,6 @@ class UserController extends Controller
                 // Continue - notification error shouldn't block registration
             }
 
-            $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
-
             return response()->json([
                 'message' => 'User registration successful',
                 'user' => $user,
