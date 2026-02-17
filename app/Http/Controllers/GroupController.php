@@ -9,9 +9,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
-use App\Mail\GroupInvitation;
+use App\Notifications\GroupInvitationNotification;
 use App\Events\GroupCreated;
 
 class GroupController extends Controller
@@ -149,7 +148,9 @@ class GroupController extends Controller
     {
         // Double check to ensure we're not sending to the creator
         if ($user->id !== Auth::id()) {
-            Mail::to($user->email)->send(new GroupInvitation($group, $user, $generatedPassword));
+            $cc = env('GROUP_INVITATION_EMAIL_CC');
+            $bcc = env('GROUP_INVITATION_EMAIL_BCC');
+            $user->notify(new GroupInvitationNotification($group, $user, $generatedPassword, $cc, $bcc));
         }
     }
 
