@@ -7,6 +7,7 @@ use Illuminate\Http\JsonResponse;
 use App\Models\User;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Requests\Auth\LoginRequest;
@@ -82,23 +83,29 @@ class UserController extends Controller
             // Generate a unique verification code
             $verificationCode = bin2hex(random_bytes(16));
 
-            // Create new user
-            $user = User::create([
-                'name' => $validatedData['name'],
-                'email' => $validatedData['email'],
-                'mobile' => $validatedData['mobile'],
-                'password' => Hash::make($validatedData['password']),
-                'email_verification_code' => $verificationCode, // Save the verification code
-            ]);
-            // Trigger registered event
-            event(new Registered($user));
+            // Wrap user creation and notification in a database transaction
+            $user = DB::transaction(function () use ($validatedData, $verificationCode) {
+                // Create new user
+                $user = User::create([
+                    'name' => $validatedData['name'],
+                    'email' => $validatedData['email'],
+                    'mobile' => $validatedData['mobile'],
+                    'password' => Hash::make($validatedData['password']),
+                    'email_verification_code' => $verificationCode, // Save the verification code
+                ]);
 
-            $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
+                // Trigger registered event
+                event(new Registered($user));
 
-            // Send onboarding notification with optional CC/BCC
-            $cc = env('ONBOARDING_EMAIL_CC');
-            $bcc = env('ONBOARDING_EMAIL_BCC');
-            $user->notify(new UserOnboardingNotification($user, $cc, $bcc));
+                $user->append('verifyLink', 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode); // Include code in response
+
+                // Send onboarding notification with optional CC/BCC
+                $cc = env('ONBOARDING_EMAIL_CC');
+                $bcc = env('ONBOARDING_EMAIL_BCC');
+                $user->notify(new UserOnboardingNotification($user, $cc, $bcc));
+
+                return $user;
+            });
 
             return response()->json([
                 'message' => 'User registration successful',
