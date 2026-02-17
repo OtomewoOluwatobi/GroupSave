@@ -97,9 +97,6 @@ class UserController extends Controller
                 return $user;
             });
 
-            // Trigger registered event (outside transaction)
-            event(new Registered($user));
-
             // Send onboarding notification (outside transaction)
             $user->notify(new UserOnboardingNotification($user));
 
