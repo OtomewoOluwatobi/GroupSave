@@ -57,13 +57,14 @@ class GroupInvitationNotification extends Notification
     {
         $mail = new MailMessage();
         
-        $mail->view('emails.group-invitation', [
-            'group' => $this->group,
-            'user' => $this->invitee,
-            'inviter' => auth()->guard()->user(),
-            'generatedPassword' => $this->generatedPassword,
-        ])
-        ->subject("You've been invited to join {$this->group->title}");
+        $mail->to($notifiable->email)
+            ->view('emails.group-invitation', [
+                'group' => $this->group,
+                'user' => $this->invitee,
+                'inviter' => auth()->guard()->user(),
+                'generatedPassword' => $this->generatedPassword,
+            ])
+            ->subject("You've been invited to join {$this->group->title}");
 
         // Add CC if provided
         if ($this->cc) {

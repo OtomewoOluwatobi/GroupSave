@@ -50,10 +50,11 @@ class UserOnboardingNotification extends Notification
     {
         $mail = new MailMessage();
         
-        $mail->view('emails.onboading', [
-            'user' => $this->user,
-        ])
-        ->subject('Welcome to GroupSave!');
+        $mail->to($notifiable->email)
+            ->view('emails.onboading', [
+                'user' => $this->user,
+            ])
+            ->subject('Welcome to GroupSave!');
 
         // Add CC if provided
         if ($this->cc) {
