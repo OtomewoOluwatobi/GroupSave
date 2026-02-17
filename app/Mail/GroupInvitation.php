@@ -5,12 +5,9 @@ namespace App\Mail;
 use App\Models\Group;
 use App\Models\User;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 
 class GroupInvitation extends Mailable
 {
-    use SerializesModels;
-
     public $group;
     public $user;
     public $generatedPassword;

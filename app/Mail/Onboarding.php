@@ -4,12 +4,9 @@ namespace App\Mail;
 
 use App\Models\User;
 use Illuminate\Mail\Mailable;
-use Illuminate\Queue\SerializesModels;
 
 class Onboarding extends Mailable
 {
-    use SerializesModels;
-
     public $user;
 
     public function __construct(User $user)
