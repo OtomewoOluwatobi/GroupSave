@@ -5,13 +5,10 @@ namespace App\Notifications;
 use App\Models\Group;
 use App\Models\User;
 use App\Mail\GroupInvitation;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class GroupInvitationNotification extends Notification
 {
-    use Queueable;
-
     protected $group;
     protected $invitee;
     protected $generatedPassword;

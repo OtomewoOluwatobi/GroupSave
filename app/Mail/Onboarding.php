@@ -3,13 +3,12 @@
 namespace App\Mail;
 
 use App\Models\User;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 class Onboarding extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $user;
 

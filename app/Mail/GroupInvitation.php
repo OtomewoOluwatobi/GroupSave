@@ -4,13 +4,12 @@ namespace App\Mail;
 
 use App\Models\Group;
 use App\Models\User;
-use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
 class GroupInvitation extends Mailable
 {
-    use Queueable, SerializesModels;
+    use SerializesModels;
 
     public $group;
     public $user;

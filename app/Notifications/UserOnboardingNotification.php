@@ -4,13 +4,10 @@ namespace App\Notifications;
 
 use App\Models\User;
 use App\Mail\Onboarding;
-use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Notification;
 
 class UserOnboardingNotification extends Notification
 {
-    use Queueable;
-
     protected $user;
 
     /**
