@@ -33,5 +33,4 @@ class UserOnboardingNotification extends Notification
     {
         return new Onboarding($this->user);
     }
-
-
+}
