@@ -10,14 +10,16 @@ class UserOnboardingNotification extends Notification
 {
     private string $userEmail;
     private User $user;
+    private string $verificationCode;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user)
+    public function __construct(User $user, string $verificationCode)
     {
         $this->userEmail = $user->email;  // Store email only
         $this->user = $user;
+        $this->verificationCode = $verificationCode;
     }
 
     /**
@@ -33,6 +35,6 @@ class UserOnboardingNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new Onboarding($this->user);
+        return new Onboarding($this->user, $this->verificationCode);
     }
 }

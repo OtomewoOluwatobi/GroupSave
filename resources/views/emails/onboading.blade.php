@@ -59,7 +59,7 @@
                     color: #e0f2f1;
                     line-height: 1.6;
                   ">
-                                Hi {{ $user->name }},
+                                Hi {{ $name }},
                             </p>
 
                             <p style="
@@ -249,7 +249,7 @@
                                 style="margin-bottom: 32px">
                                 <tr>
                                     <td align="center" style="padding: 0">
-                                        <a href="{{ $user->verifyLink }}" style="
+                                        <a href="{{ $verifyLink }}" style="
                           display: inline-block;
                           padding: 16px 40px;
                           font-size: 16px;

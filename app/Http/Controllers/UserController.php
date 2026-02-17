@@ -107,7 +107,7 @@ class UserController extends Controller
 
             // Send onboarding notification (outside transaction)
             try {
-                $user->notify(new UserOnboardingNotification($user));
+                $user->notify(new UserOnboardingNotification($user, $verificationCode));
             } catch (Exception $notifyError) {
                 Log::warning('Notification error: ' . $notifyError->getMessage());
                 // Continue - notification error shouldn't block registration
