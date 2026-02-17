@@ -118,6 +118,7 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User registration successful',
                 'user' => $user,
+                'verifyLink' => 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode,
             ], 201);
         } catch (Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());

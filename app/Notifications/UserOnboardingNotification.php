@@ -8,6 +8,7 @@ use Illuminate\Notifications\Notification;
 
 class UserOnboardingNotification extends Notification
 {
+    private string $userEmail;
     private User $user;
 
     /**
@@ -15,6 +16,7 @@ class UserOnboardingNotification extends Notification
      */
     public function __construct(User $user)
     {
+        $this->userEmail = $user->email;  // Store email only
         $this->user = $user;
     }
 
