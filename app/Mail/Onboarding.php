@@ -7,21 +7,27 @@ use Illuminate\Mail\Mailable;
 
 class Onboarding extends Mailable
 {
-    public function __construct(private User $user, private string $verificationCode)
+    private string $name;
+    private string $email;
+    private string $verifyLink;
+
+    public function __construct(User $user, string $verificationCode)
     {
+        // Extract only scalar values from User to avoid serialization
+        $this->name = $user->name;
+        $this->email = $user->email;
+        $this->verifyLink = 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode;
     }
 
     public function build()
     {
-        $verifyLink = 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $this->verificationCode;
-        
         return $this->view('emails.onboading')
-            ->to($this->user->email)
+            ->to($this->email)
             ->subject('Welcome to GroupSave!')
             ->with([
-                'name' => $this->user->name,
-                'email' => $this->user->email,
-                'verifyLink' => $verifyLink,
+                'name' => $this->name,
+                'email' => $this->email,
+                'verifyLink' => $this->verifyLink,
             ]);
     }
 }
