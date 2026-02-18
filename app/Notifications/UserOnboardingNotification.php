@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 class UserOnboardingNotification extends Notification
 {
     private string $userEmail;
-    private User $user;
+    private string $userName;
     private string $verificationCode;
 
     /**
@@ -17,8 +17,9 @@ class UserOnboardingNotification extends Notification
      */
     public function __construct(User $user, string $verificationCode)
     {
-        $this->userEmail = $user->email;  // Store email only
-        $this->user = $user;
+        // Store only scalar values - never store User model
+        $this->userEmail = $user->email;
+        $this->userName = $user->name;
         $this->verificationCode = $verificationCode;
     }
 
@@ -35,6 +36,6 @@ class UserOnboardingNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new Onboarding($this->user, $this->verificationCode);
+        return new Onboarding($this->userName, $this->userEmail, $this->verificationCode);
     }
 }
