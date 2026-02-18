@@ -37,6 +37,12 @@ Route::prefix('auth')->group(function () {
     // User login
     Route::post('/login', [UserController::class, 'login']);
 
+    // Forgot password - request password reset code
+    Route::post('/forgot-password', [UserController::class, 'forgotPassword']);
+
+    // Reset password - reset password with code
+    Route::post('/reset-password', [UserController::class, 'resetPassword']);
+
     // User logout (requires authentication)
     Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api');
