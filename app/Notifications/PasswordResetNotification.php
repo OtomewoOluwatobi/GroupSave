@@ -3,6 +3,7 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use App\Mail\PasswordReset;
 use Illuminate\Notifications\Notification;
 
 class PasswordResetNotification extends Notification
@@ -35,18 +36,6 @@ class PasswordResetNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return (new \Illuminate\Mail\Message)
-            ->subject('Password Reset Request')
-            ->greeting('Hello ' . $this->userName . ',')
-            ->line('You requested a password reset. Use the code below to reset your password:')
-            ->line('')
-            ->line('Reset Code: ' . $this->resetCode)
-            ->line('')
-            ->line('This code will expire in 15 minutes.')
-            ->line('If you did not request a password reset, please ignore this email.')
-            ->line('')
-            ->line('Enter this code in the GroupSave mobile app to reset your password.')
-            ->action('Reset Password', url('/password-reset?code=' . $this->resetCode))
-            ->from(config('mail.from.address'));
+        return new PasswordReset($this->userName, $this->userEmail, $this->resetCode);
     }
 }
