@@ -9,6 +9,15 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Auth\Events\Registered;
+use App\Notifications\UserOnboardingNotification;
+use App\Models\Group;
+use Illuminate\Http\Response;
+use App\Http\Requests\LoginRequest;
+use Exception;
 
 class UserController extends Controller
 {
@@ -117,78 +126,6 @@ class UserController extends Controller
                 'error' => 'Registration failed',
                 'message' => $e->getMessage()
             ], 400);
-        }
-    }
-
-    /**
-     * Verify user's email address.
-     *
-     * @param string $code
-     * @return JsonResponse
-     */
-
-    /**
-     * @OA\Get(
-     *     path="/verify/{token}",
-     *     tags={"Authentication"},
-     *     summary="Verify user's email address",
-     *     description="Verifies a user's email address using the provided token",
-     *     @OA\Parameter(
-     *         name="token",
-     *         in="path",
-     *         required=true,
-     *         description="Email verification token",
-     *         @OA\Schema(type="string")
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Email successfully verified",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Email verified successfully")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=400,
-     *         description="Invalid or expired token",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Invalid or expired verification token")
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=404,
-     *         description="User not found",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="User not found")
-     *         )
-     *     )
-     * )
-     */
-    public function verifyEmail(string $code): JsonResponse
-    {
-        try {
-            // Find user by verification code
-            $user = User::where('email_verification_code', $code)->first();
-
-            if (!$user) {
-                return response()->json([
-                    'message' => 'Invalid verification code'
-                ], 400);
-            }
-
-            // Update user verification status
-            $user->email_verified_at = now();
-            $user->email_verification_code = null;
-            $user->save();
-
-            return response()->json([
-                'message' => 'Email verified successfully'
-            ], 200);
-        } catch (Exception $e) {
-            Log::error('Email verification error: ' . $e->getMessage());
-            return response()->json([
-                'error' => 'Verification failed',
-                'message' => $e->getMessage()
-            ], 500);
         }
     }
 
