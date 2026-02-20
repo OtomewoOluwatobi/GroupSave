@@ -43,21 +43,6 @@ Route::prefix('auth')->group(function () {
     // Reset password - reset password with code
     Route::post('/reset-password', [UserController::class, 'resetPassword']);
 
-    // Protected email verification routes
-    Route::middleware('auth:api')->group(function () {
-        // Request email change
-        Route::post('/request-email-change', [UserController::class, 'requestEmailChange']);
-
-        // Verify email change
-        Route::post('/verify-email-change', [UserController::class, 'verifyEmailChange']);
-
-        // Resend email verification
-        Route::post('/resend-email-verification', [UserController::class, 'resendEmailVerification']);
-
-        // Get email verification status
-        Route::get('/email-verification-status', [UserController::class, 'getEmailVerificationStatus']);
-    });
-
     // User logout (requires authentication)
     Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api');
