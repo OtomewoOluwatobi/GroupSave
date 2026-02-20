@@ -32,6 +32,8 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [UserController::class, 'store']);
 
     // Email verification
+    Route::post('/resend-verificaton', [UserController::class, 'resendEmailVerification']);
+
     Route::get('/verify/{code}', [UserController::class, 'verifyEmail']);
 
     // User login
@@ -47,14 +49,6 @@ Route::prefix('auth')->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api');
 });
-
-Route::middleware('auth:api')->group(function () {
-    Route::post('/user/email/send', [UserController::class, 'sendEmailVerification']);
-    Route::post('/user/email/resend', [UserController::class, 'resendEmailVerification']);
-    Route::get('/user/email/status', [UserController::class, 'emailVerificationStatus']);
-});
-
-Route::get('/user/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail']);
 
 Route::prefix('user')->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
