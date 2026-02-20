@@ -32,9 +32,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [UserController::class, 'store']);
 
     // Email verification
-    Route::post('/resend-verificaton', [UserController::class, 'resendEmailVerification']);
+    Route::post('/resend-verification', [UserController::class, 'resendEmailVerification']);
 
-    Route::get('/verify/{code}', [UserController::class, 'verifyEmail']);
+    Route::get('/verify/{code}', [UserController::class, 'verifyEmail'])->name('verification.verify');
 
     // User login
     Route::post('/login', [UserController::class, 'login']);
