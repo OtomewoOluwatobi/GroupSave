@@ -696,7 +696,7 @@ class UserController extends Controller
                 ], 200);
             }
 
-            log::info('Resend verification email requested', [
+            Log::info('Resend verification email requested', [
                 'user_id' => $user->id,
                 'email' => $user->email,
             ]);
@@ -710,8 +710,8 @@ class UserController extends Controller
                 ], 429);
             }
 
-            // $user->notify(new VerifyEmailNotification());
-            // $user->update(['email_verification_sent_at' => now()]);
+            $user->notify(new VerifyEmailNotification());
+            $user->update(['email_verification_sent_at' => now()]);
 
             Log::info('Verification email resent', [
                 'user_id' => $user->id,
