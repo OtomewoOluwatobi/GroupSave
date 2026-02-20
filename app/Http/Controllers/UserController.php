@@ -701,46 +701,7 @@ class UserController extends Controller
                 'email' => $user->email,
             ]);
 
-            // Rate limiting - prevent spam
-            $lastSentAt = $user->email_verification_sent_at ?? null;
-            if ($lastSentAt && now()->diffInSeconds($lastSentAt) < 60) {
-                return response()->json([
-                    'message' => 'Please wait before requesting another verification email',
-                    'retry_after' => 60 - now()->diffInSeconds($lastSentAt),
-                ], 429);
-            }
-
-            $user->notify(new VerifyEmailNotification());
-            $user->update(['email_verification_sent_at' => now()]);
-
-            Log::info('Verification email resent', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
-
-            return response()->json([
-                'message' => 'Verification email sent successfully',
-                'data' => [
-                    'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4),
-                ]
-            ], 200);
-
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            Log::error('Failed to resend verification email', [
-                'email' => $validated['email'] ?? null,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'message' => 'Failed to send verification email',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+            // Generate a new verification code
     }
 
     /**
