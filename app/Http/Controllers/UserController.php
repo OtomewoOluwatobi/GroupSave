@@ -4,19 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
-use Illuminate\Auth\Events\Verified;
+use App\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Auth\Events\Registered;
+use Illuminate\Http\Response;
+use App\Events\Registered;
 use App\Notifications\UserOnboardingNotification;
 use App\Models\Group;
-use Illuminate\Http\Response;
-use App\Http\Requests\LoginRequest;
+use Illuminate\Support\Facades\DB;
 use Exception;
 
 class UserController extends Controller
@@ -126,6 +125,78 @@ class UserController extends Controller
                 'error' => 'Registration failed',
                 'message' => $e->getMessage()
             ], 400);
+        }
+    }
+
+    /**
+     * Verify user's email address.
+     *
+     * @param string $code
+     * @return JsonResponse
+     */
+
+    /**
+     * @OA\Get(
+     *     path="/verify/{token}",
+     *     tags={"Authentication"},
+     *     summary="Verify user's email address",
+     *     description="Verifies a user's email address using the provided token",
+     *     @OA\Parameter(
+     *         name="token",
+     *         in="path",
+     *         required=true,
+     *         description="Email verification token",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Email successfully verified",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Email verified successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid or expired token",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="Invalid or expired verification token")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=404,
+     *         description="User not found",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="error", type="string", example="User not found")
+     *         )
+     *     )
+     * )
+     */
+    public function verifyEmail(string $code): JsonResponse
+    {
+        try {
+            // Find user by verification code
+            $user = User::where('email_verification_code', $code)->first();
+
+            if (!$user) {
+                return response()->json([
+                    'message' => 'Invalid verification code'
+                ], 400);
+            }
+
+            // Update user verification status
+            $user->email_verified_at = now();
+            $user->email_verification_code = null;
+            $user->save();
+
+            return response()->json([
+                'message' => 'Email verified successfully'
+            ], 200);
+        } catch (Exception $e) {
+            Log::error('Email verification error: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'Verification failed',
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 
@@ -672,44 +743,28 @@ class UserController extends Controller
      */
     public function resendEmailVerification(Request $request): JsonResponse
     {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $user = Auth::user();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email already verified',
+            ], 200);
+        }
+
+        // Rate limiting
+        $lastSentAt = $user->email_verification_sent_at ?? null;
+        if ($lastSentAt && now()->diffInSeconds($lastSentAt) < 60) {
+            return response()->json([
+                'message' => 'Please wait before requesting another verification email',
+                'retry_after' => 60 - now()->diffInSeconds($lastSentAt),
+            ], 429);
+        }
+
         try {
-            // Validate email input
-            $validated = $request->validate([
-                'email' => 'required|email|exists:users,email',
-            ], [
-                'email.required' => 'Email address is required',
-                'email.email' => 'Please provide a valid email address',
-                'email.exists' => 'No account found with this email address',
-            ]);
-
-            $user = User::where('email', $validated['email'])->first();
-
-            if (!$user) {
-                return response()->json([
-                    'message' => 'No account found with this email address',
-                ], 404);
-            }
-
-            if ($user->hasVerifiedEmail()) {
-                return response()->json([
-                    'message' => 'Email already verified',
-                ], 200);
-            }
-
-            Log::info('Resend verification email requested', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
-
-            // Rate limiting - prevent spam
-            $lastSentAt = $user->email_verification_sent_at ?? null;
-            if ($lastSentAt && now()->diffInSeconds($lastSentAt) < 60) {
-                return response()->json([
-                    'message' => 'Please wait before requesting another verification email',
-                    'retry_after' => 60 - now()->diffInSeconds($lastSentAt),
-                ], 429);
-            }
-
             $user->notify(new VerifyEmailNotification());
             $user->update(['email_verification_sent_at' => now()]);
 
@@ -720,19 +775,11 @@ class UserController extends Controller
 
             return response()->json([
                 'message' => 'Verification email sent successfully',
-                'data' => [
-                    'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4),
-                ]
             ], 200);
 
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
         } catch (\Exception $e) {
             Log::error('Failed to resend verification email', [
-                'email' => $validated['email'] ?? null,
+                'user_id' => $user->id,
                 'error' => $e->getMessage(),
             ]);
 
@@ -741,44 +788,5 @@ class UserController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    /**
-     * Verify email address
-     */
-    public function verifyEmail(Request $request): JsonResponse
-    {
-        $user = User::find($request->id);
-
-        if (!$user) {
-            return response()->json([
-                'message' => 'Invalid verification link',
-            ], 404);
-        }
-
-        if (!hash_equals((string) $request->hash, sha1($user->getEmailForVerification()))) {
-            return response()->json([
-                'message' => 'Invalid verification link',
-            ], 403);
-        }
-
-        if ($user->hasVerifiedEmail()) {
-            return response()->json([
-                'message' => 'Email already verified',
-            ], 200);
-        }
-
-        $user->markEmailAsVerified();
-        event(new Verified($user));
-
-        Log::info('Email verified', [
-            'user_id' => $user->id,
-            'email' => $user->email,
-        ]);
-
-        return response()->json([
-            'message' => 'Email verified successfully',
-            'data' => $user,
-        ], 200);
     }
 }
