@@ -4,14 +4,18 @@ namespace App\Notifications;
 
 use App\Models\Group;
 use App\Models\User;
-use App\Mail\GroupInvitation;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class GroupInvitationNotification extends Notification
+class GroupInvitationNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     protected $group;
     protected $invitee;
     protected $generatedPassword;
+    protected $inviter;
 
     /**
      * Create a new notification instance.
@@ -25,6 +29,7 @@ class GroupInvitationNotification extends Notification
         $this->group = $group;
         $this->invitee = $invitee;
         $this->generatedPassword = $generatedPassword;
+        $this->inviter = $group->owner;
     }
 
     /**
@@ -42,11 +47,18 @@ class GroupInvitationNotification extends Notification
      * Get the mail representation of the notification.
      *
      * @param mixed $notifiable
-     * @return \Illuminate\Mail\Mailable
+     * @return \Illuminate\Notifications\Messages\MailMessage
      */
     public function toMail($notifiable)
     {
-        return new GroupInvitation($this->group, $this->invitee, $this->generatedPassword);
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->view('emails.group-invitation', [
+                'group' => $this->group,
+                'user' => $this->invitee,
+                'inviter' => $this->inviter,
+                'generatedPassword' => $this->generatedPassword,
+            ])
+            ->subject("You've been invited to join {$this->group->title}");
     }
 
     /**

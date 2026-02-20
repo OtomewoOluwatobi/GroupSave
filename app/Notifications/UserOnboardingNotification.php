@@ -2,25 +2,27 @@
 
 namespace App\Notifications;
 
-use App\Models\User;
-use App\Mail\Onboarding;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class UserOnboardingNotification extends Notification
+class UserOnboardingNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     private string $userEmail;
     private string $userName;
-    private string $verificationCode;
+    private string $verifyLink;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, string $verificationCode)
+    public function __construct(string $userName, string $userEmail, string $verificationCode)
     {
         // Store only scalar values - never store User model
-        $this->userEmail = $user->email;
-        $this->userName = $user->name;
-        $this->verificationCode = $verificationCode;
+        $this->userName = $userName;
+        $this->userEmail = $userEmail;
+        $this->verifyLink = config('app.frontend_url') . '/verify-email?code=' . $verificationCode;
     }
 
     /**
@@ -36,6 +38,11 @@ class UserOnboardingNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new Onboarding($this->userName, $this->userEmail, $this->verificationCode);
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->view('emails.onboarding', [
+                'name' => $this->userName,
+                'verifyLink' => $this->verifyLink,
+            ])
+            ->subject('Welcome to GroupSave!');
     }
 }

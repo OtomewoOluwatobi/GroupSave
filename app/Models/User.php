@@ -2,123 +2,45 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-/**
- * User Model
- * 
- * This class represents the User entity in the system.
- * It handles authentication, permissions, and user-related relationships.
- * 
- * @property string $name
- * @property string $email
- * @property string $mobile
- * @property string $password
- * @property \DateTime|null $email_verified_at
- */
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
-    /** 
-     * Traits implementation
-     * HasFactory - For model factory support
-     * Notifiable - For notification handling
-     * HasRoles - For user roles and permissions
-     * HasApiTokens - For API token management
-     */
-    use HasFactory, Notifiable, HasRoles, HasApiTokens;
+    use Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<string>
-     */
-    protected $guarded = [];
-
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<string>
-     */
-    protected $hidden = [
+    protected $fillable = [
+        'name',
+        'email',
         'password',
-        'remember_token',
+        'mobile',
+        'email_verified_at',
     ];
 
-    /**
-     * Define attribute casting for type consistency.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-        ];
-    }
+    protected $hidden = [
+        'password',
+    ];
 
-    /**
-     * Get the identifier that will be stored in the JWT token.
-     *
-     * @return mixed
-     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+    ];
+
     public function getJWTIdentifier()
     {
         return $this->getKey();
     }
 
-    /**
-     * Add custom claims to the JWT token.
-     *
-     * @return array<string, mixed>
-     */
-    public function getJWTCustomClaims(): array
+    public function getJWTCustomClaims()
     {
         return [];
     }
 
     /**
-     * Define relationship with UserBank model.
-     * One user can have multiple bank accounts.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * Check if email is verified
      */
-    public function userBank()
+    public function isEmailVerified(): bool
     {
-        return $this->hasMany(UserBank::class);
-    }
-
-    /**
-     * Get groups owned by the user
-     */
-    public function ownedGroups(): HasMany
-    {
-        return $this->hasMany(Group::class, 'owner_id');
-    }
-
-    /**
-     * Get groups user is a member of
-     */
-    public function groups(): BelongsToMany
-    {
-        return $this->belongsToMany(Group::class)
-            ->using(GroupUser::class)
-            ->withPivot(['role', 'is_active'])
-            ->withTimestamps();
-    }
-
-    /**
-     * Get group memberships
-     */
-    public function groupMemberships(): HasMany
-    {
-        return $this->hasMany(GroupUser::class);
+        return !is_null($this->email_verified_at);
     }
 }

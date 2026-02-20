@@ -2,20 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
 use App\Models\User;
-use Illuminate\Validation\Rules\Password;
+use App\Notifications\VerifyEmailNotification;
+use Illuminate\Auth\Events\Verified;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Auth\Events\Registered;
-use Illuminate\Support\Facades\Hash;
-use App\Http\Requests\Auth\LoginRequest;
-use App\Models\Group;
-use Illuminate\Http\Response;
-use Exception;
 use Illuminate\Support\Facades\Log;
-use App\Notifications\UserOnboardingNotification;
 
 class UserController extends Controller
 {
@@ -735,5 +728,96 @@ class UserController extends Controller
                 'message' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Resend email verification
+     */
+    public function resendEmailVerification(Request $request): JsonResponse
+    {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
+        $user = Auth::user();
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email already verified',
+            ], 200);
+        }
+
+        // Rate limiting
+        $lastSentAt = $user->email_verification_sent_at ?? null;
+        if ($lastSentAt && now()->diffInSeconds($lastSentAt) < 60) {
+            return response()->json([
+                'message' => 'Please wait before requesting another verification email',
+                'retry_after' => 60 - now()->diffInSeconds($lastSentAt),
+            ], 429);
+        }
+
+        try {
+            $user->notify(new VerifyEmailNotification());
+            $user->update(['email_verification_sent_at' => now()]);
+
+            Log::info('Verification email resent', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
+            return response()->json([
+                'message' => 'Verification email sent successfully',
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to resend verification email', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to send verification email',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Verify email address
+     */
+    public function verifyEmail(Request $request): JsonResponse
+    {
+        $user = User::find($request->id);
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Invalid verification link',
+            ], 404);
+        }
+
+        if (!hash_equals((string) $request->hash, sha1($user->getEmailForVerification()))) {
+            return response()->json([
+                'message' => 'Invalid verification link',
+            ], 403);
+        }
+
+        if ($user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Email already verified',
+            ], 200);
+        }
+
+        $user->markEmailAsVerified();
+        event(new Verified($user));
+
+        Log::info('Email verified', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
+
+        return response()->json([
+            'message' => 'Email verified successfully',
+            'data' => $user,
+        ], 200);
     }
 }

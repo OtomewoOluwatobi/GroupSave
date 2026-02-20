@@ -48,6 +48,14 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:api');
 });
 
+Route::middleware('auth:api')->group(function () {
+    Route::post('/user/email/send', [UserController::class, 'sendEmailVerification']);
+    Route::post('/user/email/resend', [UserController::class, 'resendEmailVerification']);
+    Route::get('/user/email/status', [UserController::class, 'emailVerificationStatus']);
+});
+
+Route::get('/user/email/verify/{id}/{hash}', [UserController::class, 'verifyEmail']);
+
 Route::prefix('user')->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::prefix('group')->group(function () {

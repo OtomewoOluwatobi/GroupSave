@@ -2,12 +2,14 @@
 
 namespace App\Notifications;
 
-use App\Models\User;
-use App\Mail\PasswordReset;
+use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 
-class PasswordResetNotification extends Notification
+class PasswordResetNotification extends Notification implements ShouldQueue
 {
+    use Queueable;
+
     private string $userEmail;
     private string $userName;
     private string $resetCode;
@@ -15,11 +17,11 @@ class PasswordResetNotification extends Notification
     /**
      * Create a new notification instance.
      */
-    public function __construct(User $user, string $resetCode)
+    public function __construct(string $userName, string $userEmail, string $resetCode)
     {
         // Store only scalar values - never store User model
-        $this->userEmail = $user->email;
-        $this->userName = $user->name;
+        $this->userName = $userName;
+        $this->userEmail = $userEmail;
         $this->resetCode = $resetCode;
     }
 
@@ -36,6 +38,12 @@ class PasswordResetNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        return new PasswordReset($this->userName, $this->userEmail, $this->resetCode);
+        return (new \Illuminate\Notifications\Messages\MailMessage)
+            ->view('emails.password-reset', [
+                'name' => $this->userName,
+                'email' => $this->userEmail,
+                'resetCode' => $this->resetCode,
+            ])
+            ->subject('Password Reset Request - GroupSave');
     }
 }
