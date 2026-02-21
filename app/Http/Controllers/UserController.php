@@ -81,18 +81,14 @@ class UserController extends Controller
                 'password' => ['required', 'confirmed', Password::defaults()],
             ]);
 
-            // Generate a unique verification code
-            $verificationCode = bin2hex(random_bytes(16));
-
             // Wrap user creation in a database transaction
-            $user = DB::transaction(function () use ($validatedData, $verificationCode) {
+            $user = DB::transaction(function () use ($validatedData) {
                 // Create new user
                 $user = User::create([
                     'name' => $validatedData['name'],
                     'email' => $validatedData['email'],
                     'mobile' => $validatedData['mobile'],
                     'password' => Hash::make($validatedData['password']),
-                    'email_verification_code' => $verificationCode, // Save the verification code
                 ]);
 
                 return $user;
@@ -108,7 +104,7 @@ class UserController extends Controller
 
             // Send onboarding notification (outside transaction)
             try {
-                $user->notify(new UserOnboardingNotification($user, $verificationCode));
+                $user->notify(new UserOnboardingNotification());
             } catch (Exception $notifyError) {
                 Log::warning('Notification error: ' . $notifyError->getMessage());
                 // Continue - notification error shouldn't block registration
@@ -117,7 +113,6 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'User registration successful',
                 'user' => $user,
-                'verifyLink' => 'https://phplaravel-1549794-6203025.cloudwaysapps.com/api/auth/verify/' . $verificationCode,
             ], 201);
         } catch (Exception $e) {
             Log::error('Registration error: ' . $e->getMessage());
@@ -129,23 +124,37 @@ class UserController extends Controller
     }
 
     /**
-     * Verify user's email address.
+     * Verify user's email address using signed URL
      *
-     * @param string $code
+     * @param Request $request
      * @return JsonResponse
      */
 
     /**
      * @OA\Get(
-     *     path="/verify/{token}",
+     *     path="/verify",
      *     tags={"Authentication"},
      *     summary="Verify user's email address",
-     *     description="Verifies a user's email address using the provided token",
+     *     description="Verifies a user's email address using signed URL with id and hash parameters",
      *     @OA\Parameter(
-     *         name="token",
-     *         in="path",
+     *         name="id",
+     *         in="query",
      *         required=true,
-     *         description="Email verification token",
+     *         description="User ID",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Parameter(
+     *         name="hash",
+     *         in="query",
+     *         required=true,
+     *         description="Email hash",
+     *         @OA\Schema(type="string")
+     *     ),
+     *     @OA\Parameter(
+     *         name="signature",
+     *         in="query",
+     *         required=true,
+     *         description="URL signature for verification",
      *         @OA\Schema(type="string")
      *     ),
      *     @OA\Response(
@@ -156,37 +165,61 @@ class UserController extends Controller
      *         )
      *     ),
      *     @OA\Response(
-     *         response=400,
-     *         description="Invalid or expired token",
+     *         response=403,
+     *         description="Invalid or expired verification link",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Invalid or expired verification token")
+     *             @OA\Property(property="message", type="string", example="Invalid or expired verification link")
      *         )
      *     ),
      *     @OA\Response(
      *         response=404,
      *         description="User not found",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="User not found")
+     *             @OA\Property(property="message", type="string", example="Invalid verification link")
      *         )
      *     )
      * )
      */
-    public function verifyEmail(string $code): JsonResponse
+    public function verifyEmail(Request $request): JsonResponse
     {
         try {
-            // Find user by verification code
-            $user = User::where('email_verification_code', $code)->first();
+            // Verify the signed URL signature
+            if (!$request->hasValidSignature()) {
+                return response()->json([
+                    'message' => 'Invalid or expired verification link'
+                ], 403);
+            }
+
+            $id = $request->query('id');
+            $hash = $request->query('hash');
+
+            $user = User::find($id);
 
             if (!$user) {
                 return response()->json([
-                    'message' => 'Invalid verification code'
-                ], 400);
+                    'message' => 'Invalid verification link'
+                ], 404);
             }
 
-            // Update user verification status
-            $user->email_verified_at = now();
-            $user->email_verification_code = null;
-            $user->save();
+            if (!hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+                return response()->json([
+                    'message' => 'Invalid verification link'
+                ], 403);
+            }
+
+            if ($user->hasVerifiedEmail()) {
+                return response()->json([
+                    'message' => 'Email already verified'
+                ], 200);
+            }
+
+            $user->markEmailAsVerified();
+            event(new Verified($user));
+
+            Log::info('Email verified', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
 
             return response()->json([
                 'message' => 'Email verified successfully'

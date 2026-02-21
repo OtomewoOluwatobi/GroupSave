@@ -5,24 +5,20 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\URL;
 
 class UserOnboardingNotification extends Notification implements ShouldQueue
 {
     use Queueable;
 
-    private string $userEmail;
-    private string $userName;
-    private string $verifyLink;
-
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $userName, string $userEmail, string $verificationCode)
+    public function __construct()
     {
-        // Store only scalar values - never store User model
-        $this->userName = $userName;
-        $this->userEmail = $userEmail;
-        $this->verifyLink = config('app.frontend_url') . '/verify-email?code=' . $verificationCode;
+        //
     }
 
     /**
@@ -38,11 +34,30 @@ class UserOnboardingNotification extends Notification implements ShouldQueue
      */
     public function toMail($notifiable)
     {
+        $verificationUrl = $this->verificationUrl($notifiable);
+        $expiresIn = Config::get('auth.verification.expire', 60);
+
         return (new \Illuminate\Notifications\Messages\MailMessage)
             ->view('emails.onboarding', [
-                'name' => $this->userName,
-                'verifyLink' => $this->verifyLink,
+                'user' => $notifiable,
+                'verificationUrl' => $verificationUrl,
+                'expiresIn' => $expiresIn,
             ])
             ->subject('Welcome to GroupSave!');
+    }
+
+    /**
+     * Generate a signed verification URL.
+     */
+    protected function verificationUrl($notifiable)
+    {
+        return URL::temporarySignedRoute(
+            'verification.verify',
+            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
+            [
+                'id' => $notifiable->getKey(),
+                'hash' => sha1($notifiable->getEmailForVerification()),
+            ]
+        );
     }
 }
