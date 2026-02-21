@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Http\Response;
-use App\Events\Registered;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use App\Notifications\UserOnboardingNotification;
 use App\Models\Group;
