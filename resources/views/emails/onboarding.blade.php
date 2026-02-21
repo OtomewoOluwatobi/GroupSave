@@ -4,210 +4,331 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
+
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+            font-family: 'DM Sans', 'Segoe UI', sans-serif;
+            background-color: #f0f0f5;
             margin: 0;
-            padding: 0;
+            padding: 20px 0;
         }
+
         .container {
             max-width: 600px;
-            margin: 20px auto;
+            margin: 0 auto;
             background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(102,126,234,0.12);
             overflow: hidden;
         }
+
+        /* ── Header ── */
         .header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
-            padding: 40px 20px;
+            padding: 44px 30px 36px;
             text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -40px; right: -40px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.07);
+        }
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -60px; left: -20px;
+            width: 220px; height: 220px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+        }
+        .logo-mark {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 10px;
         }
         .header h1 {
-            margin: 0;
+            margin: 0 0 6px;
             font-size: 28px;
             font-weight: 700;
+            letter-spacing: -0.4px;
         }
+        .header-sub {
+            margin: 0;
+            font-size: 13px;
+            opacity: 0.85;
+        }
+
+        /* ── Content ── */
         .content {
-            padding: 40px 30px;
+            padding: 36px 32px;
             color: #333;
-            line-height: 1.6;
+            line-height: 1.65;
         }
-        .content h2 {
-            color: #667eea;
-            font-size: 20px;
-            margin-top: 0;
+
+        .welcome-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin: 0 0 8px;
         }
-        .features {
-            background-color: #f9f9f9;
-            padding: 25px;
-            border-radius: 4px;
-            margin: 25px 0;
+        .welcome-sub {
+            font-size: 15px;
+            color: #666;
+            margin: 0 0 28px;
         }
-        .feature-item {
-            display: flex;
-            margin: 15px 0;
-            align-items: flex-start;
+
+        /* ── Section heading ── */
+        .section-heading {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #9b8ec4;
+            font-weight: 700;
+            margin: 0 0 14px;
+        }
+
+        /* ── Features infographic ── */
+        .features-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .feature-card {
+            background: #f9f8ff;
+            border: 1px solid #e0d9f7;
+            border-radius: 10px;
+            padding: 18px 16px;
+            position: relative;
+            overflow: hidden;
+        }
+        .feature-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 3px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
         }
         .feature-icon {
-            font-size: 20px;
-            margin-right: 15px;
-            color: #667eea;
-        }
-        .feature-text {
-            flex: 1;
-        }
-        .feature-text strong {
-            color: #333;
+            font-size: 26px;
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
         }
-        .feature-text p {
+        .feature-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1a1a2e;
+            margin-bottom: 4px;
+        }
+        .feature-desc {
+            font-size: 12px;
+            color: #777;
+            line-height: 1.5;
             margin: 0;
-            color: #666;
-            font-size: 14px;
         }
-        .button-container {
-            text-align: center;
-            margin: 30px 0;
-        }
-        .button {
-            display: inline-block;
-            background-color: #667eea;
-            color: white;
-            padding: 14px 40px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
-        .button:hover {
-            background-color: #5568d3;
-        }
+
+        /* ── Verify Section ── */
         .verify-section {
-            background-color: #fff3cd;
-            border: 1px solid #ffc107;
-            color: #856404;
-            padding: 20px;
-            border-radius: 4px;
-            margin: 25px 0;
-            text-align: center;
+            background: #fff9f0;
+            border: 1px solid #f5c87a;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 28px;
         }
-        .verify-link {
-            word-break: break-all;
-            background-color: #ffffff;
-            padding: 12px;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
+        .verify-header {
+            background: #f5c87a;
+            padding: 12px 20px;
             font-size: 12px;
-            margin: 15px 0;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.7px;
+            color: #7a4f00;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .verify-body {
+            padding: 20px;
+        }
+        .verify-body p {
+            color: #664400;
+            font-size: 14px;
+            margin: 0 0 16px;
+        }
+        .button-verify {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            padding: 12px 32px;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: 700;
+            font-size: 14px;
+            box-shadow: 0 3px 10px rgba(102,126,234,0.3);
+        }
+        .verify-link-box {
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: #fff;
+            border: 1px solid #f0d9a0;
+            border-radius: 6px;
+            font-family: 'DM Mono', monospace;
+            font-size: 11px;
             color: #667eea;
+            word-break: break-all;
         }
-        .footer {
-            background-color: #f9f9f9;
-            padding: 20px;
-            text-align: center;
-            font-size: 12px;
-            color: #999;
-            border-top: 1px solid #eee;
+        .verify-link-label {
+            font-size: 11px;
+            color: #b07820;
+            font-weight: 600;
+            margin-bottom: 4px;
         }
-        .cta-list {
+
+        /* ── Next Steps ── */
+        .steps-list {
             list-style: none;
             padding: 0;
-            margin: 20px 0;
+            margin: 0 0 28px;
         }
-        .cta-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #eee;
+        .steps-list li {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            background: #f9f8ff;
+            border: 1px solid #e8e2f8;
+            font-size: 14px;
+            color: #333;
         }
-        .cta-list li:last-child {
-            border-bottom: none;
+        .step-num {
+            width: 28px; height: 28px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
         }
-        .cta-list a {
-            color: #667eea;
-            text-decoration: none;
+        .step-icon { font-size: 18px; flex-shrink: 0; }
+        .step-text { flex: 1; }
+        .step-text a { color: #667eea; text-decoration: none; font-weight: 600; }
+
+        /* ── Support note ── */
+        .support-note {
+            font-size: 14px;
+            color: #666;
+            text-align: center;
+            border-top: 1px solid #eee;
+            padding-top: 20px;
         }
-        .cta-list a:hover {
-            text-decoration: underline;
+        .support-note a { color: #667eea; font-weight: 600; }
+
+        /* ── Footer ── */
+        .footer {
+            background-color: #f9f9f9;
+            padding: 20px 30px;
+            text-align: center;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #eee;
+        }
+
+        @media screen and (max-width: 520px) {
+            .content { padding: 24px 18px; }
+            .features-grid { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
+            <span class="logo-mark">🏦</span>
             <h1>GroupSave</h1>
-            <p style="margin: 10px 0 0 0; font-size: 14px; opacity: 0.9;">Welcome to Smart Saving</p>
+            <p class="header-sub">Welcome to Smart Saving</p>
         </div>
 
         <div class="content">
-            <h2>Welcome {{ $name }}! 🎉</h2>
+            <h2 class="welcome-title">Welcome, {{ $name }}! 🎉</h2>
+            <p class="welcome-sub">We're excited to help you achieve your savings goals with a community of like-minded savers.</p>
 
-            <p>Thank you for joining <strong>GroupSave</strong>! We're excited to help you achieve your savings goals with a community of like-minded savers.</p>
-
-            <div class="features">
-                <strong style="color: #667eea; display: block; margin-bottom: 15px;">Here's what you can do with GroupSave:</strong>
-                
-                <div class="feature-item">
-                    <div class="feature-icon">👥</div>
-                    <div class="feature-text">
-                        <strong>Create or Join Groups</strong>
-                        <p>Start a savings group with friends and family, or join existing groups to save together.</p>
-                    </div>
+            <p class="section-heading">What you can do with GroupSave</p>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <span class="feature-icon">👥</span>
+                    <div class="feature-title">Create or Join Groups</div>
+                    <p class="feature-desc">Start a savings group with friends and family, or join an existing one.</p>
                 </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">💰</div>
-                    <div class="feature-text">
-                        <strong>Set Savings Goals</strong>
-                        <p>Define target amounts and monthly contributions that work for your budget.</p>
-                    </div>
+                <div class="feature-card">
+                    <span class="feature-icon">💰</span>
+                    <div class="feature-title">Set Savings Goals</div>
+                    <p class="feature-desc">Define target amounts and monthly contributions that fit your budget.</p>
                 </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">📊</div>
-                    <div class="feature-text">
-                        <strong>Track Progress</strong>
-                        <p>Monitor your savings, member contributions, and group performance in real-time.</p>
-                    </div>
+                <div class="feature-card">
+                    <span class="feature-icon">📊</span>
+                    <div class="feature-title">Track Progress</div>
+                    <p class="feature-desc">Monitor contributions and group performance in real-time.</p>
                 </div>
-
-                <div class="feature-item">
-                    <div class="feature-icon">🔒</div>
-                    <div class="feature-text">
-                        <strong>Secure & Reliable</strong>
-                        <p>Your financial data is encrypted and protected with enterprise-grade security.</p>
-                    </div>
+                <div class="feature-card">
+                    <span class="feature-icon">🔒</span>
+                    <div class="feature-title">Secure & Reliable</div>
+                    <p class="feature-desc">Your financial data is encrypted with enterprise-grade security.</p>
                 </div>
             </div>
 
+            <p class="section-heading">⚡ Action Required — Verify Your Email</p>
             <div class="verify-section">
-                <strong>✉️ Verify Your Email</strong>
-                <p style="margin: 10px 0;">Before you can start saving, please verify your email address by clicking the link below:</p>
-                <a href="{{ $verifyLink }}" style="display: inline-block; background-color: #667eea; color: white; padding: 12px 25px; text-decoration: none; border-radius: 4px; font-weight: 600;">Verify Email Now</a>
-                <p style="margin: 15px 0 0 0; font-size: 12px;">Or use this verification link:</p>
-                <div class="verify-link">{{ $verifyLink }}</div>
+                <div class="verify-header">✉️ Verify your email to unlock all features</div>
+                <div class="verify-body">
+                    <p>Please verify your email address before you can start saving:</p>
+                    <a href="{{ $verifyLink }}" class="button-verify">Verify Email Now →</a>
+                    <div class="verify-link-label" style="margin-top:14px;">Or paste this link into your browser:</div>
+                    <div class="verify-link-box">{{ $verifyLink }}</div>
+                </div>
             </div>
 
-            <p><strong>Here's what to do next:</strong></p>
-            <ul class="cta-list">
-                <li>✅ <a href="{{ config('app.frontend_url') }}/verify-email">Verify your email address</a></li>
-                <li>📝 <a href="{{ config('app.frontend_url') }}/profile">Complete your profile</a></li>
-                <li>💳 <a href="{{ config('app.frontend_url') }}/bank-accounts">Connect your bank account</a></li>
-                <li>👫 <a href="{{ config('app.frontend_url') }}/groups/create">Create your first group</a></li>
+            <p class="section-heading">Your next steps</p>
+            <ul class="steps-list">
+                <li>
+                    <div class="step-num">1</div>
+                    <span class="step-icon">✅</span>
+                    <span class="step-text"><a href="{{ config('app.frontend_url') }}/verify-email">Verify your email address</a></span>
+                </li>
+                <li>
+                    <div class="step-num">2</div>
+                    <span class="step-icon">📝</span>
+                    <span class="step-text"><a href="{{ config('app.frontend_url') }}/profile">Complete your profile</a></span>
+                </li>
+                <li>
+                    <div class="step-num">3</div>
+                    <span class="step-icon">💳</span>
+                    <span class="step-text"><a href="{{ config('app.frontend_url') }}/bank-accounts">Connect your bank account</a></span>
+                </li>
+                <li>
+                    <div class="step-num">4</div>
+                    <span class="step-icon">👫</span>
+                    <span class="step-text"><a href="{{ config('app.frontend_url') }}/groups/create">Create your first group</a></span>
+                </li>
             </ul>
 
-            <p>If you have any questions or need help getting started, our support team is here for you. Feel free to reach out at <a href="mailto:support@groupsave.com" style="color: #667eea;">support@groupsave.com</a>.</p>
-
-            <p style="margin-top: 30px;">
-                Happy saving!<br>
-                <strong>The GroupSave Team</strong>
+            <p class="support-note">
+                Questions? Our support team is here at <a href="mailto:support@groupsave.com">support@groupsave.com</a>
             </p>
         </div>
 
         <div class="footer">
-            <p style="margin: 0 0 10px 0;">© {{ date('Y') }} GroupSave. All rights reserved.</p>
-            <p style="margin: 0;">Start your journey towards financial freedom today!</p>
+            <p style="margin:0 0 6px;">© {{ date('Y') }} GroupSave. All rights reserved.</p>
+            <p style="margin:0;">Start your journey towards financial freedom today!</p>
         </div>
     </div>
 </body>
