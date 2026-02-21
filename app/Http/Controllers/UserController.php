@@ -418,6 +418,7 @@ class UserController extends Controller
                 'message' => 'Password reset code sent to your email. Please check your inbox.',
                 'data' => [
                     'expires_in' => 900, // 15 minutes in seconds
+                    'password_reset_code' => $resetCode,
                     'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4), // masked email
                 ]
             ], 200);
