@@ -34,7 +34,7 @@ Route::prefix('auth')->group(function () {
     // Email verification
     Route::post('/resend-verification', [UserController::class, 'resendEmailVerification']);
 
-    Route::get('/verify/{code}', [UserController::class, 'verifyEmail'])->name('verification.verify');
+    Route::get('/verify', [UserController::class, 'verifyEmail'])->name('verification.verify');
 
     // User login
     Route::post('/login', [UserController::class, 'login']);
