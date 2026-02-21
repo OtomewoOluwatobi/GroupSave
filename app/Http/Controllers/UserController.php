@@ -534,6 +534,14 @@ class UserController extends Controller
             }
 
             // Check if reset code is valid and not expired
+            Log::info('Password reset attempt', [
+                'email' => $user->email,
+                'stored_code' => $user->password_reset_code,
+                'provided_code' => $validatedData['code'],
+                'expires_at' => $user->password_reset_expires_at,
+                'now' => now(),
+            ]);
+
             if (
                 !$user->password_reset_code ||
                 $user->password_reset_code !== $validatedData['code'] ||
