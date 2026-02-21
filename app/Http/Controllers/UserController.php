@@ -295,7 +295,7 @@ class UserController extends Controller
             }
 
             // Check if email is verified
-            if ($user->email_verification_code !== null) {
+            if (!$user->hasVerifiedEmail()) {
                 return new Response([
                     'error' => 'Email not verified'
                 ], 403);
