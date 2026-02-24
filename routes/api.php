@@ -61,24 +61,19 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::prefix('notifications')->group(function () {
         // Get all notifications (supports filtering via query params)
         Route::get('/', [NotificationController::class, 'index']);
-
         // Get specific notification
         Route::get('/{id}', [NotificationController::class, 'show']);
-
         // Mark notification as read
         Route::put('/{id}/read', [NotificationController::class, 'markAsRead']);
-
         // Mark all as read
         Route::put('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
-
         // Delete notification
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
-});
-
-Route::prefix('group')->middleware(['auth:api'])->group(function () {
-    Route::get('/', [GroupController::class, 'index']);
-    Route::get('/{id}', [GroupController::class, 'show']);
-    Route::post('/store', [GroupController::class, 'store']);
-    Route::get('/accept-invitation/{id}', [GroupController::class, 'acceptInvitation']);
+    Route::prefix('group')->middleware(['auth:api'])->group(function () {
+        Route::get('/', [GroupController::class, 'index']);
+        Route::get('/{id}', [GroupController::class, 'show']);
+        Route::post('/store', [GroupController::class, 'store']);
+        Route::get('/accept-invitation/{id}', [GroupController::class, 'acceptInvitation']);
+    });
 });
