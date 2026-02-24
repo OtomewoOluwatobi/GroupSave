@@ -70,11 +70,11 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Delete notification
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
-    Route::prefix('group')->middleware(['auth:api'])->group(function () {
+    Route::prefix('group')->group(function () {
         Route::get('/', [GroupController::class, 'index']);
         Route::get('/{id}', [GroupController::class, 'show']);
         Route::post('/store', [GroupController::class, 'store']);
-        Route::get('/accept-invitation/{id}', [GroupController::class, 'acceptInvitation']);
+        Route::get('/{id}/accept-invitation', [GroupController::class, 'acceptInvitation']);
 
         // Join request routes
         Route::post('/{id}/send-join-request', [GroupController::class, 'sendJoinRequest']);
