@@ -687,7 +687,7 @@ class UserController extends Controller
                 }])
                 ->whereHas('users', function ($query) use ($user) {
                     $query->where('user_id', $user->id)
-                          ->where('group_user.is_active', false);
+                        ->where('group_user.is_active', false);
                 })
                 ->get()
                 ->map(function ($group) {
@@ -708,6 +708,7 @@ class UserController extends Controller
                 'member_groups' => $userGroups->where('is_owner', false)->count(),
                 'pending_invitations' => $pendingInvitations->count(),
                 'active_groups' => $userGroups->where('status', 'active')->count(),
+                'unread_notifications' => $user->notifications()->whereNull('read_at')->count(),
             ];
 
             return response()->json([

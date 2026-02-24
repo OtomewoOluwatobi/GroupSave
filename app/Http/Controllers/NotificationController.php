@@ -17,24 +17,28 @@ class NotificationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $user = $request->user();
-        $perPage = $request->query('per_page', 15);
-
-        $notifications = $user->notifications()
-            ->paginate($perPage);
-
+        $query = $request->user()->notifications();
+        
+        // Filter by read/unread status
+        if ($request->has('read')) {
+            $read = filter_var($request->read, FILTER_VALIDATE_BOOLEAN);
+            if ($read) {
+                $query->whereNotNull('read_at');
+            } else {
+                $query->whereNull('read_at');
+            }
+        }
+        
+        // Filter by type
+        if ($request->has('type')) {
+            $query->where('type', 'like', '%' . $request->type . '%');
+        }
+        
+        $notifications = $query->paginate(20);
+        
         return response()->json([
-            'status' => 'success',
-            'message' => 'Notifications retrieved successfully',
-            'data' => $notifications->items(),
-            'pagination' => [
-                'total' => $notifications->total(),
-                'per_page' => $notifications->perPage(),
-                'current_page' => $notifications->currentPage(),
-                'last_page' => $notifications->lastPage(),
-                'from' => $notifications->firstItem(),
-                'to' => $notifications->lastItem(),
-            ],
+            'notifications' => $notifications,
+            'unread_count' => $request->user()->unreadNotifications()->count(),
         ]);
     }
 

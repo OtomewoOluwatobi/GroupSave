@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use App\Notifications\GroupInvitationNotification;
+use App\Notifications\GroupInvitationAcceptedNotification;
 use App\Events\GroupCreated;
 
 class GroupController extends Controller
@@ -179,12 +180,31 @@ class GroupController extends Controller
             return response()->json(['message' => 'Invitation already accepted'], 200);
         }
 
-        $group->users()->updateExistingPivot($user->id, ['is_active' => true]);
+        try {
+            $group->users()->updateExistingPivot($user->id, ['is_active' => true]);
 
-        return response()->json([
-            'message' => 'Invitation accepted successfully',
-            'data' => $group
-        ], 200);
+            // Send notification to group admin/owner
+            $groupOwner = User::find($group->owner_id);
+            if ($groupOwner) {
+                $groupOwner->notify(new GroupInvitationAcceptedNotification($group, $user));
+            }
+
+            return response()->json([
+                'message' => 'Invitation accepted successfully',
+                'data' => $group
+            ], 200);
+        } catch (\Exception $e) {
+            Log::error('Failed to accept invitation', [
+                'user_id' => $user->id,
+                'group_id' => $group->id,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to accept invitation',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
 
