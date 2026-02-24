@@ -56,7 +56,7 @@ Route::prefix('auth')->group(function () {
  * Prefix: /notifications
  * Requires JWT authentication
  */
-Route::prefix('user')->middleware(['auth:jwt'])->group(function () {
+Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::prefix('notifications')->group(function () {
         // Get all notifications (supports filtering via query params)
@@ -76,7 +76,7 @@ Route::prefix('user')->middleware(['auth:jwt'])->group(function () {
     });
 });
 
-Route::prefix('group')->middleware(['auth:jwt'])->group(function () {
+Route::prefix('group')->middleware(['auth:api'])->group(function () {
     Route::get('/', [GroupController::class, 'index']);
     Route::get('/{id}', [GroupController::class, 'show']);
     Route::post('/store', [GroupController::class, 'store']);
