@@ -2,16 +2,14 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-class UserOnboardingNotification extends Notification implements ShouldQueue
+class UserOnboardingNotification extends BaseNotification
 {
-    use Queueable;
+    private string $userName;
 
     /**
      * Create a new notification instance.
@@ -26,24 +24,47 @@ class UserOnboardingNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         $verificationUrl = $this->verificationUrl($notifiable);
         $expiresIn = Config::get('auth.verification.expire', 60);
 
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->view('emails.onboarding', [
-                'user' => $notifiable,
+                'userName' => $notifiable->name,
                 'verificationUrl' => $verificationUrl,
                 'expiresIn' => $expiresIn,
             ])
             ->subject('Welcome to GroupSave!');
+    }
+
+    /**
+     * Get the database representation of the notification (in-app activity).
+     */
+    public function toDatabase($notifiable): array
+    {
+        return [
+            'type' => 'user_onboarding',
+            'message' => 'Welcome to GroupSave! Please verify your email address',
+            'action_url' => '/email/verify',
+        ];
+    }
+
+    /**
+     * Get the array representation of the notification.
+     */
+    public function toArray($notifiable): array
+    {
+        return [
+            'type' => 'user_onboarding',
+            'message' => 'Welcome to GroupSave!',
+        ];
     }
 
     /**

@@ -22,7 +22,7 @@ class NotificationTest extends TestCase
 
         $user = User::factory()->create();
 
-        $user->notify(new UserOnboardingNotification($user));
+        $user->notify(new UserOnboardingNotification());
 
         Notification::assertSentTo(
             $user,

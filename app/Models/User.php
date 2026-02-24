@@ -47,4 +47,29 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return !is_null($this->email_verified_at);
     }
+
+    /**
+     * Get user's unread notifications
+     */
+    public function unreadNotifications()
+    {
+        return $this->notifications()->unread();
+    }
+
+    /**
+     * Get the number of unread notifications
+     */
+    public function unreadNotificationsCount(): int
+    {
+        return $this->unreadNotifications()->count();
+    }
+
+    /**
+     * Get user's notifications
+     */
+    public function notifications()
+    {
+        return $this->morphMany(Notification::class, 'notifiable')
+            ->orderBy('created_at', 'desc');
+    }
 }

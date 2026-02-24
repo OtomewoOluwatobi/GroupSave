@@ -407,7 +407,7 @@ class UserController extends Controller
             ]);
 
             try {
-                $user->notify(new \App\Notifications\PasswordResetNotification($user->name, $user->email, $resetCode));
+                $user->notify(new \App\Notifications\PasswordResetNotification($user->name, $user->email, $resetCode, $user->id));
             } catch (Exception $e) {
                 Log::warning('Password reset notification error: ' . $e->getMessage());
                 // Don't fail the request, the code is still saved

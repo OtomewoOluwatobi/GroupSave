@@ -2,27 +2,25 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class PasswordResetNotification extends Notification implements ShouldQueue
+class PasswordResetNotification extends BaseNotification
 {
-    use Queueable;
-
     private string $userEmail;
     private string $userName;
     private string $resetCode;
+    private int $userId;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $userName, string $userEmail, string $resetCode)
+    public function __construct(string $userName, string $userEmail, string $resetCode, int $userId)
     {
         // Store only scalar values - never store User model
         $this->userName = $userName;
         $this->userEmail = $userEmail;
         $this->resetCode = $resetCode;
+        $this->userId = $userId;
     }
 
     /**
@@ -30,20 +28,45 @@ class PasswordResetNotification extends Notification implements ShouldQueue
      */
     public function via($notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->view('emails.password-reset', [
                 'name' => $this->userName,
                 'email' => $this->userEmail,
                 'resetCode' => $this->resetCode,
             ])
             ->subject('Password Reset Request - GroupSave');
+    }
+
+    /**
+     * Get the database representation of the notification (in-app activity).
+     */
+    public function toDatabase($notifiable): array
+    {
+        return [
+            'type' => 'password_reset',
+            'message' => 'A password reset request was initiated for your account',
+            'code' => $this->resetCode,
+            'action_url' => '/auth/reset-password',
+        ];
+    }
+
+    /**
+     * Get the array representation of the notification.
+     */
+    public function toArray($notifiable): array
+    {
+        return [
+            'type' => 'password_reset',
+            'message' => 'Password reset request received',
+            'code' => $this->resetCode,
+        ];
     }
 }

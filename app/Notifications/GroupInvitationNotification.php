@@ -2,78 +2,87 @@
 
 namespace App\Notifications;
 
-use App\Models\Group;
-use App\Models\User;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Notifications\Notification;
+use Illuminate\Notifications\Messages\MailMessage;
 
-class GroupInvitationNotification extends Notification implements ShouldQueue
+class GroupInvitationNotification extends BaseNotification
 {
-    use Queueable;
-
-    protected $group;
-    protected $invitee;
-    protected $generatedPassword;
-    protected $inviter;
+    /**
+     * Store only scalar values to avoid serialization issues
+     */
+    protected int $groupId;
+    protected string $groupName;
+    protected int $inviteeId;
+    protected string $inviteeEmail;
+    protected string $inviteeFirstName;
+    protected int $inviterId;
+    protected string $inviterName;
+    protected string $generatedPassword;
 
     /**
      * Create a new notification instance.
-     *
-     * @param Group $group
-     * @param User $invitee
-     * @param string $generatedPassword
      */
-    public function __construct(Group $group, User $invitee, $generatedPassword)
+    public function __construct($group, $invitee, $generatedPassword)
     {
-        $this->group = $group;
-        $this->invitee = $invitee;
+        $this->groupId = $group->id;
+        $this->groupName = $group->title;
+        $this->inviteeId = $invitee->id;
+        $this->inviteeEmail = $invitee->email;
+        $this->inviteeFirstName = $invitee->name;
+        $this->inviterId = $group->owner->id;
+        $this->inviterName = $group->owner->name;
         $this->generatedPassword = $generatedPassword;
-        $this->inviter = $group->owner;
     }
 
     /**
      * Get the notification's delivery channels.
-     *
-     * @param mixed $notifiable
-     * @return array
      */
-    public function via($notifiable)
+    public function via($notifiable): array
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     /**
      * Get the mail representation of the notification.
-     *
-     * @param mixed $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
      */
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
-        return (new \Illuminate\Notifications\Messages\MailMessage)
+        return (new MailMessage)
             ->view('emails.group-invitation', [
-                'group' => $this->group,
-                'user' => $this->invitee,
-                'inviter' => $this->inviter,
+                'groupName' => $this->groupName,
+                'userName' => $this->inviteeFirstName,
+                'inviterName' => $this->inviterName,
                 'generatedPassword' => $this->generatedPassword,
             ])
-            ->subject("You've been invited to join {$this->group->title}");
+            ->subject("You've been invited to join {$this->groupName}");
+    }
+
+    /**
+     * Get the database representation of the notification (in-app activity).
+     */
+    public function toDatabase($notifiable): array
+    {
+        return [
+            'type' => 'group_invitation',
+            'group_id' => $this->groupId,
+            'group_name' => $this->groupName,
+            'inviter_id' => $this->inviterId,
+            'inviter_name' => $this->inviterName,
+            'message' => "{$this->inviterName} invited you to join {$this->groupName}",
+            'action_url' => "/groups/{$this->groupId}",
+        ];
     }
 
     /**
      * Get the array representation of the notification.
-     *
-     * @param mixed $notifiable
-     * @return array
      */
-    public function toArray($notifiable)
+    public function toArray($notifiable): array
     {
         return [
-            'group_id' => $this->group->id,
-            'group_name' => $this->group->title,
-            'inviter_id' => auth()->guard()->user()->id,
-            'message' => "You've been invited to join {$this->group->title}",
+            'group_id' => $this->groupId,
+            'group_name' => $this->groupName,
+            'inviter_id' => $this->inviterId,
+            'inviter_name' => $this->inviterName,
+            'message' => "You've been invited to join {$this->groupName}",
         ];
     }
 }
