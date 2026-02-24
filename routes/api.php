@@ -75,5 +75,11 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         Route::get('/{id}', [GroupController::class, 'show']);
         Route::post('/store', [GroupController::class, 'store']);
         Route::get('/accept-invitation/{id}', [GroupController::class, 'acceptInvitation']);
+
+        // Join request routes
+        Route::post('/{id}/send-join-request', [GroupController::class, 'sendJoinRequest']);
+        Route::get('/{id}/join-requests', [GroupController::class, 'getPendingJoinRequests']);
+        Route::put('/{groupId}/join-requests/{requestId}/approve', [GroupController::class, 'approveJoinRequest']);
+        Route::put('/{groupId}/join-requests/{requestId}/reject', [GroupController::class, 'rejectJoinRequest']);
     });
 });
