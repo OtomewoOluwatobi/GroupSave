@@ -37,6 +37,7 @@ class GroupJoinRequestNotification extends Notification
     public function toDatabase($notifiable)
     {
         return [
+            'type' => 'group_join_request',
             'group_id' => $this->group->id,
             'user_id' => $this->user->id,
             'user_name' => $this->user->name,
