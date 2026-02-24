@@ -22,14 +22,26 @@ class GroupJoinRequestNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->line('New join request for group: ' . $this->group->name)
-            ->action('View Request', url('/'))
-            ->line('Thank you for using our application!');
+            ->subject('New Join Request for ' . $this->group->name)
+            ->line('User ' . $this->user->name . ' has requested to join your group: ' . $this->group->name)
+            ->action('Review Request', url('/groups/' . $this->group->id))
+            ->line('Thank you!');
+    }
+
+    public function toDatabase($notifiable)
+    {
+        return [
+            'group_id' => $this->group->id,
+            'user_id' => $this->user->id,
+            'user_name' => $this->user->name,
+            'group_name' => $this->group->name,
+            'message' => $this->user->name . ' has requested to join ' . $this->group->name,
+        ];
     }
 }
