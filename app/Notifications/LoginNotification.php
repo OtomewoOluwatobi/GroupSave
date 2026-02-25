@@ -82,16 +82,16 @@ class LoginNotification extends BaseNotification
      */
     private function parseUserAgent(string $userAgent): string
     {
-        // Simple UA parsing - can be enhanced with a library
-        if (str_contains($userAgent, 'iPhone')) {
+        // Simple UA parsing - compatible with PHP 7.x
+        if (strpos($userAgent, 'iPhone') !== false) {
             return 'iPhone';
-        } elseif (str_contains($userAgent, 'Android')) {
+        } elseif (strpos($userAgent, 'Android') !== false) {
             return 'Android Device';
-        } elseif (str_contains($userAgent, 'Windows')) {
+        } elseif (strpos($userAgent, 'Windows') !== false) {
             return 'Windows PC';
-        } elseif (str_contains($userAgent, 'Mac')) {
+        } elseif (strpos($userAgent, 'Mac') !== false) {
             return 'Mac';
-        } elseif (str_contains($userAgent, 'Linux')) {
+        } elseif (strpos($userAgent, 'Linux') !== false) {
             return 'Linux';
         }
         return 'Unknown Device';
