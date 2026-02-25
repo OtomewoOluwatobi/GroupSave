@@ -2,11 +2,70 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\DatabaseNotification;
 
 class Notification extends DatabaseNotification
 {
+    /**
+     * Mapping of data keys to their related models.
+     */
+    protected static array $relatedModelMap = [
+        'group_id' => Group::class,
+        'inviter_id' => User::class,
+        'contributor_id' => User::class,
+        'user_id' => User::class,
+        'member_id' => User::class,
+    ];
+
+    /**
+     * Load related data based on IDs stored in the notification's data column.
+     *
+     * @return array
+     */
+    public function loadRelatedData(): array
+    {
+        $relatedData = [];
+        $data = $this->data ?? [];
+
+        foreach (self::$relatedModelMap as $key => $modelClass) {
+            if (isset($data[$key]) && !empty($data[$key])) {
+                $relationName = $this->getRelationNameFromKey($key);
+                $model = $modelClass::find($data[$key]);
+                
+                if ($model) {
+                    $relatedData[$relationName] = $model;
+                }
+            }
+        }
+
+        return $relatedData;
+    }
+
+    /**
+     * Convert a data key to a relation name.
+     *
+     * @param string $key
+     * @return string
+     */
+    protected function getRelationNameFromKey(string $key): string
+    {
+        // Remove '_id' suffix and convert to a readable name
+        return str_replace('_id', '', $key);
+    }
+
+    /**
+     * Get the notification with its related data.
+     *
+     * @return array
+     */
+    public function withRelatedData(): array
+    {
+        return [
+            'notification' => $this,
+            'related' => $this->loadRelatedData(),
+        ];
+    }
+
     /**
      * Get the notifiable entity that the notification belongs to.
      */

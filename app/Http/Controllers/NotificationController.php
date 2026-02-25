@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Notification;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\Paginator;
 
 class NotificationController extends Controller
 {
@@ -91,7 +90,7 @@ class NotificationController extends Controller
     }
 
     /**
-     * Get a specific notification
+     * Get a specific notification with related data
      * 
      * @param Request $request
      * @param string $notificationId
@@ -115,7 +114,7 @@ class NotificationController extends Controller
 
         return response()->json([
             'status' => 'success',
-            'data' => $notification,
+            'data' => $notification->withRelatedData(),
         ]);
     }
 
