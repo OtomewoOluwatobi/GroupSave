@@ -4,6 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
+use App\Notifications\LoginNotification;
+use App\Notifications\PasswordChangedNotification;
+use App\Notifications\AccountUpdatedNotification;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -308,6 +311,15 @@ class UserController extends Controller
                 ], 401);
             }
 
+            // Send login notification
+            try {
+                $ipAddress = $request->ip() ?? 'Unknown';
+                $userAgent = $request->userAgent() ?? 'Unknown';
+                $user->notify(new LoginNotification($ipAddress, $userAgent));
+            } catch (Exception $notifyError) {
+                Log::warning('Login notification error: ' . $notifyError->getMessage());
+            }
+
             return new Response([
                 'token' => $token,
                 'user' => $user,
@@ -572,6 +584,13 @@ class UserController extends Controller
                 'password_reset_code' => null,
                 'password_reset_expires_at' => null,
             ]);
+
+            // Send password changed notification
+            try {
+                $user->notify(new PasswordChangedNotification($user->name, 'reset'));
+            } catch (Exception $notifyError) {
+                Log::warning('Password changed notification error: ' . $notifyError->getMessage());
+            }
 
             return response()->json([
                 'status' => 'success',
@@ -854,6 +873,265 @@ class UserController extends Controller
             return response()->json([
                 'message' => 'Failed to send verification email',
                 'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Change authenticated user's password.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    /**
+     * @OA\Post(
+     *     path="/api/user/change-password",
+     *     tags={"User"},
+     *     summary="Change authenticated user's password",
+     *     description="Allows authenticated user to change their password",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"current_password","password","password_confirmation"},
+     *             @OA\Property(property="current_password", type="string", format="password", example="oldPassword123"),
+     *             @OA\Property(property="password", type="string", format="password", example="newPassword123"),
+     *             @OA\Property(property="password_confirmation", type="string", format="password", example="newPassword123")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Password changed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Password changed successfully")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Current password incorrect",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="error", type="string", example="Current password is incorrect")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function changePassword(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Unauthorized',
+                ], 401);
+            }
+
+            $validatedData = $request->validate(
+                [
+                    'current_password' => 'required|string',
+                    'password' => ['required', 'confirmed', Password::defaults()],
+                ],
+                [
+                    'current_password.required' => 'Current password is required',
+                    'password.required' => 'New password is required',
+                    'password.confirmed' => 'Passwords do not match',
+                ]
+            );
+
+            // Verify current password
+            if (!Hash::check($validatedData['current_password'], $user->password)) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Current password is incorrect',
+                ], 400);
+            }
+
+            // Update password
+            $user->update([
+                'password' => Hash::make($validatedData['password']),
+            ]);
+
+            // Send password changed notification
+            try {
+                $user->notify(new PasswordChangedNotification($user->name, 'change'));
+            } catch (Exception $notifyError) {
+                Log::warning('Password changed notification error: ' . $notifyError->getMessage());
+            }
+
+            Log::info('Password changed', ['user_id' => $user->id]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Password changed successfully',
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('Change password error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Failed to change password',
+                'message' => 'Please try again later',
+            ], 500);
+        }
+    }
+
+    /**
+     * Update authenticated user's profile.
+     *
+     * @param Request $request
+     * @return JsonResponse
+     */
+    /**
+     * @OA\Put(
+     *     path="/api/user/profile",
+     *     tags={"User"},
+     *     summary="Update authenticated user's profile",
+     *     description="Allows authenticated user to update their profile information",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="email", type="string", format="email", example="newemail@example.com"),
+     *             @OA\Property(property="mobile", type="string", example="+1234567890")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Profile updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="message", type="string", example="Profile updated successfully"),
+     *             @OA\Property(property="user", type="object")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthorized"
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Validation error"
+     *     )
+     * )
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Unauthorized',
+                ], 401);
+            }
+
+            $validatedData = $request->validate(
+                [
+                    'name' => 'sometimes|string|max:255',
+                    'email' => 'sometimes|string|lowercase|email|max:255|unique:users,email,' . $user->id,
+                    'mobile' => 'sometimes|string|max:255',
+                ],
+                [
+                    'name.max' => 'Name must not exceed 255 characters',
+                    'email.email' => 'Please provide a valid email address',
+                    'email.unique' => 'This email is already in use',
+                    'mobile.max' => 'Mobile number must not exceed 255 characters',
+                ]
+            );
+
+            // Track what fields are being changed
+            $updatedFields = [];
+            $emailChanged = false;
+
+            foreach ($validatedData as $key => $value) {
+                if ($user->$key !== $value) {
+                    $updatedFields[$key] = [
+                        'old' => $key === 'email' ? substr($user->$key, 0, 3) . '***' : $user->$key,
+                        'new' => $key === 'email' ? substr($value, 0, 3) . '***' : $value,
+                    ];
+                    if ($key === 'email') {
+                        $emailChanged = true;
+                    }
+                }
+            }
+
+            if (empty($updatedFields)) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No changes detected',
+                    'user' => $user,
+                ], 200);
+            }
+
+            // Update user
+            $user->update($validatedData);
+
+            // If email changed, mark as unverified
+            if ($emailChanged) {
+                $user->update(['email_verified_at' => null]);
+                // Send new verification email
+                try {
+                    $user->notify(new VerifyEmailNotification());
+                } catch (Exception $e) {
+                    Log::warning('Verification email error after profile update: ' . $e->getMessage());
+                }
+            }
+
+            // Send account updated notification
+            try {
+                $user->notify(new AccountUpdatedNotification($user->name, $updatedFields, $emailChanged));
+            } catch (Exception $notifyError) {
+                Log::warning('Account updated notification error: ' . $notifyError->getMessage());
+            }
+
+            Log::info('Profile updated', [
+                'user_id' => $user->id,
+                'updated_fields' => array_keys($updatedFields),
+            ]);
+
+            $response = [
+                'status' => 'success',
+                'message' => 'Profile updated successfully',
+                'user' => $user->fresh(),
+                'updated_fields' => array_keys($updatedFields),
+            ];
+
+            if ($emailChanged) {
+                $response['email_verification_required'] = true;
+                $response['message'] = 'Profile updated. Please verify your new email address.';
+            }
+
+            return response()->json($response, 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            Log::error('Update profile error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Failed to update profile',
+                'message' => 'Please try again later',
             ], 500);
         }
     }

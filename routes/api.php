@@ -58,6 +58,8 @@ Route::prefix('auth')->group(function () {
  */
 Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
+    Route::put('/profile', [UserController::class, 'updateProfile']);
+    Route::post('/change-password', [UserController::class, 'changePassword']);
     Route::prefix('notifications')->group(function () {
         // Get all notifications (supports filtering via query params)
         Route::get('/', [NotificationController::class, 'index']);
