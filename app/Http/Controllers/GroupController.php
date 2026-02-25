@@ -367,85 +367,83 @@ class GroupController extends Controller
             return response()->json(['message' => 'Unauthorized: Only group admin can approve join requests'], 403);
         }
 
+        $joinRequest = DB::table('group_join_requests')
+            ->where('id', $requestId)
+            ->where('group_id', $groupId)
+            ->first();
+
+        if (!$joinRequest) {
+            return response()->json(['message' => 'Join request not found'], 404);
+        }
+
+        if ($joinRequest->status !== 'pending') {
+            return response()->json(['message' => 'Join request is no longer pending'], 400);
+        }
+
+        // Check if group is at capacity
+        $activeMembers = $group->users()->where('group_user.is_active', true)->count();
+        $totalUsers = $group->total_users;
+        $replacedMemberId = null;
+
         try {
-            $joinRequest = DB::table('group_join_requests')
-                ->where('id', $requestId)
-                ->where('group_id', $groupId)
-                ->first();
+            DB::beginTransaction();
 
-            if (!$joinRequest) {
-                return response()->json(['message' => 'Join request not found'], 404);
-            }
+            // If group is at capacity, remove an inactive member
+            if ($activeMembers >= $totalUsers) {
+                $inactiveMember = $group->users()
+                    ->where('group_user.is_active', false)
+                    ->orderBy('group_user.created_at', 'asc')
+                    ->first();
 
-            if ($joinRequest->status !== 'pending') {
-                return response()->json(['message' => 'Join request is no longer pending'], 400);
-            }
+                if ($inactiveMember) {
+                    $replacedMemberId = $inactiveMember->id;
+                    $group->users()->detach($inactiveMember->id);
 
-            // Check if group is at capacity
-            $activeMembers = $group->users()->where('group_user.is_active', true)->count();
-            $totalUsers = $group->total_users;
-
-            DB::transaction(function () use ($group, $joinRequest, $activeMembers, $totalUsers) {
-                $replacedMemberId = null;
-
-                // If group is at capacity, remove an inactive member
-                if ($activeMembers >= $totalUsers) {
-                    // Find an inactive member (invited but not accepted)
-                    $inactiveMember = $group->users()
-                        ->where('group_user.is_active', false)
-                        ->orderBy('group_user.created_at', 'asc')
-                        ->first();
-
-                    if ($inactiveMember) {
-                        $replacedMemberId = $inactiveMember->id;
-                        
-                        // Remove the inactive member from group
-                        $group->users()->detach($inactiveMember->id);
-
-                        // Notify the replaced member (queued, won't block)
-                        try {
-                            $inactiveMember->notify(new GroupMemberRemovedNotification($group->id, $group->title ?? ''));
-                        } catch (\Exception $e) {
-                            Log::warning('Failed to send member removed notification', ['error' => $e->getMessage()]);
-                        }
-
-                        Log::info('Inactive member replaced in group', [
-                            'replaced_user_id' => $inactiveMember->id,
-                            'group_id' => $group->id,
-                            'new_user_id' => $joinRequest->user_id
-                        ]);
-                    }
-                }
-
-                // Add the new user to the group
-                if (!$group->users()->where('user_id', $joinRequest->user_id)->exists()) {
-                    $group->users()->attach($joinRequest->user_id, [
-                        'role' => 'member',
-                        'is_active' => true
+                    Log::info('Inactive member replaced in group', [
+                        'replaced_user_id' => $inactiveMember->id,
+                        'group_id' => $group->id,
+                        'new_user_id' => $joinRequest->user_id
                     ]);
                 }
+            }
 
-                // Update join request status
-                DB::table('group_join_requests')
-                    ->where('id', $joinRequest->id)
-                    ->update(['status' => 'approved', 'updated_at' => now()]);
+            // Add the new user to the group
+            if (!$group->users()->where('user_id', $joinRequest->user_id)->exists()) {
+                $group->users()->attach($joinRequest->user_id, [
+                    'role' => 'member',
+                    'is_active' => true
+                ]);
+            }
 
-                // Notify user about approval (queued, won't block)
+            // Update join request status
+            DB::table('group_join_requests')
+                ->where('id', $joinRequest->id)
+                ->update(['status' => 'approved', 'updated_at' => now()]);
+
+            DB::commit();
+
+            // Send notifications AFTER commit (non-blocking)
+            try {
                 $user = User::find($joinRequest->user_id);
-                if ($user) {
-                    try {
-                        $user->notify(new GroupJoinApprovedNotification($group->id, $group->title ?? ''));
-                    } catch (\Exception $e) {
-                        Log::warning('Failed to send join approved notification', ['error' => $e->getMessage()]);
-                    }
+                if ($user && $group->title) {
+                    $user->notify(new GroupJoinApprovedNotification($group->id, $group->title));
                 }
 
-                Log::info('Join request approved', [
-                    'user_id' => $joinRequest->user_id,
-                    'group_id' => $group->id,
-                    'replaced_member_id' => $replacedMemberId
-                ]);
-            });
+                if ($replacedMemberId) {
+                    $replacedUser = User::find($replacedMemberId);
+                    if ($replacedUser && $group->title) {
+                        $replacedUser->notify(new GroupMemberRemovedNotification($group->id, $group->title));
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send approval notifications', ['error' => $e->getMessage()]);
+            }
+
+            Log::info('Join request approved', [
+                'user_id' => $joinRequest->user_id,
+                'group_id' => $group->id,
+                'replaced_member_id' => $replacedMemberId
+            ]);
 
             return response()->json([
                 'message' => 'Join request approved successfully',
@@ -458,10 +456,13 @@ class GroupController extends Controller
             ], 200);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             Log::error('Failed to approve join request', [
                 'group_id' => $groupId,
                 'request_id' => $requestId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
@@ -494,33 +495,33 @@ class GroupController extends Controller
             return response()->json(['message' => 'Unauthorized: Only group admin can reject join requests'], 403);
         }
 
+        $joinRequest = DB::table('group_join_requests')
+            ->where('id', $requestId)
+            ->where('group_id', $groupId)
+            ->first();
+
+        if (!$joinRequest) {
+            return response()->json(['message' => 'Join request not found'], 404);
+        }
+
+        if ($joinRequest->status !== 'pending') {
+            return response()->json(['message' => 'Join request is no longer pending'], 400);
+        }
+
         try {
-            $joinRequest = DB::table('group_join_requests')
-                ->where('id', $requestId)
-                ->where('group_id', $groupId)
-                ->first();
-
-            if (!$joinRequest) {
-                return response()->json(['message' => 'Join request not found'], 404);
-            }
-
-            if ($joinRequest->status !== 'pending') {
-                return response()->json(['message' => 'Join request is no longer pending'], 400);
-            }
-
             // Update join request status
             DB::table('group_join_requests')
                 ->where('id', $joinRequest->id)
                 ->update(['status' => 'rejected', 'updated_at' => now()]);
 
-            // Notify user about rejection (queued, won't block)
-            $user = User::find($joinRequest->user_id);
-            if ($user) {
-                try {
-                    $user->notify(new GroupJoinRejectedNotification($group->id, $group->title ?? ''));
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
+            // Send notification AFTER update (non-blocking)
+            try {
+                $user = User::find($joinRequest->user_id);
+                if ($user && $group->title) {
+                    $user->notify(new GroupJoinRejectedNotification($group->id, $group->title));
                 }
+            } catch (\Exception $e) {
+                Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
             }
 
             Log::info('Join request rejected', [
@@ -532,11 +533,13 @@ class GroupController extends Controller
                 'message' => 'Join request rejected successfully',
                 'data' => ['request_id' => $requestId, 'status' => 'rejected']
             ], 200);
+
         } catch (\Exception $e) {
             Log::error('Failed to reject join request', [
                 'group_id' => $groupId,
                 'request_id' => $requestId,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
 
             return response()->json([
