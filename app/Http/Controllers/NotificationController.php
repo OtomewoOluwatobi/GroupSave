@@ -112,6 +112,9 @@ class NotificationController extends Controller
             ], 404);
         }
 
+        // Automatically mark as read when viewed
+        $notification->markAsRead();
+
         return response()->json([
             'status' => 'success',
             'data' => $notification->withRelatedData(),
