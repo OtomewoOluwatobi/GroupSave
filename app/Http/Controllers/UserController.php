@@ -744,6 +744,21 @@ class UserController extends Controller
                 'unread_notifications' => $user->notifications()->whereNull('read_at')->count(),
             ];
 
+            // Get recent notifications (last 10)
+            $recentNotifications = $user->notifications()
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get()
+                ->map(function ($notification) {
+                    return [
+                        'id' => $notification->id,
+                        'type' => $notification->type,
+                        'data' => $notification->data,
+                        'read_at' => $notification->read_at,
+                        'created_at' => $notification->created_at,
+                    ];
+                });
+
             return response()->json([
                 'message' => 'Dashboard data retrieved successfully',
                 'user' => [
@@ -757,6 +772,7 @@ class UserController extends Controller
                 'user_groups' => $userGroups,
                 'suggested_groups' => $suggestedGroups,
                 'pending_invitations' => $pendingInvitations,
+                'recent_notifications' => $recentNotifications,
                 'user_banks' => $user->userBank ?? [],
             ], 200);
 
