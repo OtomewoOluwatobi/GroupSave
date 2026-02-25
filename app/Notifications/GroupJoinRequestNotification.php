@@ -2,47 +2,57 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class GroupJoinRequestNotification extends Notification
+class GroupJoinRequestNotification extends BaseNotification
 {
-    use Queueable;
+    private int $groupId;
+    private string $groupTitle;
+    private int $userId;
+    private string $userName;
 
-    public $group;
-    public $user;
-
-    public function __construct($group, $user)
+    public function __construct(int $groupId, string $groupTitle, int $userId, string $userName)
     {
-        $this->group = $group;
-        $this->user = $user;
+        $this->groupId = $groupId;
+        $this->groupTitle = $groupTitle;
+        $this->userId = $userId;
+        $this->userName = $userName;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail', 'database'];
     }
 
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Join Request for ' . $this->group->name)
-            ->line('User ' . $this->user->name . ' has requested to join your group: ' . $this->group->name)
-            ->action('Review Request', url('/groups/' . $this->group->id))
-            ->line('Thank you!');
+            ->subject('New Join Request for ' . $this->groupTitle)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line($this->userName . ' has requested to join your group: ' . $this->groupTitle)
+            ->action('Review Request', url('/groups/' . $this->groupId))
+            ->line('Thank you for using GroupSave!');
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
         return [
             'type' => 'group_join_request',
-            'group_id' => $this->group->id,
-            'user_id' => $this->user->id,
-            'user_name' => $this->user->name,
-            'group_name' => $this->group->name,
-            'message' => $this->user->name . ' has requested to join ' . $this->group->name,
+            'group_id' => $this->groupId,
+            'user_id' => $this->userId,
+            'user_name' => $this->userName,
+            'group_title' => $this->groupTitle,
+            'message' => $this->userName . ' has requested to join ' . $this->groupTitle,
+        ];
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'type' => 'group_join_request',
+            'group_id' => $this->groupId,
+            'user_id' => $this->userId,
+            'message' => $this->userName . ' requested to join ' . $this->groupTitle,
         ];
     }
 }

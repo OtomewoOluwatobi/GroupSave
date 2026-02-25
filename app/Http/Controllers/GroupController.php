@@ -7,9 +7,9 @@ use App\Models\Group;
 use App\Models\User;
 use App\Notifications\GroupInvitationAcceptedNotification;
 use App\Notifications\GroupInvitationNotification;
-use App\Notifications\GroupJoinRequestApprovedNotification;
+use App\Notifications\GroupJoinApprovedNotification;
 use App\Notifications\GroupJoinRequestNotification;
-use App\Notifications\GroupJoinRequestRejectedNotification;
+use App\Notifications\GroupJoinRejectedNotification;
 use App\Notifications\GroupMemberRemovedNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -259,7 +259,12 @@ class GroupController extends Controller
                 // Notify group owner/admin about the join request
                 $groupOwner = User::find($group->owner_id);
                 if ($groupOwner) {
-                    $groupOwner->notify(new GroupJoinRequestNotification($group, $user));
+                    $groupOwner->notify(new GroupJoinRequestNotification(
+                        $group->id,
+                        $group->title,
+                        $user->id,
+                        $user->name
+                    ));
                 }
 
                 Log::info('User sent join request to group', [
@@ -398,7 +403,7 @@ class GroupController extends Controller
                         $group->users()->detach($inactiveMember->id);
 
                         // Notify the replaced member
-                        $inactiveMember->notify(new GroupMemberRemovedNotification($group));
+                        $inactiveMember->notify(new GroupMemberRemovedNotification($group->id, $group->title));
 
                         Log::info('Inactive member replaced in group', [
                             'replaced_user_id' => $inactiveMember->id,
@@ -424,7 +429,7 @@ class GroupController extends Controller
                 // Notify user about approval
                 $user = User::find($joinRequest->user_id);
                 if ($user) {
-                    $user->notify(new GroupJoinRequestApprovedNotification($group));
+                    $user->notify(new GroupJoinApprovedNotification($group->id, $group->title));
                 }
 
                 Log::info('Join request approved', [
@@ -503,7 +508,7 @@ class GroupController extends Controller
             // Notify user about rejection
             $user = User::find($joinRequest->user_id);
             if ($user) {
-                $user->notify(new GroupJoinRequestRejectedNotification($group));
+                $user->notify(new GroupJoinRejectedNotification($group->id, $group->title));
             }
 
             Log::info('Join request rejected', [

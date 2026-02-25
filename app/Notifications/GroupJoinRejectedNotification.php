@@ -2,42 +2,49 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class GroupJoinRejectedNotification extends Notification
+class GroupJoinRejectedNotification extends BaseNotification
 {
-    use Queueable;
+    private int $groupId;
+    private string $groupTitle;
 
-    public $group;
-
-    public function __construct($group)
+    public function __construct(int $groupId, string $groupTitle)
     {
-        $this->group = $group;
+        $this->groupId = $groupId;
+        $this->groupTitle = $groupTitle;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail', 'database'];
     }
 
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Join Request Declined - ' . $this->group->name)
-            ->line('Your request to join ' . $this->group->name . ' has been declined.')
+            ->subject('Join Request Declined - ' . $this->groupTitle)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('Your request to join "' . $this->groupTitle . '" has been declined.')
             ->line('You can try joining other groups or contact the group admin for more information.');
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
         return [
             'type' => 'group_join_rejected',
-            'group_id' => $this->group->id,
-            'group_name' => $this->group->name,
-            'message' => 'Your request to join ' . $this->group->name . ' has been declined.',
+            'group_id' => $this->groupId,
+            'group_title' => $this->groupTitle,
+            'message' => 'Your request to join "' . $this->groupTitle . '" has been declined.',
+        ];
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'type' => 'group_join_rejected',
+            'group_id' => $this->groupId,
+            'message' => 'Join request declined for ' . $this->groupTitle,
         ];
     }
 }

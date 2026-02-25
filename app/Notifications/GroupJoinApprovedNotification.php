@@ -2,43 +2,50 @@
 
 namespace App\Notifications;
 
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class GroupJoinApprovedNotification extends Notification
+class GroupJoinApprovedNotification extends BaseNotification
 {
-    use Queueable;
+    private int $groupId;
+    private string $groupTitle;
 
-    public $group;
-
-    public function __construct($group)
+    public function __construct(int $groupId, string $groupTitle)
     {
-        $this->group = $group;
+        $this->groupId = $groupId;
+        $this->groupTitle = $groupTitle;
     }
 
-    public function via($notifiable)
+    public function via($notifiable): array
     {
         return ['mail', 'database'];
     }
 
-    public function toMail($notifiable)
+    public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Join Request Approved - ' . $this->group->name)
-            ->line('Your request to join ' . $this->group->name . ' has been approved!')
-            ->action('View Group', url('/groups/' . $this->group->id))
+            ->subject('Join Request Approved - ' . $this->groupTitle)
+            ->greeting('Hello ' . $notifiable->name . ',')
+            ->line('Your request to join "' . $this->groupTitle . '" has been approved!')
+            ->action('View Group', url('/groups/' . $this->groupId))
             ->line('Welcome to the group!');
     }
 
-    public function toDatabase($notifiable)
+    public function toDatabase($notifiable): array
     {
         return [
             'type' => 'group_join_approved',
-            'group_id' => $this->group->id,
-            'group_name' => $this->group->name,
-            'message' => 'Your request to join ' . $this->group->name . ' has been approved!',
+            'group_id' => $this->groupId,
+            'group_title' => $this->groupTitle,
+            'message' => 'Your request to join "' . $this->groupTitle . '" has been approved!',
+        ];
+    }
+
+    public function toArray($notifiable): array
+    {
+        return [
+            'type' => 'group_join_approved',
+            'group_id' => $this->groupId,
+            'message' => 'Join request approved for ' . $this->groupTitle,
         ];
     }
 }

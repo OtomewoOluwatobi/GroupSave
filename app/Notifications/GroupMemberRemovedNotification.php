@@ -2,29 +2,26 @@
 
 namespace App\Notifications;
 
-use App\Models\Group;
-use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
 
-class GroupMemberRemovedNotification extends Notification implements ShouldQueue
+class GroupMemberRemovedNotification extends BaseNotification
 {
-    use Queueable;
+    private int $groupId;
+    private string $groupTitle;
 
     /**
      * Create a new notification instance.
      */
-    public function __construct(private Group $group)
+    public function __construct(int $groupId, string $groupTitle)
     {
+        $this->groupId = $groupId;
+        $this->groupTitle = $groupTitle;
     }
 
     /**
      * Get the notification's delivery channels.
-     *
-     * @return array<int, string>
      */
-    public function via(object $notifiable): array
+    public function via($notifiable): array
     {
         return ['mail', 'database'];
     }
@@ -32,27 +29,39 @@ class GroupMemberRemovedNotification extends Notification implements ShouldQueue
     /**
      * Get the mail representation of the notification.
      */
-    public function toMail(object $notifiable): MailMessage
+    public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You have been removed from group: {$this->group->title}")
+            ->subject("You have been removed from group: {$this->groupTitle}")
             ->greeting("Hello {$notifiable->name},")
-            ->line("You have been removed from the group '{$this->group->title}' because your invitation was not accepted within the required timeframe.")
+            ->line("You have been removed from the group '{$this->groupTitle}' because your invitation was not accepted within the required timeframe.")
             ->line("A new member has been added to replace you.")
-            ->action('View Group', url("/groups/{$this->group->id}"))
+            ->action('View Group', url("/groups/{$this->groupId}"))
             ->line('Thank you for your interest in GroupSave!');
+    }
+
+    /**
+     * Get the database representation of the notification.
+     */
+    public function toDatabase($notifiable): array
+    {
+        return [
+            'type' => 'group_member_removed',
+            'group_id' => $this->groupId,
+            'group_title' => $this->groupTitle,
+            'message' => "You have been removed from group '{$this->groupTitle}' due to not accepting the invitation.",
+        ];
     }
 
     /**
      * Get the array representation of the notification.
      */
-    public function toArray(object $notifiable): array
+    public function toArray($notifiable): array
     {
         return [
             'type' => 'group_member_removed',
-            'group_id' => $this->group->id,
-            'group_title' => $this->group->title,
-            'message' => "You have been removed from group '{$this->group->title}' due to not accepting the invitation.",
+            'group_id' => $this->groupId,
+            'message' => "Removed from group: {$this->groupTitle}",
         ];
     }
 }
