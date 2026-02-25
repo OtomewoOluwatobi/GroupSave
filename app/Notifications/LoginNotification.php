@@ -2,10 +2,14 @@
 
 namespace App\Notifications;
 
+use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
-class LoginNotification extends BaseNotification
+class LoginNotification extends Notification
 {
+    use Queueable;
+
     private string $ipAddress;
     private string $userAgent;
     private string $loginTime;

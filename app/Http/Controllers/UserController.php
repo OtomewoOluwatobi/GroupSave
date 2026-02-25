@@ -324,14 +324,15 @@ class UserController extends Controller
                 ], 401);
             }
 
-            // Send login notification - temporarily disabled for debugging
-            // try {
-            //     $ipAddress = $request->ip() ?? 'Unknown';
-            //     $userAgent = $request->userAgent() ?? 'Unknown';
-            //     $user->notify(new LoginNotification($ipAddress, $userAgent));
-            // } catch (Exception $notifyError) {
-            //     Log::warning('Login notification error: ' . $notifyError->getMessage());
-            // }
+            // Send login notification
+            try {
+                $ipAddress = $request->ip() ?? 'Unknown';
+                $userAgent = $request->userAgent() ?? 'Unknown';
+                $user->notify(new LoginNotification($ipAddress, $userAgent));
+            } catch (\Throwable $notifyError) {
+                Log::warning('Login notification error: ' . $notifyError->getMessage());
+                // Don't fail login if notification fails
+            }
 
             return new Response([
                 'token' => $token,
