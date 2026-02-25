@@ -978,8 +978,10 @@
             cursor.style.cssText = `left:${mx-5}px;top:${my-5}px`;
         });
         (function animRing(){
-            rx += (mx-rx)*0.13; ry += (my-ry)*0.13;
-            ring.style.cssText = `left:${rx-19}px;top:${ry-19}px`;
+            if (!document.hidden) {
+                rx += (mx-rx)*0.13; ry += (my-ry)*0.13;
+                ring.style.cssText = `left:${rx-19}px;top:${ry-19}px`;
+            }
             requestAnimationFrame(animRing);
         })();
         document.querySelectorAll('a,button').forEach(el => {
@@ -1012,7 +1014,7 @@
 
         let darkMode = html.getAttribute('data-theme') === 'dark';
 
-        const parts = Array.from({length:90},()=>({
+        const parts = Array.from({length:40},()=>({
             x: Math.random()*innerWidth, y: Math.random()*innerHeight,
             size: Math.random()*1.4+0.3,
             vx:(Math.random()-.5)*.35, vy:(Math.random()-.5)*.35,
@@ -1037,6 +1039,7 @@
         updateParticleColors(html.getAttribute('data-theme'));
 
         function drawParticles(){
+            if (document.hidden) { requestAnimationFrame(drawParticles); return; }
             ctx.clearRect(0,0,canvas.width,canvas.height);
             parts.forEach(p => {
                 p.x+=p.vx; p.y+=p.vy;
@@ -1052,11 +1055,11 @@
                 for(let j=i+1;j<parts.length;j++){
                     const dx=parts[i].x-parts[j].x, dy=parts[i].y-parts[j].y;
                     const d=Math.sqrt(dx*dx+dy*dy);
-                    if(d<130){
+                    if(d<80){
                         ctx.beginPath();
                         ctx.moveTo(parts[i].x,parts[i].y);
                         ctx.lineTo(parts[j].x,parts[j].y);
-                        ctx.strokeStyle=`rgba(${colors.line},${0.07*(1-d/130)})`;
+                        ctx.strokeStyle=`rgba(${colors.line},${0.07*(1-d/80)})`;
                         ctx.lineWidth=0.5; ctx.stroke();
                     }
                 }
@@ -1181,8 +1184,12 @@
             return el;
         }
 
+        let feedTimeoutId = null;
         function addFeedItem() {
-            if (!feedRunning) return;
+            if (!feedRunning || document.hidden) {
+                feedTimeoutId = setTimeout(addFeedItem, 2000);
+                return;
+            }
             // Rotate queue
             if (feedQueue.length === 0) feedQueue = [...feedEvents];
             const event = feedQueue.shift();
@@ -1212,9 +1219,9 @@
                 if (t) t.textContent = timeLabels[activeItems.length - 1 - i] || `${(activeItems.length - i) * 2}m ago`;
             });
 
-            // Random interval between 1.8s and 3.6s
-            const delay = 1800 + Math.random() * 1800;
-            setTimeout(addFeedItem, delay);
+            // Random interval between 2.5s and 4.5s (slower to reduce load)
+            const delay = 2500 + Math.random() * 2000;
+            feedTimeoutId = setTimeout(addFeedItem, delay);
         }
 
         // Seed with initial items
