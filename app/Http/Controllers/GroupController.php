@@ -402,8 +402,12 @@ class GroupController extends Controller
                         // Remove the inactive member from group
                         $group->users()->detach($inactiveMember->id);
 
-                        // Notify the replaced member
-                        $inactiveMember->notify(new GroupMemberRemovedNotification($group->id, $group->title));
+                        // Notify the replaced member (queued, won't block)
+                        try {
+                            $inactiveMember->notify(new GroupMemberRemovedNotification($group->id, $group->title ?? ''));
+                        } catch (\Exception $e) {
+                            Log::warning('Failed to send member removed notification', ['error' => $e->getMessage()]);
+                        }
 
                         Log::info('Inactive member replaced in group', [
                             'replaced_user_id' => $inactiveMember->id,
@@ -426,10 +430,14 @@ class GroupController extends Controller
                     ->where('id', $joinRequest->id)
                     ->update(['status' => 'approved', 'updated_at' => now()]);
 
-                // Notify user about approval
+                // Notify user about approval (queued, won't block)
                 $user = User::find($joinRequest->user_id);
                 if ($user) {
-                    $user->notify(new GroupJoinApprovedNotification($group->id, $group->title));
+                    try {
+                        $user->notify(new GroupJoinApprovedNotification($group->id, $group->title ?? ''));
+                    } catch (\Exception $e) {
+                        Log::warning('Failed to send join approved notification', ['error' => $e->getMessage()]);
+                    }
                 }
 
                 Log::info('Join request approved', [
@@ -505,10 +513,14 @@ class GroupController extends Controller
                 ->where('id', $joinRequest->id)
                 ->update(['status' => 'rejected', 'updated_at' => now()]);
 
-            // Notify user about rejection
+            // Notify user about rejection (queued, won't block)
             $user = User::find($joinRequest->user_id);
             if ($user) {
-                $user->notify(new GroupJoinRejectedNotification($group->id, $group->title));
+                try {
+                    $user->notify(new GroupJoinRejectedNotification($group->id, $group->title ?? ''));
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
+                }
             }
 
             Log::info('Join request rejected', [
