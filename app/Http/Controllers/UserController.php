@@ -290,10 +290,21 @@ class UserController extends Controller
             // Find user by email
             $user = User::where('email', $credentials['email'])->first();
 
-            // Check if user exists and password is correct
-            if (!$user || !Hash::check($credentials['password'], $user->password)) {
+            // Check if user exists
+            if (!$user) {
+                Log::warning('Login failed: User not found', ['email' => $credentials['email']]);
                 return new Response([
-                    'error' => 'Invalid credentials'
+                    'error' => 'Invalid credentials',
+                    'debug' => 'user_not_found'
+                ], 401);
+            }
+
+            // Check password
+            if (!Hash::check($credentials['password'], $user->password)) {
+                Log::warning('Login failed: Password mismatch', ['email' => $credentials['email']]);
+                return new Response([
+                    'error' => 'Invalid credentials',
+                    'debug' => 'password_mismatch'
                 ], 401);
             }
 
@@ -306,8 +317,10 @@ class UserController extends Controller
 
             // Use JWT guard specifically
             if (!$token = Auth::guard('api')->attempt($credentials)) {
+                Log::warning('Login failed: JWT attempt failed', ['email' => $credentials['email']]);
                 return new Response([
-                    'error' => 'Invalid credentials'
+                    'error' => 'Invalid credentials',
+                    'debug' => 'jwt_failed'
                 ], 401);
             }
 
@@ -323,7 +336,7 @@ class UserController extends Controller
             return new Response([
                 'token' => $token,
                 'user' => $user,
-                'expires_in' => config('jwt.ttl') * 60,
+                'expires_in' => config('jwt.ttl') * 240,
             ], 200);
         } catch (Exception $e) {
             Log::error('Login error: ' . $e->getMessage());
