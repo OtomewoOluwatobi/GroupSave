@@ -582,9 +582,31 @@ class GroupController extends Controller
             return response()->json(['message' => 'Group not found'], 404);
         }
 
+        // Load join requests with user data (only for group owner)
+        $joinRequests = [];
+        if ($group->owner_id === Auth::id()) {
+            $joinRequests = DB::table('group_join_requests')
+                ->where('group_id', $id)
+                ->join('users', 'group_join_requests.user_id', '=', 'users.id')
+                ->select(
+                    'group_join_requests.id',
+                    'group_join_requests.status',
+                    'group_join_requests.created_at',
+                    'group_join_requests.updated_at',
+                    'users.id as user_id',
+                    'users.name as user_name',
+                    'users.email as user_email'
+                )
+                ->orderBy('group_join_requests.created_at', 'desc')
+                ->get();
+        }
+
         return response()->json([
             'message' => 'Group retrieved successfully',
-            'data' => $group
+            'data' => [
+                'group' => $group,
+                'join_requests' => $joinRequests,
+            ]
         ], 200);
     }
 
