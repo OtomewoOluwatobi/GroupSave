@@ -257,14 +257,22 @@ class GroupController extends Controller
                 ]);
 
                 // Notify group owner/admin about the join request
-                $groupOwner = User::find($group->owner_id);
-                if ($groupOwner) {
-                    $groupOwner->notify(new GroupJoinRequestNotification(
-                        $group->id,
-                        $group->title,
-                        $user->id,
-                        $user->name
-                    ));
+                try {
+                    $groupOwner = User::find($group->owner_id);
+                    if ($groupOwner) {
+                        $groupOwner->notify(new GroupJoinRequestNotification(
+                            $group->id,
+                            $group->title,
+                            $user->id,
+                            $user->name
+                        ));
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send join request notification', [
+                        'user_id' => $user->id,
+                        'group_id' => $group->id,
+                        'error' => $e->getMessage()
+                    ]);
                 }
 
                 Log::info('User sent join request to group', [
