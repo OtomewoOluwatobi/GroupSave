@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 
-class GroupMemberRemovedNotification extends BaseNotification
+class GroupMemberRemovedNotification extends DatabaseNotification
 {
     private int $groupId;
     private string $groupTitle;

@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 
-class GroupInvitationAcceptedNotification extends BaseNotification
+class GroupInvitationAcceptedNotification extends DatabaseNotification
 {
     /**
      * Store only scalar values to avoid serialization issues

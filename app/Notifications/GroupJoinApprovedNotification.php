@@ -4,7 +4,7 @@ namespace App\Notifications;
 
 use Illuminate\Notifications\Messages\MailMessage;
 
-class GroupJoinApprovedNotification extends BaseNotification
+class GroupJoinApprovedNotification extends DatabaseNotification
 {
     private int $groupId;
     private string $groupTitle;
