@@ -380,7 +380,8 @@ class GroupController extends Controller
             return response()->json(['message' => 'Join request is no longer pending'], 400);
         }
 
-        // Check if group is at capacity
+        // Check if group is at capacity (total members including pending invitations)
+        $totalMembers = $group->users()->count();
         $activeMembers = $group->users()->where('group_user.is_active', true)->count();
         $totalUsers = $group->total_users;
         $replacedMemberId = null;
@@ -388,8 +389,8 @@ class GroupController extends Controller
         try {
             DB::beginTransaction();
 
-            // If group is at capacity, remove an inactive member
-            if ($activeMembers >= $totalUsers) {
+            // If total members (active + pending) equals or exceeds capacity, remove an inactive member
+            if ($totalMembers >= $totalUsers) {
                 $inactiveMember = $group->users()
                     ->where('group_user.is_active', false)
                     ->orderBy('group_user.created_at', 'asc')
@@ -404,6 +405,12 @@ class GroupController extends Controller
                         'group_id' => $group->id,
                         'new_user_id' => $joinRequest->user_id
                     ]);
+                } else {
+                    // No inactive members to replace and group is full with active members
+                    DB::rollBack();
+                    return response()->json([
+                        'message' => 'Group is at full capacity with no pending invitations to replace',
+                    ], 400);
                 }
             }
 
@@ -451,7 +458,10 @@ class GroupController extends Controller
                     'request_id' => $requestId,
                     'status' => 'approved',
                     'new_member_id' => $joinRequest->user_id,
-                    'group_capacity_full' => $activeMembers >= $totalUsers
+                    'replaced_member_id' => $replacedMemberId,
+                    'total_members' => $totalMembers,
+                    'active_members' => $activeMembers + 1, // +1 for newly approved member
+                    'group_capacity' => $totalUsers
                 ]
             ], 200);
 
