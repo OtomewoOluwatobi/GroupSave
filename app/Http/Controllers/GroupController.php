@@ -11,6 +11,7 @@ use App\Notifications\GroupJoinApprovedNotification;
 use App\Notifications\GroupJoinRequestNotification;
 use App\Notifications\GroupJoinRejectedNotification;
 use App\Notifications\GroupMemberRemovedNotification;
+use App\Services\NotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -152,7 +153,7 @@ class GroupController extends Controller
     {
         // Double check to ensure we're not sending to the creator
         if ($user->id !== Auth::id()) {
-            $user->notify(new GroupInvitationNotification($group, $user, $generatedPassword));
+            NotificationService::send($user, new GroupInvitationNotification($group, $user, $generatedPassword));
         }
     }
 
@@ -188,9 +189,7 @@ class GroupController extends Controller
 
             // Send notification to group admin/owner
             $groupOwner = User::find($group->owner_id);
-            if ($groupOwner) {
-                $groupOwner->notify(new GroupInvitationAcceptedNotification($group, $user));
-            }
+            NotificationService::send($groupOwner, new GroupInvitationAcceptedNotification($group, $user));
 
             return response()->json([
                 'message' => 'Invitation accepted successfully',
@@ -257,23 +256,13 @@ class GroupController extends Controller
                 ]);
 
                 // Notify group owner/admin about the join request
-                try {
-                    $groupOwner = User::find($group->owner_id);
-                    if ($groupOwner) {
-                        $groupOwner->notify(new GroupJoinRequestNotification(
-                            $group->id,
-                            $group->title,
-                            $user->id,
-                            $user->name
-                        ));
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send join request notification', [
-                        'user_id' => $user->id,
-                        'group_id' => $group->id,
-                        'error' => $e->getMessage()
-                    ]);
-                }
+                $groupOwner = User::find($group->owner_id);
+                NotificationService::send($groupOwner, new GroupJoinRequestNotification(
+                    $group->id,
+                    $group->title,
+                    $user->id,
+                    $user->name
+                ));
 
                 Log::info('User sent join request to group', [
                     'user_id' => $user->id,
@@ -462,24 +451,14 @@ class GroupController extends Controller
                 ]
             ], 200);
 
-            // Send notifications after response (deferred)
-            defer(function () use ($approvedUserId, $groupId, $groupTitle, $replacedMemberId) {
-                try {
-                    $user = User::find($approvedUserId);
-                    if ($user && $groupTitle) {
-                        $user->notify(new GroupJoinApprovedNotification($groupId, $groupTitle));
-                    }
+            // Send notifications (deferred via NotificationService)
+            $user = User::find($approvedUserId);
+            NotificationService::send($user, new GroupJoinApprovedNotification($groupId, $groupTitle));
 
-                    if ($replacedMemberId) {
-                        $replacedUser = User::find($replacedMemberId);
-                        if ($replacedUser && $groupTitle) {
-                            $replacedUser->notify(new GroupMemberRemovedNotification($groupId, $groupTitle));
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send approval notifications', ['error' => $e->getMessage()]);
-                }
-            });
+            if ($replacedMemberId) {
+                $replacedUser = User::find($replacedMemberId);
+                NotificationService::send($replacedUser, new GroupMemberRemovedNotification($groupId, $groupTitle));
+            }
 
             return $response;
 
@@ -558,17 +537,9 @@ class GroupController extends Controller
                 'data' => ['request_id' => $requestId, 'status' => 'rejected']
             ], 200);
 
-            // Send notification after response (deferred)
-            defer(function () use ($rejectedUserId, $groupId, $groupTitle) {
-                try {
-                    $user = User::find($rejectedUserId);
-                    if ($user && $groupTitle) {
-                        $user->notify(new GroupJoinRejectedNotification($groupId, $groupTitle));
-                    }
-                } catch (\Exception $e) {
-                    Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
-                }
-            });
+            // Send notification (deferred via NotificationService)
+            $user = User::find($rejectedUserId);
+            NotificationService::send($user, new GroupJoinRejectedNotification($groupId, $groupTitle));
 
             return $response;
 

@@ -6,7 +6,9 @@ use App\Models\User;
 use App\Notifications\VerifyEmailNotification;
 use App\Notifications\LoginNotification;
 use App\Notifications\PasswordChangedNotification;
+use App\Notifications\PasswordResetNotification;
 use App\Notifications\AccountUpdatedNotification;
+use App\Services\NotificationService;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -107,12 +109,7 @@ class UserController extends Controller
             }
 
             // Send onboarding notification (outside transaction)
-            try {
-                $user->notify(new UserOnboardingNotification());
-            } catch (Exception $notifyError) {
-                Log::warning('Notification error: ' . $notifyError->getMessage());
-                // Continue - notification error shouldn't block registration
-            }
+            NotificationService::send($user, new UserOnboardingNotification());
 
             return response()->json([
                 'message' => 'User registration successful',
@@ -325,14 +322,9 @@ class UserController extends Controller
             }
 
             // Send login notification
-            try {
-                $ipAddress = $request->ip() ?? 'Unknown';
-                $userAgent = $request->userAgent() ?? 'Unknown';
-                $user->notify(new LoginNotification($ipAddress, $userAgent));
-            } catch (\Throwable $notifyError) {
-                Log::warning('Login notification error: ' . $notifyError->getMessage());
-                // Don't fail login if notification fails
-            }
+            $ipAddress = $request->ip() ?? 'Unknown';
+            $userAgent = $request->userAgent() ?? 'Unknown';
+            NotificationService::send($user, new LoginNotification($ipAddress, $userAgent));
 
             return new Response([
                 'token' => $token,
@@ -432,12 +424,7 @@ class UserController extends Controller
                 'password_reset_expires_at' => $expiresAt,
             ]);
 
-            try {
-                $user->notify(new \App\Notifications\PasswordResetNotification($user->name, $user->email, $resetCode, $user->id));
-            } catch (Exception $e) {
-                Log::warning('Password reset notification error: ' . $e->getMessage());
-                // Don't fail the request, the code is still saved
-            }
+            NotificationService::send($user, new PasswordResetNotification($user->name, $user->email, $resetCode, $user->id));
 
             return response()->json([
                 'status' => 'success',
@@ -600,11 +587,7 @@ class UserController extends Controller
             ]);
 
             // Send password changed notification
-            try {
-                $user->notify(new PasswordChangedNotification($user->name, 'reset'));
-            } catch (Exception $notifyError) {
-                Log::warning('Password changed notification error: ' . $notifyError->getMessage());
-            }
+            NotificationService::send($user, new PasswordChangedNotification($user->name, 'reset'));
 
             return response()->json([
                 'status' => 'success',
@@ -859,7 +842,7 @@ class UserController extends Controller
                 ], 429);
             }
 
-            $user->notify(new VerifyEmailNotification());
+            NotificationService::send($user, new VerifyEmailNotification());
             $user->update(['email_verification_sent_at' => now()]);
 
             Log::info('Verification email resent', [
@@ -978,11 +961,7 @@ class UserController extends Controller
             ]);
 
             // Send password changed notification
-            try {
-                $user->notify(new PasswordChangedNotification($user->name, 'change'));
-            } catch (Exception $notifyError) {
-                Log::warning('Password changed notification error: ' . $notifyError->getMessage());
-            }
+            NotificationService::send($user, new PasswordChangedNotification($user->name, 'change'));
 
             Log::info('Password changed', ['user_id' => $user->id]);
 
@@ -1103,19 +1082,11 @@ class UserController extends Controller
             if ($emailChanged) {
                 $user->update(['email_verified_at' => null]);
                 // Send new verification email
-                try {
-                    $user->notify(new VerifyEmailNotification());
-                } catch (Exception $e) {
-                    Log::warning('Verification email error after profile update: ' . $e->getMessage());
-                }
+                NotificationService::send($user, new VerifyEmailNotification());
             }
 
             // Send account updated notification
-            try {
-                $user->notify(new AccountUpdatedNotification($user->name, $updatedFields, $emailChanged));
-            } catch (Exception $notifyError) {
-                Log::warning('Account updated notification error: ' . $notifyError->getMessage());
-            }
+            NotificationService::send($user, new AccountUpdatedNotification($user->name, $updatedFields, $emailChanged));
 
             Log::info('Profile updated', [
                 'user_id' => $user->id,
