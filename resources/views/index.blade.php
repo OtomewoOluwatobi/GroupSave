@@ -3021,7 +3021,7 @@
 
                 <div class="price-body">
                     <div class="price-tier tier-growth">Growth</div>
-                    <div class="price-name">Scale Your Ajo</div>
+                    <div class="price-name">Scale Your Growth</div>
                     <div class="price-tagline">For serious, committed savers who run multiple groups</div>
 
                     <div class="price-display">
@@ -3120,9 +3120,6 @@
                         <li><span class="chk-v">✦</span> Organisation-wide dashboard</li>
                         <li><span class="chk-v">✦</span> Multi-group oversight tools</li>
                         <li><span class="chk-v">✦</span> Dedicated account manager</li>
-                        <li><span class="chk-v">✦</span> SLA support guarantee</li>
-                        <li><span class="chk-v">✦</span> Data export API access</li>
-                        <li><span class="chk-v">✦</span> Optional white-label domain</li>
                     </ul>
 
                     <div class="price-designed">
