@@ -3021,7 +3021,7 @@
 
                 <div class="price-body">
                     <div class="price-tier tier-growth">Growth</div>
-                    <div class="price-name">Scale Your Savings</div>
+                    <div class="price-name">Scale Your Ajo</div>
                     <div class="price-tagline">For serious, committed savers who run multiple groups</div>
 
                     <div class="price-display">
