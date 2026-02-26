@@ -3120,6 +3120,9 @@
                         <li><span class="chk-v">✦</span> Organisation-wide dashboard</li>
                         <li><span class="chk-v">✦</span> Multi-group oversight tools</li>
                         <li><span class="chk-v">✦</span> Dedicated account manager</li>
+                        <li><span class="chk-v">✦</span> SLA support guarantee</li>
+                        <li><span class="chk-v">✦</span> Data export API access</li>
+                        <li><span class="chk-v">✦</span> Optional white-label domain</li>
                     </ul>
 
                     <div class="price-designed">
