@@ -429,41 +429,51 @@ class GroupController extends Controller
 
             DB::commit();
 
-            // Send notifications AFTER commit (non-blocking)
-            try {
-                $user = User::find($joinRequest->user_id);
-                if ($user && $group->title) {
-                    $user->notify(new GroupJoinApprovedNotification($group->id, $group->title));
-                }
-
-                if ($replacedMemberId) {
-                    $replacedUser = User::find($replacedMemberId);
-                    if ($replacedUser && $group->title) {
-                        $replacedUser->notify(new GroupMemberRemovedNotification($group->id, $group->title));
-                    }
-                }
-            } catch (\Exception $e) {
-                Log::warning('Failed to send approval notifications', ['error' => $e->getMessage()]);
-            }
+            // Store data for deferred notifications
+            $approvedUserId = $joinRequest->user_id;
+            $groupId = $group->id;
+            $groupTitle = $group->title;
 
             Log::info('Join request approved', [
-                'user_id' => $joinRequest->user_id,
-                'group_id' => $group->id,
+                'user_id' => $approvedUserId,
+                'group_id' => $groupId,
                 'replaced_member_id' => $replacedMemberId
             ]);
 
-            return response()->json([
+            // Return response first, then send notifications
+            $response = response()->json([
                 'message' => 'Join request approved successfully',
                 'data' => [
                     'request_id' => $requestId,
                     'status' => 'approved',
-                    'new_member_id' => $joinRequest->user_id,
+                    'new_member_id' => $approvedUserId,
                     'replaced_member_id' => $replacedMemberId,
                     'total_members' => $totalMembers,
-                    'active_members' => $activeMembers + 1, // +1 for newly approved member
+                    'active_members' => $activeMembers + 1,
                     'group_capacity' => $totalUsers
                 ]
             ], 200);
+
+            // Send notifications after response (deferred)
+            defer(function () use ($approvedUserId, $groupId, $groupTitle, $replacedMemberId) {
+                try {
+                    $user = User::find($approvedUserId);
+                    if ($user && $groupTitle) {
+                        $user->notify(new GroupJoinApprovedNotification($groupId, $groupTitle));
+                    }
+
+                    if ($replacedMemberId) {
+                        $replacedUser = User::find($replacedMemberId);
+                        if ($replacedUser && $groupTitle) {
+                            $replacedUser->notify(new GroupMemberRemovedNotification($groupId, $groupTitle));
+                        }
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send approval notifications', ['error' => $e->getMessage()]);
+                }
+            });
+
+            return $response;
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -524,25 +534,35 @@ class GroupController extends Controller
                 ->where('id', $joinRequest->id)
                 ->update(['status' => 'rejected', 'updated_at' => now()]);
 
-            // Send notification AFTER update (non-blocking)
-            try {
-                $user = User::find($joinRequest->user_id);
-                if ($user && $group->title) {
-                    $user->notify(new GroupJoinRejectedNotification($group->id, $group->title));
-                }
-            } catch (\Exception $e) {
-                Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
-            }
+            // Store data for deferred notification
+            $rejectedUserId = $joinRequest->user_id;
+            $groupId = $group->id;
+            $groupTitle = $group->title;
 
             Log::info('Join request rejected', [
-                'user_id' => $joinRequest->user_id,
-                'group_id' => $group->id,
+                'user_id' => $rejectedUserId,
+                'group_id' => $groupId,
             ]);
 
-            return response()->json([
+            // Return response first
+            $response = response()->json([
                 'message' => 'Join request rejected successfully',
                 'data' => ['request_id' => $requestId, 'status' => 'rejected']
             ], 200);
+
+            // Send notification after response (deferred)
+            defer(function () use ($rejectedUserId, $groupId, $groupTitle) {
+                try {
+                    $user = User::find($rejectedUserId);
+                    if ($user && $groupTitle) {
+                        $user->notify(new GroupJoinRejectedNotification($groupId, $groupTitle));
+                    }
+                } catch (\Exception $e) {
+                    Log::warning('Failed to send join rejected notification', ['error' => $e->getMessage()]);
+                }
+            });
+
+            return $response;
 
         } catch (\Exception $e) {
             Log::error('Failed to reject join request', [
