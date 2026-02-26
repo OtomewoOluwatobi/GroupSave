@@ -113,39 +113,3 @@ class NotificationService
         return self::isNotificationsEnabled();
     }
 }
-    }
-
-    /**
-     * Send notification to multiple users safely
-     *
-     * @param iterable $notifiables Collection of users to notify
-     * @param Notification $notification The notification instance
-     * @param bool $defer Whether to defer notifications until after response
-     * @return array Results for each notifiable
-     */
-    public static function sendToMany(iterable $notifiables, Notification $notification, bool $defer = true): array
-    {
-        $results = [];
-
-        foreach ($notifiables as $notifiable) {
-            $results[] = [
-                'notifiable_id' => $notifiable->id ?? null,
-                'success' => self::send($notifiable, $notification, $defer)
-            ];
-        }
-
-        return $results;
-    }
-
-    /**
-     * Send notification immediately without deferring (use sparingly)
-     *
-     * @param mixed $notifiable
-     * @param Notification $notification
-     * @return bool
-     */
-    public static function sendNow($notifiable, Notification $notification): bool
-    {
-        return self::send($notifiable, $notification, defer: false);
-    }
-}
