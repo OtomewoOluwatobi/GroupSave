@@ -255,22 +255,14 @@ class GroupController extends Controller
                     'updated_at' => now()
                 ]);
 
-                // Notify group owner/admin about the join request
-                $groupOwner = User::find($group->owner_id);
-                NotificationService::send($groupOwner, new GroupJoinRequestNotification(
-                    $group->id,
-                    $group->title,
-                    $user->id,
-                    $user->name
-                ));
-
                 Log::info('User sent join request to group', [
                     'user_id' => $user->id,
                     'group_id' => $group->id,
                 ]);
             });
 
-            return response()->json([
+            // Return response first
+            $response = response()->json([
                 'message' => 'Join request sent successfully',
                 'data' => [
                     'group_id' => $group->id,
@@ -278,6 +270,17 @@ class GroupController extends Controller
                     'status' => 'pending'
                 ]
             ], 201);
+
+            // Notify group owner/admin AFTER transaction (deferred)
+            $groupOwner = User::find($group->owner_id);
+            NotificationService::send($groupOwner, new GroupJoinRequestNotification(
+                $group->id,
+                $group->title,
+                $user->id,
+                $user->name
+            ));
+
+            return $response;
         } catch (\Exception $e) {
             Log::error('Failed to send join request', [
                 'user_id' => $user->id,
