@@ -32,7 +32,8 @@ class LoginNotification extends Notification
     public function via($notifiable): array
     {
         // Only send email for new device logins
-        return $this->isNewDevice ? ['mail', 'database'] : ['database'];
+        // Database first to ensure notification is saved before attempting email
+        return $this->isNewDevice ? ['database', 'mail'] : ['database'];
     }
 
     /**

@@ -28,7 +28,8 @@ class AccountUpdatedNotification extends BaseNotification
     public function via($notifiable): array
     {
         // Send email only for sensitive changes (email change)
-        return $this->emailChanged ? ['mail', 'database'] : ['database'];
+        // Database first to ensure notification is saved before attempting email
+        return $this->emailChanged ? ['database', 'mail'] : ['database'];
     }
 
     /**
