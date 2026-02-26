@@ -2913,6 +2913,42 @@
 
             <!-- ── STARTER ── -->
             <div class="price-card">
+                <!-- SVG: small seed/sprout scene -->
+                <div class="price-illustration">
+                    <svg viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Ground -->
+                        <ellipse cx="170" cy="155" rx="120" ry="18" fill="rgba(74,222,128,0.06)" />
+                        <!-- Soil mound -->
+                        <path d="M110 155 Q170 138 230 155" stroke="rgba(74,222,128,0.18)" stroke-width="1.5"
+                            fill="none" />
+                        <!-- Stem -->
+                        <path d="M170 155 Q168 130 170 100" stroke="rgba(74,222,128,0.5)" stroke-width="2"
+                            stroke-linecap="round" />
+                        <!-- Leaf left -->
+                        <path d="M170 120 Q148 105 142 85 Q160 88 170 108" fill="rgba(74,222,128,0.25)"
+                            stroke="rgba(74,222,128,0.4)" stroke-width="1" />
+                        <!-- Leaf right -->
+                        <path d="M170 110 Q192 95 198 75 Q180 78 170 98" fill="rgba(74,222,128,0.2)"
+                            stroke="rgba(74,222,128,0.35)" stroke-width="1" />
+                        <!-- Bud top -->
+                        <ellipse cx="170" cy="97" rx="7" ry="9" fill="rgba(74,222,128,0.35)"
+                            stroke="rgba(74,222,128,0.6)" stroke-width="1" />
+                        <!-- Sparkles -->
+                        <circle cx="200" cy="72" r="2" fill="rgba(74,222,128,0.5)" />
+                        <circle cx="215" cy="88" r="1.2" fill="rgba(74,222,128,0.35)" />
+                        <circle cx="140" cy="68" r="1.8" fill="rgba(74,222,128,0.4)" />
+                        <circle cx="128" cy="84" r="1" fill="rgba(74,222,128,0.3)" />
+                        <!-- Coin left -->
+                        <circle cx="125" cy="148" r="11" fill="rgba(74,222,128,0.1)" stroke="rgba(74,222,128,0.3)"
+                            stroke-width="1" />
+                        <text x="125" y="153" text-anchor="middle" fill="rgba(74,222,128,0.6)" font-size="10"
+                            font-weight="700">£</text>
+                        <!-- Ground dots -->
+                        <circle cx="145" cy="157" r="2" fill="rgba(74,222,128,0.15)" />
+                        <circle cx="200" cy="158" r="1.5" fill="rgba(74,222,128,0.12)" />
+                        <circle cx="220" cy="155" r="2.5" fill="rgba(74,222,128,0.1)" />
+                    </svg>
+                </div>
 
                 <div class="price-body">
                     <div class="price-tier tier-starter">Starter</div>
@@ -2948,6 +2984,41 @@
             <div class="price-card featured">
                 <div class="popular-badge">⭐ Most Popular</div>
 
+                <!-- SVG: rising bar chart / growth scene -->
+                <div class="price-illustration" style="padding-top:18px;">
+                    <svg viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Glow backdrop -->
+                        <ellipse cx="170" cy="150" rx="100" ry="25" fill="rgba(200,164,90,0.07)" />
+                        <!-- Bar chart bars -->
+                        <rect x="80" y="120" width="28" height="35" rx="5" fill="rgba(200,164,90,0.15)"
+                            stroke="rgba(200,164,90,0.3)" stroke-width="1" />
+                        <rect x="118" y="100" width="28" height="55" rx="5" fill="rgba(200,164,90,0.2)"
+                            stroke="rgba(200,164,90,0.35)" stroke-width="1" />
+                        <rect x="156" y="74" width="28" height="81" rx="5" fill="rgba(200,164,90,0.28)"
+                            stroke="rgba(200,164,90,0.5)" stroke-width="1" />
+                        <rect x="194" y="55" width="28" height="100" rx="5" fill="rgba(200,164,90,0.38)"
+                            stroke="rgba(200,164,90,0.65)" stroke-width="1.5" />
+                        <rect x="232" y="38" width="28" height="117" rx="5" fill="rgba(200,164,90,0.55)"
+                            stroke="rgba(200,164,90,0.8)" stroke-width="1.5" />
+                        <!-- Trend line -->
+                        <polyline points="94,125 132,105 170,79 208,60 246,43" stroke="rgba(200,164,90,0.9)"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+                        <!-- Arrow up on trend -->
+                        <polygon points="246,35 240,48 252,48" fill="rgba(200,164,90,0.9)" />
+                        <!-- Base line -->
+                        <line x1="70" y1="155" x2="270" y2="155" stroke="rgba(200,164,90,0.2)" stroke-width="1" />
+                        <!-- Sparkle dots -->
+                        <circle cx="246" cy="43" r="5" fill="var(--gold)" opacity="0.85" />
+                        <circle cx="298" cy="60" r="2" fill="rgba(200,164,90,0.5)" />
+                        <circle cx="310" cy="80" r="1.5" fill="rgba(200,164,90,0.3)" />
+                        <!-- £ floating label -->
+                        <rect x="255" y="28" width="34" height="18" rx="6" fill="rgba(200,164,90,0.15)"
+                            stroke="rgba(200,164,90,0.4)" stroke-width="1" />
+                        <text x="272" y="41" text-anchor="middle" fill="rgba(200,164,90,0.9)" font-size="10"
+                            font-weight="800">+£</text>
+                    </svg>
+                </div>
+
                 <div class="price-body">
                     <div class="price-tier tier-growth">Growth</div>
                     <div class="price-name">Scale Your Savings</div>
@@ -2972,7 +3043,7 @@
                         <li><span class="chk-gold">✦</span> Priority support</li>
                     </ul>
 
-                    <div class="price-note gold-note mb-5">
+                    <div class="price-note gold-note">
                         Removes all friction. Ideal if you coordinate multiple groups or want a fully professional
                         experience.
                     </div>
@@ -2984,6 +3055,52 @@
             <!-- ── ENTERPRISE ── -->
             <div class="price-card">
                 <!-- SVG: city/network/org scene -->
+                <div class="price-illustration">
+                    <svg viewBox="0 0 340 180" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Glow -->
+                        <ellipse cx="170" cy="152" rx="110" ry="22" fill="rgba(124,92,232,0.07)" />
+                        <!-- Buildings -->
+                        <rect x="55" y="90" width="32" height="65" rx="3" fill="rgba(124,92,232,0.12)"
+                            stroke="rgba(124,92,232,0.25)" stroke-width="1" />
+                        <rect x="62" y="98" width="7" height="7" rx="1" fill="rgba(124,92,232,0.3)" />
+                        <rect x="73" y="98" width="7" height="7" rx="1" fill="rgba(124,92,232,0.3)" />
+                        <rect x="62" y="110" width="7" height="7" rx="1" fill="rgba(124,92,232,0.25)" />
+                        <rect x="73" y="110" width="7" height="7" rx="1" fill="rgba(124,92,232,0.4)" />
+                        <!-- Tall centre building -->
+                        <rect x="140" y="55" width="60" height="100" rx="4" fill="rgba(124,92,232,0.16)"
+                            stroke="rgba(124,92,232,0.35)" stroke-width="1.5" />
+                        <!-- Centre windows -->
+                        <rect x="149" y="65" width="10" height="10" rx="2" fill="rgba(124,92,232,0.45)" />
+                        <rect x="163" y="65" width="10" height="10" rx="2" fill="rgba(167,139,250,0.5)" />
+                        <rect x="177" y="65" width="10" height="10" rx="2" fill="rgba(124,92,232,0.35)" />
+                        <rect x="149" y="82" width="10" height="10" rx="2" fill="rgba(167,139,250,0.4)" />
+                        <rect x="163" y="82" width="10" height="10" rx="2" fill="rgba(124,92,232,0.5)" />
+                        <rect x="177" y="82" width="10" height="10" rx="2" fill="rgba(167,139,250,0.35)" />
+                        <rect x="149" y="99" width="10" height="10" rx="2" fill="rgba(124,92,232,0.3)" />
+                        <rect x="177" y="99" width="10" height="10" rx="2" fill="rgba(167,139,250,0.45)" />
+                        <!-- Antenna -->
+                        <line x1="170" y1="55" x2="170" y2="36" stroke="rgba(167,139,250,0.6)" stroke-width="1.5" />
+                        <circle cx="170" cy="34" r="4" fill="rgba(167,139,250,0.7)" stroke="rgba(167,139,250,0.9)"
+                            stroke-width="1" />
+                        <!-- Right building -->
+                        <rect x="253" y="100" width="32" height="55" rx="3" fill="rgba(124,92,232,0.1)"
+                            stroke="rgba(124,92,232,0.22)" stroke-width="1" />
+                        <rect x="260" y="108" width="7" height="7" rx="1" fill="rgba(124,92,232,0.3)" />
+                        <rect x="271" y="108" width="7" height="7" rx="1" fill="rgba(167,139,250,0.35)" />
+                        <rect x="260" y="120" width="7" height="7" rx="1" fill="rgba(124,92,232,0.25)" />
+                        <!-- Network connection lines -->
+                        <line x1="87" y1="120" x2="140" y2="120" stroke="rgba(167,139,250,0.2)" stroke-width="1"
+                            stroke-dasharray="4,3" />
+                        <line x1="200" y1="120" x2="253" y2="120" stroke="rgba(167,139,250,0.2)" stroke-width="1"
+                            stroke-dasharray="4,3" />
+                        <!-- Ground -->
+                        <line x1="45" y1="155" x2="295" y2="155" stroke="rgba(124,92,232,0.15)" stroke-width="1" />
+                        <!-- Crown above building -->
+                        <path d="M156,52 L162,42 L170,50 L178,42 L184,52" stroke="rgba(200,164,90,0.7)"
+                            stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                    </svg>
+                </div>
+
                 <div class="price-body">
                     <span class="price-tag-enterprise">Premium · Annual</span>
                     <div class="price-tier tier-ent" style="margin-top:8px;">Enterprise</div>
