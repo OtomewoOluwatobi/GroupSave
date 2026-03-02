@@ -3,9 +3,14 @@
 namespace App\Notifications;
 
 use App\Models\User;
+use Illuminate\Bus\Queueable;
+use Illuminate\Notifications\Messages\MailMessage;
+use Illuminate\Notifications\Notification;
 
-class ReferralSignupNotification
+class ReferralSignupNotification extends Notification
 {
+    use Queueable;
+
     public User $referredUser;
 
     public function __construct(User $referredUser)
@@ -14,18 +19,47 @@ class ReferralSignupNotification
     }
 
     /**
-     * Get the notification's data array.
+     * Get the notification's delivery channels.
      */
-    public function toArray(): array
+    public function via($notifiable): array
+    {
+        return ['database', 'mail'];
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail($notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('Someone Used Your Referral Code!')
+            ->greeting('Hello ' . $notifiable->name . '!')
+            ->line("{$this->referredUser->name} just signed up using your referral code.")
+            ->line('Once they verify their account, you\'ll earn referral points!')
+            ->line('Keep sharing your code to earn more rewards.')
+            ->action('View Your Referrals', url('/referrals'))
+            ->salutation('Happy saving, GroupSave Team');
+    }
+
+    /**
+     * Get the database representation of the notification.
+     */
+    public function toDatabase($notifiable): array
     {
         return [
+            'type' => 'referral_signup',
             'title' => 'New Referral Signup!',
             'message' => "{$this->referredUser->name} signed up using your referral code. Points will be awarded once they verify their account.",
-            'type' => 'referral_signup',
-            'data' => [
-                'referred_user_id' => $this->referredUser->id,
-                'referred_user_name' => $this->referredUser->name,
-            ],
+            'referred_user_id' => $this->referredUser->id,
+            'referred_user_name' => $this->referredUser->name,
         ];
+    }
+
+    /**
+     * Get the array representation of the notification.
+     */
+    public function toArray($notifiable): array
+    {
+        return $this->toDatabase($notifiable);
     }
 }
