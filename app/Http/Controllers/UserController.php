@@ -24,6 +24,7 @@ use App\Notifications\UserOnboardingNotification;
 use App\Models\Group;
 use App\Services\ReferralService;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Exception;
 
 class UserController extends Controller
@@ -80,16 +81,26 @@ class UserController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
-        try {
-            // Validate user input
-            $validatedData = $request->validate([
-                'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
-                'mobile' => ['required', 'string', 'max:255', 'unique:' . User::class],
-                'password' => ['required', 'confirmed', Password::defaults()],
-                'referral_code' => ['nullable', 'string', 'max:10'],
-            ]);
+        // Validate FIRST - before try/catch so validation errors return proper format
+        $validator = Validator::make($request->all(), [
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
+            'mobile' => ['required', 'string', 'max:255', 'unique:users,mobile'],
+            'password' => ['required', 'confirmed', Password::defaults()],
+            'referral_code' => ['nullable', 'string', 'max:10'],
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json([
+                'error' => 'Validation failed',
+                'message' => 'Please check your input',
+                'errors' => $validator->errors(),
+            ], 422);
+        }
+
+        $validatedData = $validator->validated();
+
+        try {
             // Track referral data for notification after commit
             $referralData = null;
 
