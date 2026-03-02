@@ -812,6 +812,71 @@ class UserController extends Controller
     }
 
     /**
+     * Refresh the authentication token.
+     *
+     * @return JsonResponse
+     */
+    /**
+     * @OA\Post(
+     *     path="/api/auth/refresh",
+     *     tags={"Authentication"},
+     *     summary="Refresh authentication token",
+     *     description="Refreshes the JWT token and returns a new one with extended expiration",
+     *     security={{"bearerAuth":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="Token refreshed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="success"),
+     *             @OA\Property(property="token", type="string"),
+     *             @OA\Property(property="token_type", type="string", example="bearer"),
+     *             @OA\Property(property="expires_in", type="integer", example=604800)
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Token invalid or expired",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="string", example="error"),
+     *             @OA\Property(property="error", type="string", example="Token is invalid or expired")
+     *         )
+     *     )
+     * )
+     */
+    public function refreshToken(): JsonResponse
+    {
+        try {
+            $newToken = Auth::guard('api')->refresh();
+
+            return response()->json([
+                'status' => 'success',
+                'token' => $newToken,
+                'token_type' => 'bearer',
+                'expires_in' => Auth::guard('api')->factory()->getTTL() * 60,
+            ], 200);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Token has expired and cannot be refreshed',
+                'code' => 'TOKEN_EXPIRED',
+            ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Token is invalid',
+                'code' => 'TOKEN_INVALID',
+            ], 401);
+        } catch (Exception $e) {
+            Log::error('Token refresh error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Could not refresh token',
+                'message' => 'Please log in again',
+            ], 401);
+        }
+    }
+
+    /**
      * Resend email verification
      */
     public function resendEmailVerification(Request $request): JsonResponse

@@ -56,6 +56,10 @@ Route::prefix('auth')->group(function () {
     // User logout (requires authentication)
     Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api');
+
+    // Refresh token (requires authentication)
+    Route::post('/refresh', [UserController::class, 'refreshToken'])
+        ->middleware('auth:api');
 });
 
 Route::prefix('user')->middleware(['auth:api'])->group(function () {
@@ -94,7 +98,7 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
 
-    
+
     Route::prefix('group')->group(function () {
         Route::get('/', [GroupController::class, 'index']);
         Route::get('/{id}', [GroupController::class, 'show']);
