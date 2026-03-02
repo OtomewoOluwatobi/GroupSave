@@ -91,7 +91,9 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::info('Registration validation failed - NEW CODE', ['errors' => $validator->errors()->toArray()]);
             return response()->json([
+                'status' => 'error',
                 'error' => 'Validation failed',
                 'message' => 'Please check your input',
                 'errors' => $validator->errors(),
