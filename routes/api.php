@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,12 @@ Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
 Route::get('/ping', function () {
     return response()->json(['message' => 'pong'], 200);
 });
+
+/**
+ * Public Referral Route
+ * Validate referral code before signup
+ */
+Route::post('/referral/validate', [ReferralController::class, 'validateCode']);
 
 /**
  * Authentication Routes Group
@@ -51,15 +58,29 @@ Route::prefix('auth')->group(function () {
         ->middleware('auth:api');
 });
 
-/**
- * Notification Routes Group
- * Prefix: /notifications
- * Requires JWT authentication
- */
 Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::post('/change-password', [UserController::class, 'changePassword']);
+
+    /**
+     * Referral Routes Group
+     * Prefix: /user/referral
+     */
+    Route::prefix('referral')->group(function () {
+        // Get referral dashboard data (code, stats, history, milestones)
+        Route::get('/', [ReferralController::class, 'index']);
+        // Get referral history only
+        Route::get('/history', [ReferralController::class, 'history']);
+        // Regenerate referral code
+        Route::post('/regenerate-code', [ReferralController::class, 'regenerateCode']);
+    });
+
+    /**
+     * Notification Routes Group
+     * Prefix: /users/notifications
+     * Requires JWT authentication
+     */
     Route::prefix('notifications')->group(function () {
         // Get all notifications (supports filtering via query params)
         Route::get('/', [NotificationController::class, 'index']);
@@ -72,6 +93,8 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Delete notification
         Route::delete('/{id}', [NotificationController::class, 'destroy']);
     });
+
+    
     Route::prefix('group')->group(function () {
         Route::get('/', [GroupController::class, 'index']);
         Route::get('/{id}', [GroupController::class, 'show']);

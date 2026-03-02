@@ -21,6 +21,7 @@ use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use App\Notifications\UserOnboardingNotification;
 use App\Models\Group;
+use App\Services\ReferralService;
 use Illuminate\Support\Facades\DB;
 use Exception;
 
@@ -85,6 +86,7 @@ class UserController extends Controller
                 'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
                 'mobile' => ['required', 'string', 'max:255'],
                 'password' => ['required', 'confirmed', Password::defaults()],
+                'referral_code' => ['nullable', 'string', 'max:10'],
             ]);
 
             // Wrap user creation in a database transaction
@@ -99,6 +101,12 @@ class UserController extends Controller
 
                 return $user;
             });
+
+            // Process referral if code provided
+            if (!empty($validatedData['referral_code'])) {
+                $referralService = new ReferralService();
+                $referralService->processReferral($user, $validatedData['referral_code']);
+            }
 
             try {
                 // Trigger registered event (outside transaction)
@@ -216,6 +224,10 @@ class UserController extends Controller
 
             $user->markEmailAsVerified();
             event(new Verified($user));
+
+            // Activate referral and award points to referrer
+            $referralService = new ReferralService();
+            $referralService->activateReferral($user);
 
             Log::info('Email verified', [
                 'user_id' => $user->id,
