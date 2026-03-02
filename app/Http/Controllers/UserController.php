@@ -8,6 +8,7 @@ use App\Notifications\LoginNotification;
 use App\Notifications\PasswordChangedNotification;
 use App\Notifications\PasswordResetNotification;
 use App\Notifications\AccountUpdatedNotification;
+use App\Notifications\ReferralSignupNotification;
 use App\Services\NotificationService;
 use App\Http\Requests\LoginRequest;
 use Illuminate\Http\JsonResponse;
@@ -89,9 +90,12 @@ class UserController extends Controller
                 'referral_code' => ['nullable', 'string', 'max:10'],
             ]);
 
+            // Track referral data for notification after commit
+            $referralData = null;
+
             // Wrap user creation and referral processing in a single transaction
-            // Only commits if everything succeeds
-            $user = DB::transaction(function () use ($validatedData) {
+            // Only commits if everything succeeds - NO notifications inside transaction
+            $user = DB::transaction(function () use ($validatedData, &$referralData) {
                 // Create new user
                 $user = User::create([
                     'name' => $validatedData['name'],
@@ -100,23 +104,49 @@ class UserController extends Controller
                     'password' => Hash::make($validatedData['password']),
                 ]);
 
-                // Process referral if code provided (inside transaction)
+                // Process referral if code provided (inside transaction, no notification)
                 if (!empty($validatedData['referral_code'])) {
                     $referralService = new ReferralService();
-                    $referralService->processReferral($user, $validatedData['referral_code']);
+                    $referral = $referralService->processReferral($user, $validatedData['referral_code'], false);
+                    
+                    // Store referral data for notification after commit
+                    if ($referral) {
+                        $referralData = [
+                            'referrer' => $referral->referrer,
+                            'newUser' => $user,
+                        ];
+                    }
                 }
 
                 return $user;
             });
 
-            // Events and notifications happen AFTER successful commit
-            // These are non-blocking - failures won't affect registration
+            // === ALL NOTIFICATIONS HAPPEN AFTER SUCCESSFUL TRANSACTION COMMIT ===
+            
+            // Send referral notification if applicable
+            if ($referralData) {
+                try {
+                    NotificationService::send(
+                        $referralData['referrer'], 
+                        new ReferralSignupNotification($referralData['newUser'])
+                    );
+                    Log::info('Referral signup notification sent', [
+                        'referrer_id' => $referralData['referrer']->id,
+                        'referred_id' => $referralData['newUser']->id,
+                    ]);
+                } catch (Exception $e) {
+                    Log::warning('Referral notification error: ' . $e->getMessage());
+                }
+            }
+
+            // Trigger registered event
             try {
                 event(new Registered($user));
             } catch (Exception $eventError) {
                 Log::warning('Registered event error: ' . $eventError->getMessage());
             }
 
+            // Send onboarding notification
             try {
                 NotificationService::send($user, new UserOnboardingNotification());
             } catch (Exception $notificationError) {

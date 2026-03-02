@@ -28,8 +28,14 @@ class ReferralService
 
     /**
      * Process referral when a new user signs up with a referral code
+     * Note: This method does NOT send notifications - caller must handle notifications after transaction commits
+     * 
+     * @param User $newUser The newly registered user
+     * @param string $referralCode The referral code used
+     * @param bool $sendNotification Whether to send notification (set false if inside a transaction)
+     * @return Referral|null
      */
-    public function processReferral(User $newUser, string $referralCode): ?Referral
+    public function processReferral(User $newUser, string $referralCode, bool $sendNotification = true): ?Referral
     {
         $referrer = User::where('referral_code', $referralCode)->first();
 
@@ -41,29 +47,30 @@ class ReferralService
             return null;
         }
 
-        return DB::transaction(function () use ($newUser, $referrer) {
-            // Update the referred_by field
-            $newUser->update(['referred_by' => $referrer->id]);
+        // Update the referred_by field
+        $newUser->update(['referred_by' => $referrer->id]);
 
-            // Create referral record (pending until user completes certain actions)
-            $referral = Referral::create([
-                'referrer_id' => $referrer->id,
-                'referred_id' => $newUser->id,
-                'points_awarded' => 0,
-                'status' => Referral::STATUS_PENDING,
-            ]);
+        // Create referral record (pending until user completes certain actions)
+        $referral = Referral::create([
+            'referrer_id' => $referrer->id,
+            'referred_id' => $newUser->id,
+            'points_awarded' => 0,
+            'status' => Referral::STATUS_PENDING,
+        ]);
 
-            // Notify referrer about new signup
+        Log::info('Referral record created', [
+            'referrer_id' => $referrer->id,
+            'referred_id' => $newUser->id,
+            'referral_id' => $referral->id,
+        ]);
+
+        // Only send notification if not inside a parent transaction
+        if ($sendNotification) {
             NotificationService::send($referrer, new ReferralSignupNotification($newUser));
+            Log::info('Referral signup notification sent', ['referrer_id' => $referrer->id]);
+        }
 
-            Log::info('Referral processed successfully', [
-                'referrer_id' => $referrer->id,
-                'referred_id' => $newUser->id,
-                'referral_id' => $referral->id,
-            ]);
-
-            return $referral;
-        });
+        return $referral;
     }
 
     /**
