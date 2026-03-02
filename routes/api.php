@@ -1,8 +1,10 @@
 <?php
 
+use App\Http\Controllers\FaqController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ReferralController;
+use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -30,6 +32,22 @@ Route::get('/ping', function () {
  * Validate referral code before signup
  */
 Route::post('/referral/validate', [ReferralController::class, 'validateCode']);
+
+/**
+ * Public Support Routes (FAQ - no auth required)
+ */
+Route::prefix('support')->group(function () {
+    // Get all FAQ categories with articles
+    Route::get('/faq', [FaqController::class, 'index']);
+    // Search FAQ articles
+    Route::get('/faq/search', [FaqController::class, 'search']);
+    // Get specific category with articles
+    Route::get('/faq/{categorySlug}', [FaqController::class, 'category']);
+    // Submit article feedback (helpful/not helpful)
+    Route::post('/faq/{articleId}/feedback', [FaqController::class, 'articleFeedback']);
+    // Get contact info and SLA
+    Route::get('/contact', [FaqController::class, 'contactInfo']);
+});
 
 /**
  * Authentication Routes Group
@@ -110,5 +128,24 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Route::get('/{id}/join-requests', [GroupController::class, 'getPendingJoinRequests']);
         Route::put('/{groupId}/join-requests/{requestId}/approve', [GroupController::class, 'approveJoinRequest']);
         Route::put('/{groupId}/join-requests/{requestId}/reject', [GroupController::class, 'rejectJoinRequest']);
+    });
+
+    /**
+     * Support Ticket Routes (authenticated)
+     * Prefix: /user/support
+     */
+    Route::prefix('support')->group(function () {
+        // Get all user's tickets
+        Route::get('/tickets', [SupportTicketController::class, 'index']);
+        // Create new ticket
+        Route::post('/tickets', [SupportTicketController::class, 'store']);
+        // Get specific ticket details
+        Route::get('/tickets/{ticketId}', [SupportTicketController::class, 'show']);
+        // Reply to a ticket
+        Route::post('/tickets/{ticketId}/reply', [SupportTicketController::class, 'reply']);
+        // Escalate a ticket
+        Route::post('/tickets/{ticketId}/escalate', [SupportTicketController::class, 'escalate']);
+        // Submit feedback on resolved ticket
+        Route::post('/tickets/{ticketId}/feedback', [SupportTicketController::class, 'feedback']);
     });
 });
