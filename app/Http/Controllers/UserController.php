@@ -89,7 +89,8 @@ class UserController extends Controller
                 'referral_code' => ['nullable', 'string', 'max:10'],
             ]);
 
-            // Wrap user creation in a database transaction
+            // Wrap user creation and referral processing in a single transaction
+            // Only commits if everything succeeds
             $user = DB::transaction(function () use ($validatedData) {
                 // Create new user
                 $user = User::create([
@@ -99,25 +100,28 @@ class UserController extends Controller
                     'password' => Hash::make($validatedData['password']),
                 ]);
 
+                // Process referral if code provided (inside transaction)
+                if (!empty($validatedData['referral_code'])) {
+                    $referralService = new ReferralService();
+                    $referralService->processReferral($user, $validatedData['referral_code']);
+                }
+
                 return $user;
             });
 
-            // Process referral if code provided
-            if (!empty($validatedData['referral_code'])) {
-                $referralService = new ReferralService();
-                $referralService->processReferral($user, $validatedData['referral_code']);
-            }
-
+            // Events and notifications happen AFTER successful commit
+            // These are non-blocking - failures won't affect registration
             try {
-                // Trigger registered event (outside transaction)
                 event(new Registered($user));
             } catch (Exception $eventError) {
                 Log::warning('Registered event error: ' . $eventError->getMessage());
-                // Continue - event error shouldn't block registration
             }
 
-            // Send onboarding notification (outside transaction)
-            NotificationService::send($user, new UserOnboardingNotification());
+            try {
+                NotificationService::send($user, new UserOnboardingNotification());
+            } catch (Exception $notificationError) {
+                Log::warning('Onboarding notification error: ' . $notificationError->getMessage());
+            }
 
             return response()->json([
                 'message' => 'User registration successful',
