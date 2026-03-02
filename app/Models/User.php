@@ -43,17 +43,17 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         parent::boot();
 
         static::creating(function ($user) {
-            $user->referral_code = self::generateUniqueReferralCode();
+            $user->referral_code = self::generateUniqueReferralCode($user);
         });
     }
 
     /**
      * Generate unique referral code
      */
-    public static function generateUniqueReferralCode(): string
+    public static function generateUniqueReferralCode($user): string
     {
         do {
-            $code = 'GRP-' . strtoupper(Str::random(4));
+            $code = strtoupper(substr($user->name, 0, 3)) . '-' . strtoupper(Str::random(4));
         } while (self::where('referral_code', $code)->exists());
 
         return $code;

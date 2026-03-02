@@ -198,7 +198,7 @@ class ReferralController extends Controller
     public function regenerateCode(): JsonResponse
     {
         $user = Auth::user();
-        $user->referral_code = $user::generateUniqueReferralCode();
+        $user->referral_code = $user::generateUniqueReferralCode($user);
         $user->save();
 
         return response()->json([
