@@ -83,7 +83,7 @@ class UserController extends Controller
             // Validate user input
             $validatedData = $request->validate([
                 'name' => ['required', 'string', 'max:255'],
-                'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+                'email' => ['required', 'string', 'email', 'max:255', 'unique:' . User::class],
                 'mobile' => ['required', 'string', 'max:255', 'unique:' . User::class],
                 'password' => ['required', 'confirmed', Password::defaults()],
                 'referral_code' => ['nullable', 'string', 'max:10'],
