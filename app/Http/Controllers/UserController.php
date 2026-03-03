@@ -2,29 +2,29 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\LoginRequest;
+use App\Models\Group;
 use App\Models\User;
-use App\Notifications\VerifyEmailNotification;
+use App\Notifications\AccountUpdatedNotification;
 use App\Notifications\LoginNotification;
 use App\Notifications\PasswordChangedNotification;
 use App\Notifications\PasswordResetNotification;
-use App\Notifications\AccountUpdatedNotification;
 use App\Notifications\ReferralSignupNotification;
+use App\Notifications\UserOnboardingNotification;
+use App\Notifications\VerifyEmailNotification;
 use App\Services\NotificationService;
-use App\Http\Requests\LoginRequest;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Validation\Rules\Password;
-use Illuminate\Http\Response;
+use App\Services\ReferralService;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
-use App\Notifications\UserOnboardingNotification;
-use App\Models\Group;
-use App\Services\ReferralService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password;
 use Exception;
 
 class UserController extends Controller
@@ -121,7 +121,7 @@ class UserController extends Controller
                 if (!empty($validatedData['referral_code'])) {
                     $referralService = new ReferralService();
                     $referral = $referralService->processReferral($user, $validatedData['referral_code'], false);
-                    
+
                     // Store referral data for notification after commit
                     if ($referral) {
                         $referralData = [
@@ -135,12 +135,12 @@ class UserController extends Controller
             });
 
             // === ALL NOTIFICATIONS HAPPEN AFTER SUCCESSFUL TRANSACTION COMMIT ===
-            
+
             // Send referral notification if applicable
             if ($referralData) {
                 try {
                     NotificationService::send(
-                        $referralData['referrer'], 
+                        $referralData['referrer'],
                         new ReferralSignupNotification($referralData['newUser'])
                     );
                     Log::info('Referral signup notification sent', [
@@ -398,12 +398,14 @@ class UserController extends Controller
             ], 500);
         }
     }
+
     /**
      * Request password reset code.
      *
      * @param Request $request
      * @return JsonResponse
      */
+
     /**
      * @OA\Post(
      *     path="/api/forgot-password",
@@ -471,7 +473,7 @@ class UserController extends Controller
                 return response()->json([
                     'status' => 'error',
                     'error' => 'No account found with this email',
-                    'message' => 'Please check the email and try again, or sign up if you don\'t have an account',
+                    'message' => "Please check the email and try again, or sign up if you don't have an account",
                 ], 404);
             }
 
@@ -489,9 +491,9 @@ class UserController extends Controller
                 'status' => 'success',
                 'message' => 'Password reset code sent to your email. Please check your inbox.',
                 'data' => [
-                    'expires_in' => 900, // 15 minutes in seconds
+                    'expires_in' => 900,  // 15 minutes in seconds
                     'password_reset_code' => $resetCode,
-                    'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4), // masked email
+                    'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4),  // masked email
                 ]
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -516,6 +518,7 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+
     /**
      * @OA\Post(
      *     path="/api/reset-password",
@@ -687,17 +690,18 @@ class UserController extends Controller
 
             // Get user's groups (both owned and member)
             $userGroups = Group::with(['users' => function ($query) {
-                    $query->select('users.id', 'users.name', 'users.email');
-                }])
+                $query->select('users.id', 'users.name', 'users.email');
+            }])
                 ->withCount([
                     'users as total_members',
                     'users as active_members_count' => function ($query) {
                         $query->where('group_user.is_active', true);
                     }
                 ])
-                ->where(function($query) use ($user) {
-                    $query->where('owner_id', $user->id)
-                        ->orWhereHas('users', function($q) use ($user) {
+                ->where(function ($query) use ($user) {
+                    $query
+                        ->where('owner_id', $user->id)
+                        ->orWhereHas('users', function ($q) use ($user) {
                             $q->where('user_id', $user->id);
                         });
                 })
@@ -706,7 +710,7 @@ class UserController extends Controller
                 ->map(function ($group) use ($user) {
                     $userRole = $group->users->where('id', $user->id)->first()?->pivot?->role ?? 'member';
                     $isActive = $group->users->where('id', $user->id)->first()?->pivot?->is_active ?? false;
-                    
+
                     return [
                         'id' => $group->id,
                         'title' => $group->title,
@@ -727,8 +731,8 @@ class UserController extends Controller
 
             // Get suggested groups (random groups user is not part of)
             $suggestedGroups = Group::with(['users' => function ($query) {
-                    $query->select('users.id', 'users.name');
-                }])
+                $query->select('users.id', 'users.name');
+            }])
                 ->withCount([
                     'users as total_members',
                     'users as active_members_count' => function ($query) {
@@ -758,10 +762,11 @@ class UserController extends Controller
 
             // Get pending invitations
             $pendingInvitations = Group::with(['users' => function ($query) {
-                    $query->where('group_user.role', 'admin');
-                }])
+                $query->where('group_user.role', 'admin');
+            }])
                 ->whereHas('users', function ($query) use ($user) {
-                    $query->where('user_id', $user->id)
+                    $query
+                        ->where('user_id', $user->id)
                         ->where('group_user.is_active', false);
                 })
                 ->get()
@@ -802,7 +807,6 @@ class UserController extends Controller
                 // 'recent_notifications' => $recentNotifications,
                 'user_banks' => $user->userBank ?? [],
             ], 200);
-
         } catch (\Exception $e) {
             Log::error('Dashboard error', [
                 'user_id' => Auth::id(),
@@ -822,6 +826,7 @@ class UserController extends Controller
      * @param Request $request
      * @return Response
      */
+
     /**
      * @OA\Post(
      *     path="/api/logout",
@@ -863,13 +868,14 @@ class UserController extends Controller
      *
      * @return JsonResponse
      */
+
     /**
      * @OA\Post(
      *     path="/api/auth/refresh",
      *     tags={"Authentication"},
      *     summary="Refresh authentication token",
      *     description="Refreshes the JWT token and returns a new one with extended expiration",
-     *     security={{"bearerAuth":{}}},
+     *     security={{ "bearerAuth":{ }}},
      *     @OA\Response(
      *         response=200,
      *         description="Token refreshed successfully",
@@ -980,7 +986,6 @@ class UserController extends Controller
                     'email' => substr($user->email, 0, 3) . '***' . substr($user->email, -4),
                 ]
             ], 200);
-
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
@@ -1005,13 +1010,14 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+
     /**
      * @OA\Post(
      *     path="/api/user/change-password",
      *     tags={"User"},
      *     summary="Change authenticated user's password",
      *     description="Allows authenticated user to change their password",
-     *     security={{"bearerAuth":{}}},
+     *     security={{ "bearerAuth":{ }}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -1115,13 +1121,14 @@ class UserController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
+
     /**
      * @OA\Put(
      *     path="/api/user/profile",
      *     tags={"User"},
      *     summary="Update authenticated user's profile",
      *     description="Allows authenticated user to update their profile information",
-     *     security={{"bearerAuth":{}}},
+     *     security={{ "bearerAuth":{ }}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
