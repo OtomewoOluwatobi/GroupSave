@@ -39,15 +39,14 @@ class TicketReplyNotification extends Notification
             : 'You';
 
         return (new MailMessage)
-            ->subject('New Reply on Ticket ' . $this->ticket->ticket_id)
-            ->greeting('Hello ' . $notifiable->name . '!')
-            ->line("{$author} replied to your support ticket.")
-            ->line('**Ticket ID:** ' . $this->ticket->ticket_id)
-            ->line('**Subject:** ' . $this->ticket->subject)
-            ->line('**Message Preview:**')
-            ->line(substr($this->reply->message, 0, 200) . (strlen($this->reply->message) > 200 ? '...' : ''))
-            ->action('View Full Conversation', url('/support/tickets/' . $this->ticket->ticket_id))
-            ->salutation('Best regards, GroupSave Support');
+            ->view('emails.ticket-reply', [
+                'userName' => $notifiable->name,
+                'ticketId' => $this->ticket->ticket_id,
+                'subject' => $this->ticket->subject,
+                'author' => $author,
+                'messagePreview' => substr($this->reply->message, 0, 200) . (strlen($this->reply->message) > 200 ? '...' : ''),
+            ])
+            ->subject('New Reply on Ticket ' . $this->ticket->ticket_id);
     }
 
     /**

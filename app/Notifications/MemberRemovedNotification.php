@@ -27,15 +27,12 @@ class MemberRemovedNotification extends Notification
 
     public function toMail($notifiable)
     {
-        $mail = (new MailMessage)
-            ->subject('Removed from Group - ' . $this->group->name)
-            ->line('You have been removed from the group: ' . $this->group->name);
-
-        if ($this->reason) {
-            $mail->line('Reason: ' . $this->reason);
-        }
-
-        return $mail->line('If you believe this is an error, please contact the group admin.');
+        return (new MailMessage)
+            ->view('emails.member-removed', [
+                'groupName' => $this->group->name,
+                'reason' => $this->reason,
+            ])
+            ->subject('Removed from Group - ' . $this->group->name);
     }
 
     public function toDatabase($notifiable)

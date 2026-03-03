@@ -27,11 +27,14 @@ class GroupJoinRequestNotification extends DatabaseNotification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Join Request for ' . $this->groupTitle)
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line($this->userName . ' has requested to join your group: ' . $this->groupTitle)
-            ->action('Review Request', url('/groups/' . $this->groupId))
-            ->line('Thank you for using GroupSave!');
+            ->view('emails.group-join-request', [
+                'adminName' => $notifiable->name,
+                'requesterName' => $this->userName,
+                'requesterEmail' => '',
+                'groupTitle' => $this->groupTitle,
+                'groupId' => $this->groupId,
+            ])
+            ->subject('New Join Request for ' . $this->groupTitle);
     }
 
     public function toDatabase($notifiable): array

@@ -49,7 +49,9 @@ class GroupInvitationNotification extends DatabaseNotification
         return (new MailMessage)
             ->view('emails.group-invitation', [
                 'groupName' => $this->groupName,
+                'groupId' => $this->groupId,
                 'userName' => $this->inviteeFirstName,
+                'userEmail' => $this->inviteeEmail,
                 'inviterName' => $this->inviterName,
                 'generatedPassword' => $this->generatedPassword,
             ])

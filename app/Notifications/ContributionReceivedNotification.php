@@ -30,11 +30,13 @@ class ContributionReceivedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Contribution Received - ' . $this->group->name)
-            ->line($this->contributor->name . ' has made a contribution of £' . number_format($this->contribution->amount, 2))
-            ->line('Group: ' . $this->group->name)
-            ->action('View Group', url('/groups/' . $this->group->id))
-            ->line('Thank you!');
+            ->view('emails.contribution-received', [
+                'groupName' => $this->group->name,
+                'groupId' => $this->group->id,
+                'contributorName' => $this->contributor->name,
+                'amount' => $this->contribution->amount,
+            ])
+            ->subject('Contribution Received - ' . $this->group->name);
     }
 
     public function toDatabase($notifiable)

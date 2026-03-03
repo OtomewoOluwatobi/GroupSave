@@ -34,13 +34,12 @@ class ReferralBonusNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('You Earned Referral Points!')
-            ->greeting('Congratulations ' . $notifiable->name . '!')
-            ->line("You earned {$this->points} referral points!")
-            ->line("{$this->referredUser->name} has verified their account.")
-            ->line('Keep referring friends to earn more rewards.')
-            ->action('View Your Points', url('/referrals'))
-            ->salutation('Happy saving, GroupSave Team');
+            ->view('emails.referral-bonus', [
+                'userName' => $notifiable->name,
+                'referredUserName' => $this->referredUser->name,
+                'points' => $this->points,
+            ])
+            ->subject('You Earned Referral Points!');
     }
 
     /**

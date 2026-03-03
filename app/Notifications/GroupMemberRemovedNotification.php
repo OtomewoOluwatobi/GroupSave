@@ -32,12 +32,11 @@ class GroupMemberRemovedNotification extends DatabaseNotification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject("You have been removed from group: {$this->groupTitle}")
-            ->greeting("Hello {$notifiable->name},")
-            ->line("You have been removed from the group '{$this->groupTitle}' because your invitation was not accepted within the required timeframe.")
-            ->line("A new member has been added to replace you.")
-            ->action('View Group', url("/groups/{$this->groupId}"))
-            ->line('Thank you for your interest in GroupSave!');
+            ->view('emails.member-removed', [
+                'groupName' => $this->groupTitle,
+                'reason' => 'Your invitation was not accepted within the required timeframe. A new member has been added to replace you.',
+            ])
+            ->subject("You have been removed from group: {$this->groupTitle}");
     }
 
     /**

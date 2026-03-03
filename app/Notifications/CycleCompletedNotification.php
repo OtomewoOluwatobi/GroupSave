@@ -28,10 +28,12 @@ class CycleCompletedNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Cycle Completed - ' . $this->group->name)
-            ->line('Cycle ' . $this->cycle->cycle_number . ' has been completed for ' . $this->group->name)
-            ->action('View Group', url('/groups/' . $this->group->id))
-            ->line('Thank you for participating!');
+            ->view('emails.cycle-completed', [
+                'groupName' => $this->group->name,
+                'groupId' => $this->group->id,
+                'cycleNumber' => $this->cycle->cycle_number,
+            ])
+            ->subject('Cycle Completed - ' . $this->group->name);
     }
 
     public function toDatabase($notifiable)

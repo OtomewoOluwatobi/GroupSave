@@ -38,17 +38,13 @@ class AccountUpdatedNotification extends BaseNotification
      */
     public function toMail($notifiable): MailMessage
     {
-        $fieldsList = implode(', ', array_keys($this->updatedFields));
-        
         return (new MailMessage)
-            ->subject('Your GroupSave Account Was Updated')
-            ->greeting('Hello ' . $this->userName . ',')
-            ->line('Your account information was updated on ' . $this->updatedAt . '.')
-            ->line('**Updated fields:** ' . $fieldsList)
-            ->line('If you made these changes, no action is needed.')
-            ->line('If you did NOT make these changes, please secure your account immediately.')
-            ->action('Review Account', url('/profile'))
-            ->salutation('Best regards, GroupSave Team');
+            ->view('emails.account-updated', [
+                'userName' => $this->userName,
+                'updatedFields' => array_keys($this->updatedFields),
+                'updatedAt' => $this->updatedAt,
+            ])
+            ->subject('Your GroupSave Account Was Updated');
     }
 
     /**

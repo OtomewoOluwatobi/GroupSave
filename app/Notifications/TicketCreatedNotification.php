@@ -34,15 +34,15 @@ class TicketCreatedNotification extends Notification
         $sla = SupportTicket::getPriorityInfo($this->ticket->priority)['sla'];
 
         return (new MailMessage)
-            ->subject('Support Ticket Created - ' . $this->ticket->ticket_id)
-            ->greeting('Hello ' . $notifiable->name . '!')
-            ->line('Your support ticket has been submitted successfully.')
-            ->line('**Ticket ID:** ' . $this->ticket->ticket_id)
-            ->line('**Subject:** ' . $this->ticket->subject)
-            ->line('**Category:** ' . ucfirst($this->ticket->category))
-            ->line("We'll respond within {$sla}.")
-            ->action('View Ticket', url('/support/tickets/' . $this->ticket->ticket_id))
-            ->salutation('Best regards, GroupSave Support');
+            ->view('emails.ticket-created', [
+                'userName' => $notifiable->name,
+                'ticketId' => $this->ticket->ticket_id,
+                'subject' => $this->ticket->subject,
+                'category' => $this->ticket->category,
+                'priority' => $this->ticket->priority,
+                'sla' => $sla,
+            ])
+            ->subject('Support Ticket Created - ' . $this->ticket->ticket_id);
     }
 
     /**

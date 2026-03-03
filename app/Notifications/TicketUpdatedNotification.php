@@ -38,13 +38,15 @@ class TicketUpdatedNotification extends Notification
         $data = $this->getData();
 
         return (new MailMessage)
-            ->subject($data['title'] . ' - ' . $this->ticket->ticket_id)
-            ->greeting('Hello ' . $notifiable->name . '!')
-            ->line($data['message'])
-            ->line('**Ticket ID:** ' . $this->ticket->ticket_id)
-            ->line('**Subject:** ' . $this->ticket->subject)
-            ->action('View Ticket', url('/support/tickets/' . $this->ticket->ticket_id))
-            ->salutation('Best regards, GroupSave Support');
+            ->view('emails.ticket-updated', [
+                'userName' => $notifiable->name,
+                'ticketId' => $this->ticket->ticket_id,
+                'subject' => $this->ticket->subject,
+                'status' => $this->ticket->status,
+                'title' => $data['title'],
+                'message' => $data['message'],
+            ])
+            ->subject($data['title'] . ' - ' . $this->ticket->ticket_id);
     }
 
     /**

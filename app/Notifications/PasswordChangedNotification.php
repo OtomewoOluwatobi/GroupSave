@@ -37,15 +37,12 @@ class PasswordChangedNotification extends BaseNotification
         $action = $this->method === 'reset' ? 'reset' : 'changed';
         
         return (new MailMessage)
-            ->subject('Your GroupSave Password Has Been ' . ucfirst($action))
-            ->greeting('Hello ' . $this->userName . ',')
-            ->line('Your password was successfully ' . $action . ' on ' . $this->changedAt . '.')
-            ->line('If you made this change, no further action is required.')
-            ->line('**If you did NOT make this change**, your account may be compromised. Please:')
-            ->line('1. Reset your password immediately')
-            ->line('2. Contact our support team')
-            ->action('Contact Support', url('/support'))
-            ->salutation('Stay secure, GroupSave Team');
+            ->view('emails.password-changed', [
+                'userName' => $this->userName,
+                'changedAt' => $this->changedAt,
+                'action' => $action,
+            ])
+            ->subject('Your GroupSave Password Has Been ' . ucfirst($action));
     }
 
     /**

@@ -32,13 +32,11 @@ class ReferralSignupNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Someone Used Your Referral Code!')
-            ->greeting('Hello ' . $notifiable->name . '!')
-            ->line("{$this->referredUser->name} just signed up using your referral code.")
-            ->line('Once they verify their account, you\'ll earn referral points!')
-            ->line('Keep sharing your code to earn more rewards.')
-            ->action('View Your Referrals', url('/referrals'))
-            ->salutation('Happy saving, GroupSave Team');
+            ->view('emails.referral-signup', [
+                'userName' => $notifiable->name,
+                'referredUserName' => $this->referredUser->name,
+            ])
+            ->subject('Someone Used Your Referral Code!');
     }
 
     /**

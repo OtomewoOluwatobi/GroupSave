@@ -23,10 +23,11 @@ class GroupJoinRejectedNotification extends DatabaseNotification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('Join Request Declined - ' . $this->groupTitle)
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line('Your request to join "' . $this->groupTitle . '" has been declined.')
-            ->line('You can try joining other groups or contact the group admin for more information.');
+            ->view('emails.group-join-rejected', [
+                'userName' => $notifiable->name,
+                'groupTitle' => $this->groupTitle,
+            ])
+            ->subject('Join Request Declined - ' . $this->groupTitle);
     }
 
     public function toDatabase($notifiable): array

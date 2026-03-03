@@ -28,11 +28,12 @@ class PayoutNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Payout Received - ' . $this->group->name)
-            ->line('Congratulations! You have received a payout of £' . number_format($this->payout->amount, 2))
-            ->line('Group: ' . $this->group->name)
-            ->action('View Details', url('/groups/' . $this->group->id))
-            ->line('Thank you for being part of the group!');
+            ->view('emails.payout', [
+                'groupName' => $this->group->name,
+                'groupId' => $this->group->id,
+                'amount' => $this->payout->amount,
+            ])
+            ->subject('Payout Received - ' . $this->group->name);
     }
 
     public function toDatabase($notifiable)

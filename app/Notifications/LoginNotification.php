@@ -42,16 +42,13 @@ class LoginNotification extends Notification
     public function toMail($notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('New Login to Your GroupSave Account')
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line('We detected a new login to your GroupSave account.')
-            ->line('**Time:** ' . $this->loginTime)
-            ->line('**IP Address:** ' . $this->ipAddress)
-            ->line('**Device:** ' . $this->parseUserAgent($this->userAgent))
-            ->line('If this was you, no action is needed.')
-            ->line('If you did not log in, please change your password immediately and contact support.')
-            ->action('Secure Your Account', url('/auth/change-password'))
-            ->salutation('Stay safe, GroupSave Team');
+            ->view('emails.login', [
+                'userName' => $notifiable->name,
+                'loginTime' => $this->loginTime,
+                'ipAddress' => $this->ipAddress,
+                'device' => $this->parseUserAgent($this->userAgent),
+            ])
+            ->subject('New Login to Your GroupSave Account');
     }
 
     /**
