@@ -84,14 +84,18 @@ class UserController extends Controller
         // Validate FIRST - before try/catch so validation errors return proper format
         $validator = Validator::make($request->all(), [
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
-            'mobile' => ['required', 'string', 'max:255', 'unique:users,mobile'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,NULL,id,deleted_at,NULL'],
+            'mobile' => ['required', 'string', 'max:255', 'unique:users,mobile,NULL,id,deleted_at,NULL'],
             'password' => ['required', 'confirmed', Password::defaults()],
             'referral_code' => ['nullable', 'string', 'max:10'],
         ]);
 
         if ($validator->fails()) {
-            Log::info('Registration validation failed - NEW CODE', ['errors' => $validator->errors()->toArray()]);
+            Log::info('Registration validation failed', [
+                'errors' => $validator->errors()->toArray(),
+                'input_email' => $request->input('email'),
+                'input_mobile' => $request->input('mobile'),
+            ]);
             return response()->json([
                 'status' => 'error',
                 'error' => 'Validation failed',
