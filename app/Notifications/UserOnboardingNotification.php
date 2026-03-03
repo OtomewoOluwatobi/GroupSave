@@ -16,7 +16,7 @@ class UserOnboardingNotification extends BaseNotification
      */
     public function __construct()
     {
-        //
+        parent::__construct();
     }
 
     /**

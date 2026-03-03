@@ -18,22 +18,25 @@ abstract class BaseNotification extends Notification implements ShouldQueue
     /**
      * Queue timeout - prevents hung notifications
      */
-    public $timeout = 120;
+    public int $timeout = 120;
 
     /**
      * Number of retry attempts
      */
-    public $tries = 3;
+    public int $tries = 3;
 
     /**
      * Backoff strategy in seconds (progressive delays)
      */
-    public $backoff = [10, 60, 180];
+    public array $backoff = [10, 60, 180];
 
     /**
-     * Queue name for notifications
+     * Create a new notification instance.
      */
-    public $queue = 'notifications';
+    public function __construct()
+    {
+        $this->onQueue('notifications');
+    }
 
     /**
      * Handle notification failures

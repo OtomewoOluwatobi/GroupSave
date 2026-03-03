@@ -15,6 +15,7 @@ class PasswordChangedNotification extends BaseNotification
      */
     public function __construct(string $userName, string $method = 'change')
     {
+        parent::__construct();
         $this->userName = $userName;
         $this->changedAt = now()->toDateTimeString();
         $this->method = $method;

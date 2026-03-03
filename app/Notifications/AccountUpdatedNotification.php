@@ -16,6 +16,7 @@ class AccountUpdatedNotification extends BaseNotification
      */
     public function __construct(string $userName, array $updatedFields, bool $emailChanged = false)
     {
+        parent::__construct();
         $this->userName = $userName;
         $this->updatedFields = $updatedFields;
         $this->updatedAt = now()->toDateTimeString();

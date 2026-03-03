@@ -16,6 +16,7 @@ class PasswordResetNotification extends BaseNotification
      */
     public function __construct(string $userName, string $userEmail, string $resetCode, int $userId)
     {
+        parent::__construct();
         // Store only scalar values - never store User model
         $this->userName = $userName;
         $this->userEmail = $userEmail;
