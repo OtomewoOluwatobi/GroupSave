@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('referral_code', 10)->unique()->nullable()->after('mobile');
-            $table->foreignId('referred_by')->nullable()->after('referral_code')->constrained('users')->nullOnDelete();
-            $table->unsignedInteger('referral_points')->default(0)->after('referred_by');
+            $table->string('referral_code', 10)->unique()->nullable();
+            $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->unsignedInteger('referral_points')->default(0);
         });
     }
 
