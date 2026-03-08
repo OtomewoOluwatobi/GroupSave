@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Digital Ajo Ledger — Save Together, Grow Together</title>
+    <title>Rukuni — Save Together, Grow Together</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=neue-montreal:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -2459,7 +2459,7 @@
     <!-- NAV -->
     <nav id="nav">
         <div class="nav-left">
-            <a href="#" class="logo">Group<span>Save</span></a>
+            <a href="#" class="logo">Ruku<span>ni</span></a>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how">Process</a></li>
@@ -2488,7 +2488,7 @@
                     <span class="hero-line">Together We</span>
                     <span class="hero-line">Grow Richer.</span>
                 </h1>
-                <p class="hero-sub">GroupSave brings your circles together — family, friends, colleagues — to save with
+                <p class="hero-sub">Rukuni brings your circles together — family, friends, colleagues — to save with
                     purpose, transparency, and zero stress.</p>
                 <div class="hero-actions">
                     <a href="#" class="btn-primary mag">
@@ -2564,7 +2564,7 @@
                 <div class="activity-eyebrow">Real-Time Activity</div>
                 <h2 class="activity-title">Your community is<br>saving as you read this</h2>
                 <p class="activity-sub">Every second, someone across the UK makes a contribution, hits a goal, or starts
-                    a new group. GroupSave never sleeps.</p>
+                    a new group. Rukuni never sleeps.</p>
                 <div class="activity-stat">
                     <div class="astat">
                         <div class="astat-num">£284</div>
@@ -2604,7 +2604,7 @@
 
     <!-- FEATURES -->
     <section class="features" id="features">
-        <div class="eyebrow reveal">Why GroupSave</div>
+        <div class="eyebrow reveal">Why Rukuni</div>
         <h2 class="section-h reveal">Built for serious savers</h2>
         <p class="section-p reveal">Every tool you need, beautifully designed. From creating your first group to
             celebrating your biggest financial win.</p>
@@ -2631,7 +2631,7 @@
                 <div class="bento-icon">🔔</div>
                 <div class="bento-title">Smart Reminders</div>
                 <div class="bento-text">Automated email alerts ensure no one misses a payment. Set it, forget it —
-                    GroupSave keeps everyone accountable.</div>
+                    Rukuni keeps everyone accountable.</div>
             </div>
             <div class="bento-card reveal" style="transition-delay:.2s">
                 <div class="bento-icon">🔒</div>
@@ -2705,7 +2705,7 @@
             <div class="testi-card reveal" style="transition-delay:.05s">
                 <div class="stars">★★★★★</div>
                 <div class="testi-q">"We saved for a family holiday to Portugal in 8 months. I never had to chase anyone
-                    — GroupSave kept the whole group accountable automatically."</div>
+                    — Rukuni kept the whole group accountable automatically."</div>
                 <div class="testi-foot">
                     <div class="tav" style="background:#CADCFC;">AN</div>
                     <div>
@@ -2982,7 +2982,7 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom"><span>© 2025 GroupSave Ltd. All rights reserved.</span><span>Made with ♥ in the
+        <div class="footer-bottom"><span>© 2025 Rukuni Ltd. All rights reserved.</span><span>Made with ♥ in the
                 UK</span></div>
     </footer>
 
