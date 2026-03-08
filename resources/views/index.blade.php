@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 
 <head>
     <meta charset="UTF-8">
@@ -19,63 +19,47 @@
         /* ══════════════════════════════════════
        THEME TOKENS
     ══════════════════════════════════════ */
+        /*
+      BRAND PALETTE
+      #00246B  deep navy blue    — primary dark / text
+      #2a52a0  mid blue          — secondary accent
+      #CADCFC  periwinkle blue   — primary accent
+      #a8c4f8  light blue        — light accent
+      #1a3a7a  dark navy blue    — highlight / CTA
+    */
         :root {
-            --gold: #c8a45a;
-            --gold-light: #e8c87e;
-            --gold-glow: rgba(200, 164, 90, 0.35);
-            --violet-bright: #7c5ce8;
-            --green-bright: #4ade80;
+            --gold: #CADCFC;
+            --gold-light: #a8c4f8;
+            --gold-glow: rgba(0, 36, 107, 0.25);
+            --violet-bright: #2a52a0;
+            --green-bright: #1a3a7a;
+            --blue-mid: #2a52a0;
+            --red-accent: #1a3a7a;
+            --navy-dark: #00246B;
             --trans: all 0.45s cubic-bezier(.4, 0, .2, 1);
         }
 
         /* DARK */
-        [data-theme="dark"] {
-            --bg: #080812;
+        :root {
+            --bg: #000f2e;
             --bg-alt: rgba(255, 255, 255, 0.015);
             --surface: rgba(255, 255, 255, 0.04);
             --surface-2: rgba(255, 255, 255, 0.025);
             --border: rgba(255, 255, 255, 0.07);
             --border-hi: rgba(255, 255, 255, 0.12);
-            --text: #ffffff;
-            --text-muted: rgba(255, 255, 255, 0.4);
-            --text-dim: rgba(255, 255, 255, 0.22);
-            --nav-bg: rgba(8, 8, 18, 0.82);
-            --card-bg: rgba(20, 18, 35, 0.88);
+            --text: #e8f0fd;
+            --text-muted: rgba(232, 240, 253, 0.45);
+            --text-dim: rgba(232, 240, 253, 0.22);
+            --nav-bg: rgba(0, 15, 46, 0.85);
+            --card-bg: rgba(0, 20, 60, 0.90);
             --stat-div: rgba(255, 255, 255, 0.05);
             --how-bg: rgba(255, 255, 255, 0.015);
             --how-border: rgba(255, 255, 255, 0.05);
-            --av-border: rgba(8, 8, 18, 0.9);
-            --particle-a: rgba(200, 164, 90, VAR);
-            --particle-b: rgba(124, 92, 232, VAR);
-            --footer-bg: rgba(0, 0, 0, 0.55);
+            --av-border: rgba(0, 15, 46, 0.9);
+            --footer-bg: rgba(0, 0, 0, 0.45);
             --footer-border: rgba(255, 255, 255, 0.06);
-            --toggle-bg: rgba(255, 255, 255, 0.08);
-            --toggle-border: rgba(255, 255, 255, 0.15);
-            --shadow-card: rgba(0, 0, 0, 0.5);
-        }
 
-        /* LIGHT */
-        [data-theme="light"] {
-            --bg: #f2ede4;
-            --bg-alt: rgba(0, 0, 0, 0.02);
-            --surface: rgba(255, 255, 255, 0.85);
-            --surface-2: rgba(255, 255, 255, 0.7);
-            --border: rgba(0, 0, 0, 0.08);
-            --border-hi: rgba(0, 0, 0, 0.14);
-            --text: #120f22;
-            --text-muted: rgba(18, 15, 34, 0.5);
-            --text-dim: rgba(18, 15, 34, 0.3);
-            --nav-bg: rgba(242, 237, 228, 0.88);
-            --card-bg: rgba(255, 255, 255, 0.96);
-            --stat-div: rgba(0, 0, 0, 0.06);
-            --how-bg: rgba(255, 255, 255, 0.4);
-            --how-border: rgba(0, 0, 0, 0.06);
-            --av-border: rgba(242, 237, 228, 0.9);
-            --footer-bg: rgba(18, 15, 34, 0.06);
-            --footer-border: rgba(0, 0, 0, 0.08);
-            --toggle-bg: rgba(0, 0, 0, 0.06);
-            --toggle-border: rgba(0, 0, 0, 0.12);
-            --shadow-card: rgba(61, 43, 142, 0.12);
+            --shadow-card: rgba(0, 0, 0, 0.5);
         }
 
         html {
@@ -104,16 +88,12 @@
             transition: transform 0.1s;
         }
 
-        [data-theme="dark"] #cursor {
-            mix-blend-mode: difference;
-        }
-
         #cursor-ring {
             position: fixed;
             z-index: 9998;
             width: 38px;
             height: 38px;
-            border: 1.5px solid rgba(200, 164, 90, 0.6);
+            border: 1.5px solid rgba(202, 220, 252, 0.6);
             border-radius: 50%;
             pointer-events: none;
             transition: width 0.3s, height 0.3s, border-color 0.3s;
@@ -128,14 +108,6 @@
             transition: opacity 0.5s;
         }
 
-        [data-theme="dark"] #particle-canvas {
-            opacity: 0.6;
-        }
-
-        [data-theme="light"] #particle-canvas {
-            opacity: 0.35;
-        }
-
         /* grain */
         body::before {
             content: '';
@@ -147,89 +119,18 @@
             transition: opacity 0.45s;
         }
 
-        [data-theme="dark"] body::before {
-            opacity: 0.3;
-        }
-
-        [data-theme="light"] body::before {
-            opacity: 0.12;
-        }
-
         /* ══════════════════════════════════════
        THEME TOGGLE
     ══════════════════════════════════════ */
-        .theme-toggle {
-            position: relative;
-            width: 52px;
-            height: 28px;
-            background: var(--toggle-bg);
-            border: 1px solid var(--toggle-border);
-            border-radius: 100px;
-            cursor: pointer;
-            flex-shrink: 0;
-            transition: background 0.35s, border-color 0.35s;
-            display: flex;
-            align-items: center;
-        }
 
-        .theme-toggle:hover {
-            border-color: var(--gold);
-        }
 
-        .toggle-track {
-            position: absolute;
-            inset: 3px;
-            border-radius: 100px;
-        }
 
-        .toggle-thumb {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background: var(--gold);
-            top: 50%;
-            transform: translateY(-50%);
-            left: 4px;
-            transition: left 0.38s cubic-bezier(.34, 1.56, .64, 1), background 0.3s;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 11px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
-        }
 
-        [data-theme="light"] .toggle-thumb {
-            left: 28px;
-        }
+
+
 
         /* Sun/moon icons inside thumb */
-        .icon-sun,
-        .icon-moon {
-            position: absolute;
-            transition: opacity 0.3s, transform 0.4s;
-            line-height: 1;
-        }
 
-        [data-theme="dark"] .icon-sun {
-            opacity: 0;
-            transform: rotate(-90deg) scale(0.5);
-        }
-
-        [data-theme="dark"] .icon-moon {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
-
-        [data-theme="light"] .icon-moon {
-            opacity: 0;
-            transform: rotate(90deg) scale(0.5);
-        }
-
-        [data-theme="light"] .icon-sun {
-            opacity: 1;
-            transform: rotate(0deg) scale(1);
-        }
 
         /* ── NAV ── */
         nav {
@@ -248,7 +149,7 @@
         nav.scrolled {
             background: var(--nav-bg);
             backdrop-filter: blur(22px);
-            border-bottom: 1px solid rgba(200, 164, 90, 0.13);
+            border-bottom: 1px solid rgba(202, 220, 252, 0.13);
             padding: 15px 64px;
         }
 
@@ -317,7 +218,7 @@
             position: relative;
             overflow: hidden;
             background: transparent;
-            border: 1px solid rgba(200, 164, 90, 0.45);
+            border: 1px solid rgba(202, 220, 252, 0.45);
             color: var(--gold);
             padding: 11px 26px;
             border-radius: 40px;
@@ -370,14 +271,10 @@
             transition: opacity 0.6s;
         }
 
-        [data-theme="light"] .blob {
-            opacity: 0.55;
-        }
-
         .blob-1 {
             width: 650px;
             height: 650px;
-            background: radial-gradient(circle, rgba(124, 92, 232, 0.22), transparent 70%);
+            background: radial-gradient(circle, rgba(0, 36, 107, 0.22), transparent 70%);
             top: -150px;
             right: -150px;
         }
@@ -385,7 +282,7 @@
         .blob-2 {
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, rgba(200, 164, 90, 0.18), transparent 70%);
+            background: radial-gradient(circle, rgba(202, 220, 252, 0.18), transparent 70%);
             bottom: -50px;
             left: 5%;
             animation-delay: -5s;
@@ -394,14 +291,13 @@
         .blob-3 {
             width: 300px;
             height: 300px;
-            background: radial-gradient(circle, rgba(30, 122, 80, 0.14), transparent 70%);
+            background: radial-gradient(circle, rgba(42, 82, 160, 0.14), transparent 70%);
             top: 45%;
             right: 28%;
             animation-delay: -2.5s;
         }
 
-        @@keyframes morphBlob {
-        0%,
+        <blade keyframes|%20morphBlob%20%7B>0%,
         100% {
             border-radius: 60% 40% 70% 30%/50% 60% 40% 50%;
             transform: scale(1);
@@ -432,8 +328,8 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: rgba(200, 164, 90, 0.08);
-            border: 1px solid rgba(200, 164, 90, 0.28);
+            background: rgba(202, 220, 252, 0.08);
+            border: 1px solid rgba(202, 220, 252, 0.28);
             color: var(--gold);
             padding: 8px 18px;
             border-radius: 40px;
@@ -454,10 +350,9 @@
             animation: pulseDot 2s infinite;
         }
 
-        @@keyframes pulseDot {
-        0%,
+        <blade keyframes|%20pulseDot%20%7B>0%,
         100% {
-            box-shadow: 0 0 0 0 rgba(200, 164, 90, 0.5);
+            box-shadow: 0 0 0 0 rgba(202, 220, 252, 0.5);
         }
 
         50% {
@@ -494,8 +389,7 @@
             font-style: italic;
         }
 
-        @@keyframes lineReveal { to { opacity: 1; transform: translateY(0); } }
-        .hero-sub {
+        <blade keyframes|%20lineReveal%20%7B%20to%20%7B%20opacity%3A%201%3B%20transform%3A%20translateY(0)%3B%20%7D%20%7D>.hero-sub {
             font-size: 17px;
             color: var(--text-muted);
             line-height: 1.75;
@@ -507,8 +401,7 @@
             transition: color 0.45s;
         }
 
-        @@keyframes fadeSlideRight { from { opacity:0; transform:translateX(-24px); } to { opacity:1; transform:translateX(0); } }
-        .hero-actions {
+        <blade keyframes|%20fadeSlideRight%20%7B%20from%20%7B%20opacity%3A0%3B%20transform%3AtranslateX(-24px)%3B%20%7D%20to%20%7B%20opacity%3A1%3B%20transform%3AtranslateX(0)%3B%20%7D%20%7D>.hero-actions {
             display: flex;
             gap: 18px;
             align-items: center;
@@ -521,7 +414,7 @@
             align-items: center;
             gap: 12px;
             background: var(--gold);
-            color: #120f22;
+            color: #00246B;
             padding: 17px 36px;
             border-radius: 50px;
             font-size: 14px;
@@ -576,8 +469,7 @@
             animation: heroCardIn 1s 0.5s cubic-bezier(.16, 1, .3, 1) forwards;
         }
 
-        @@keyframes heroCardIn { from { opacity:0; transform:translateY(50px) scale(0.93); } to { opacity:1; transform:translateY(0) scale(1); } }
-        .card-main {
+        <blade keyframes|%20heroCardIn%20%7B%20from%20%7B%20opacity%3A0%3B%20transform%3AtranslateY(50px)%20scale(0.93)%3B%20%7D%20to%20%7B%20opacity%3A1%3B%20transform%3AtranslateY(0)%20scale(1)%3B%20%7D%20%7D>.card-main {
             background: var(--surface);
             backdrop-filter: blur(30px);
             border: 1px solid var(--border-hi);
@@ -596,14 +488,14 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(200, 164, 90, 0.7), transparent);
+            background: linear-gradient(90deg, transparent, rgba(202, 220, 252, 0.7), transparent);
         }
 
         .card-inner-glow {
             position: absolute;
             width: 250px;
             height: 250px;
-            background: radial-gradient(circle, rgba(124, 92, 232, 0.2), transparent);
+            background: radial-gradient(circle, rgba(0, 36, 107, 0.2), transparent);
             top: -80px;
             right: -80px;
             pointer-events: none;
@@ -707,8 +599,7 @@
             animation: shimmer 2.5s 3s ease-in-out infinite;
         }
 
-        @@keyframes shimmer { 0%{transform:translateX(-100px);opacity:0;} 40%{opacity:1;} 100%{transform:translateX(100px);opacity:0;} }
-        .prog-labels {
+        <blade keyframes|%20shimmer%20%7B%200%25%7Btransform%3AtranslateX(-100px)%3Bopacity%3A0%3B%7D%2040%25%7Bopacity%3A1%3B%7D%20100%25%7Btransform%3AtranslateX(100px)%3Bopacity%3A0%3B%7D%20%7D>.prog-labels {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
@@ -759,20 +650,20 @@
         }
 
         .av-a {
-            background: #667eea;
+            background: #00246B;
         }
 
         .av-b {
-            background: #e06b6b;
+            background: #2a52a0;
         }
 
         .av-c {
             background: var(--gold);
-            color: #120f22;
+            color: #00246B;
         }
 
         .av-d {
-            background: #2a7d4f;
+            background: #1a3a7a;
         }
 
         .av-e {
@@ -840,14 +731,12 @@
             animation: floatA 5s 1s ease-in-out infinite;
         }
 
-        @@keyframes floatA { 0%,100%{transform:translateY(0) rotate(-1deg);} 50%{transform:translateY(-10px) rotate(1deg);} }
-        @@keyframes floatB { 0%,100%{transform:translateY(0) rotate(1deg);} 50%{transform:translateY(-14px) rotate(-1deg);} }
-        .notif-pop {
+        <blade keyframes|%20floatA%20%7B%200%25%2C100%25%7Btransform%3AtranslateY(0)%20rotate(-1deg)%3B%7D%2050%25%7Btransform%3AtranslateY(-10px)%20rotate(1deg)%3B%7D%20%7D><blade keyframes|%20floatB%20%7B%200%25%2C100%25%7Btransform%3AtranslateY(0)%20rotate(1deg)%3B%7D%2050%25%7Btransform%3AtranslateY(-14px)%20rotate(-1deg)%3B%7D%20%7D>.notif-pop {
             position: absolute;
             top: -18px;
             left: -18px;
             background: var(--card-bg);
-            border: 1px solid rgba(74, 222, 128, 0.35);
+            border: 1px solid rgba(218, 69, 63, 0.35);
             border-radius: 14px;
             padding: 12px 16px;
             display: flex;
@@ -859,8 +748,7 @@
             transition: background 0.45s;
         }
 
-        @@keyframes popIn { from{opacity:0;transform:scale(0.6) translateY(10px);} to{opacity:1;transform:scale(1) translateY(0);} }
-        .notif-icon {
+        <blade keyframes|%20popIn%20%7B%20from%7Bopacity%3A0%3Btransform%3Ascale(0.6)%20translateY(10px)%3B%7D%20to%7Bopacity%3A1%3Btransform%3Ascale(1)%20translateY(0)%3B%7D%20%7D>.notif-icon {
             font-size: 18px;
         }
 
@@ -889,12 +777,11 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(200, 164, 90, 0.04) 0%, transparent 50%, rgba(124, 92, 232, 0.04) 100%);
+            background: linear-gradient(135deg, rgba(202, 220, 252, 0.04) 0%, transparent 50%, rgba(0, 36, 107, 0.04) 100%);
             transition: opacity 0.45s;
         }
 
-        [data-theme="light"] .activity-section::before {
-            background: linear-gradient(135deg, rgba(200, 164, 90, 0.07) 0%, transparent 50%, rgba(124, 92, 232, 0.06) 100%);
+        background: linear-gradient(135deg, rgba(202, 220, 252, 0.07) 0%, transparent 50%, rgba(0, 36, 107, 0.06) 100%);
         }
 
         .activity-inner {
@@ -1019,8 +906,7 @@
             animation: feedSlideOut 0.4s ease forwards;
         }
 
-        @@keyframes feedSlideIn {
-        from {
+        <blade keyframes|%20feedSlideIn%20%7B>from {
             opacity: 0;
             transform: translateX(30px) scale(0.97);
         }
@@ -1031,8 +917,7 @@
         }
         }
 
-        @@keyframes feedSlideOut {
-        from {
+        <blade keyframes|%20feedSlideOut%20%7B>from {
             opacity: 1;
             transform: translateY(0) scale(1);
             max-height: 80px;
@@ -1116,27 +1001,27 @@
         }
 
         .badge-paid {
-            background: rgba(74, 222, 128, 0.12);
-            color: #4ade80;
-            border: 1px solid rgba(74, 222, 128, 0.25);
+            background: rgba(202, 220, 252, 0.15);
+            color: #00246B;
+            border: 1px solid rgba(202, 220, 252, 0.4);
         }
 
         .badge-joined {
-            background: rgba(200, 164, 90, 0.12);
+            background: rgba(202, 220, 252, 0.12);
             color: var(--gold);
-            border: 1px solid rgba(200, 164, 90, 0.25);
+            border: 1px solid rgba(202, 220, 252, 0.25);
         }
 
         .badge-goal {
-            background: rgba(124, 92, 232, 0.12);
-            color: #a78bfa;
-            border: 1px solid rgba(124, 92, 232, 0.25);
+            background: rgba(0, 36, 107, 0.12);
+            color: #CADCFC;
+            border: 1px solid rgba(0, 36, 107, 0.3);
         }
 
         .badge-new {
-            background: rgba(56, 189, 248, 0.12);
-            color: #38bdf8;
-            border: 1px solid rgba(56, 189, 248, 0.25);
+            background: rgba(42, 82, 160, 0.12);
+            color: #2a52a0;
+            border: 1px solid rgba(42, 82, 160, 0.3);
         }
 
         /* Pulse dot on header */
@@ -1146,7 +1031,7 @@
             gap: 7px;
             font-size: 11px;
             font-weight: 700;
-            color: #4ade80;
+            color: #1a3a7a;
             margin-bottom: 10px;
         }
 
@@ -1155,7 +1040,7 @@
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #4ade80;
+            background: #1a3a7a;
             animation: pulseDot 2s infinite;
         }
 
@@ -1197,7 +1082,7 @@
         }
 
         .stat-box:hover {
-            background: rgba(200, 164, 90, 0.04);
+            background: rgba(202, 220, 252, 0.04);
         }
 
         .stat-num {
@@ -1295,8 +1180,8 @@
 
         .bento-card:hover {
             transform: translateY(-7px);
-            border-color: rgba(200, 164, 90, 0.3);
-            box-shadow: 0 24px 60px var(--shadow-card), 0 0 40px rgba(200, 164, 90, 0.07);
+            border-color: rgba(202, 220, 252, 0.3);
+            box-shadow: 0 24px 60px var(--shadow-card), 0 0 40px rgba(202, 220, 252, 0.07);
         }
 
         .bento-card.wide {
@@ -1308,7 +1193,7 @@
             position: absolute;
             width: 220px;
             height: 220px;
-            background: radial-gradient(circle, rgba(200, 164, 90, 0.1), transparent 70%);
+            background: radial-gradient(circle, rgba(202, 220, 252, 0.1), transparent 70%);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s;
@@ -1325,8 +1210,8 @@
             width: 54px;
             height: 54px;
             border-radius: 16px;
-            background: rgba(200, 164, 90, 0.09);
-            border: 1px solid rgba(200, 164, 90, 0.2);
+            background: rgba(202, 220, 252, 0.09);
+            border: 1px solid rgba(202, 220, 252, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1337,7 +1222,7 @@
 
         .bento-card:hover .bento-icon {
             transform: rotate(-8deg) scale(1.12);
-            background: rgba(200, 164, 90, 0.2);
+            background: rgba(202, 220, 252, 0.2);
         }
 
         .bento-title {
@@ -1377,8 +1262,8 @@
         }
 
         .chip:hover {
-            background: rgba(200, 164, 90, 0.1);
-            border-color: rgba(200, 164, 90, 0.3);
+            background: rgba(202, 220, 252, 0.1);
+            border-color: rgba(202, 220, 252, 0.3);
             color: var(--gold);
         }
 
@@ -1405,7 +1290,7 @@
             top: 20px;
             bottom: 20px;
             width: 1px;
-            background: linear-gradient(180deg, transparent, rgba(200, 164, 90, 0.3) 15%, rgba(200, 164, 90, 0.3) 85%, transparent);
+            background: linear-gradient(180deg, transparent, rgba(202, 220, 252, 0.3) 15%, rgba(202, 220, 252, 0.3) 85%, transparent);
         }
 
         .step-row {
@@ -1433,8 +1318,8 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: rgba(200, 164, 90, 0.07);
-            border: 1px solid rgba(200, 164, 90, 0.25);
+            background: rgba(202, 220, 252, 0.07);
+            border: 1px solid rgba(202, 220, 252, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1445,7 +1330,7 @@
 
         .step-row:hover .step-circle {
             transform: scale(1.1) rotate(6deg);
-            background: rgba(200, 164, 90, 0.18);
+            background: rgba(202, 220, 252, 0.18);
         }
 
         .step-circle span {
@@ -1479,8 +1364,8 @@
         .step-badge {
             display: inline-block;
             margin-top: 16px;
-            background: rgba(200, 164, 90, 0.07);
-            border: 1px solid rgba(200, 164, 90, 0.2);
+            background: rgba(202, 220, 252, 0.07);
+            border: 1px solid rgba(202, 220, 252, 0.2);
             color: var(--gold);
             font-size: 11px;
             font-weight: 700;
@@ -1515,7 +1400,7 @@
 
         .testi-card:hover {
             transform: translateY(-8px);
-            border-color: rgba(200, 164, 90, 0.25);
+            border-color: rgba(202, 220, 252, 0.25);
         }
 
         .stars {
@@ -1593,7 +1478,7 @@
             transform: translateX(-50%);
             width: 900px;
             height: 600px;
-            background: radial-gradient(ellipse, rgba(200, 164, 90, 0.06) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(202, 220, 252, 0.06) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -1633,9 +1518,9 @@
 
         /* Featured (Growth) — highlighted column */
         .price-card.featured {
-            background: linear-gradient(180deg, rgba(200, 164, 90, 0.07) 0%, rgba(124, 92, 232, 0.06) 100%);
-            border-right: 1px solid rgba(200, 164, 90, 0.22);
-            border-left: 1px solid rgba(200, 164, 90, 0.22);
+            background: linear-gradient(180deg, rgba(202, 220, 252, 0.07) 0%, rgba(0, 36, 107, 0.06) 100%);
+            border-right: 1px solid rgba(202, 220, 252, 0.22);
+            border-left: 1px solid rgba(202, 220, 252, 0.22);
             z-index: 1;
         }
 
@@ -1663,7 +1548,7 @@
             align-items: center;
             gap: 6px;
             background: var(--gold);
-            color: #120f22;
+            color: #00246B;
             font-size: 10px;
             font-weight: 900;
             letter-spacing: 1.5px;
@@ -1676,7 +1561,7 @@
             transform: translateX(-50%);
             white-space: nowrap;
             z-index: 2;
-            box-shadow: 0 4px 16px rgba(200, 164, 90, 0.35);
+            box-shadow: 0 4px 16px rgba(0, 36, 107, 0.25);
         }
 
         .price-tier {
@@ -1696,7 +1581,7 @@
         }
 
         .tier-ent {
-            color: #a78bfa;
+            color: #9ab8b2;
         }
 
         .price-name {
@@ -1804,7 +1689,7 @@
         }
 
         .chk-v {
-            color: #a78bfa;
+            color: #9ab8b2;
             font-size: 11px;
             font-weight: 900;
             flex-shrink: 0;
@@ -1817,16 +1702,16 @@
             font-size: 11.5px;
             line-height: 1.6;
             color: var(--text-muted);
-            background: rgba(74, 222, 128, 0.06);
-            border: 1px solid rgba(74, 222, 128, 0.15);
+            background: rgba(218, 69, 63, 0.06);
+            border: 1px solid rgba(218, 69, 63, 0.15);
             border-radius: 10px;
             padding: 11px 14px;
             transition: color 0.45s, background 0.45s;
         }
 
         .price-note.gold-note {
-            background: rgba(200, 164, 90, 0.07);
-            border-color: rgba(200, 164, 90, 0.2);
+            background: rgba(202, 220, 252, 0.07);
+            border-color: rgba(202, 220, 252, 0.2);
         }
 
         .price-for-whom {
@@ -1870,7 +1755,7 @@
 
         .price-designed-list li::before {
             content: '→';
-            color: #a78bfa;
+            color: #9ab8b2;
             font-size: 10px;
             font-weight: 800;
         }
@@ -1878,9 +1763,9 @@
         .price-tag-enterprise {
             display: inline-block;
             margin-bottom: 8px;
-            background: rgba(124, 92, 232, 0.12);
-            border: 1px solid rgba(124, 92, 232, 0.25);
-            color: #a78bfa;
+            background: rgba(0, 36, 107, 0.12);
+            border: 1px solid rgba(0, 36, 107, 0.25);
+            color: #9ab8b2;
             font-size: 9px;
             font-weight: 900;
             letter-spacing: 2px;
@@ -1924,13 +1809,13 @@
         .pb-out:hover {
             border-color: var(--gold);
             color: var(--gold);
-            background: rgba(200, 164, 90, 0.05);
+            background: rgba(202, 220, 252, 0.05);
         }
 
         .pb-gold {
             background: var(--gold);
-            color: #120f22;
-            box-shadow: 0 4px 24px rgba(200, 164, 90, 0.4);
+            color: #00246B;
+            box-shadow: 0 4px 24px rgba(202, 220, 252, 0.4);
         }
 
         .pb-gold::after {
@@ -1947,18 +1832,18 @@
         }
 
         .pb-gold:hover {
-            box-shadow: 0 8px 40px rgba(200, 164, 90, 0.5);
+            box-shadow: 0 8px 40px rgba(202, 220, 252, 0.5);
         }
 
         .pb-violet {
-            border: 1px solid rgba(124, 92, 232, 0.4);
-            color: #a78bfa;
-            background: rgba(124, 92, 232, 0.07);
+            border: 1px solid rgba(0, 36, 107, 0.4);
+            color: #9ab8b2;
+            background: rgba(0, 36, 107, 0.07);
         }
 
         .pb-violet:hover {
-            background: rgba(124, 92, 232, 0.15);
-            border-color: #a78bfa;
+            background: rgba(0, 36, 107, 0.15);
+            border-color: #9ab8b2;
         }
 
         /* ── PRICE NOTE (starter) ── */
@@ -2035,9 +1920,9 @@
         .price-tag-enterprise {
             display: inline-block;
             margin-bottom: 6px;
-            background: rgba(124, 92, 232, 0.12);
-            border: 1px solid rgba(124, 92, 232, 0.25);
-            color: #a78bfa;
+            background: rgba(0, 36, 107, 0.12);
+            border: 1px solid rgba(0, 36, 107, 0.25);
+            color: #9ab8b2;
             font-size: 10px;
             font-weight: 800;
             letter-spacing: 1.5px;
@@ -2118,7 +2003,7 @@
 
         .reward-pill:hover {
             transform: translateY(-4px);
-            border-color: rgba(200, 164, 90, 0.3);
+            border-color: rgba(202, 220, 252, 0.3);
         }
 
         .reward-pill-icon {
@@ -2165,8 +2050,8 @@
             width: 64px;
             height: 64px;
             border-radius: 50%;
-            background: rgba(74, 222, 128, 0.1);
-            border: 1px solid rgba(74, 222, 128, 0.25);
+            background: rgba(218, 69, 63, 0.1);
+            border: 1px solid rgba(218, 69, 63, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -2175,10 +2060,9 @@
             animation: lockPulse 3s ease-in-out infinite;
         }
 
-        @@keyframes lockPulse {
-        0%,
+        <blade keyframes|%20lockPulse%20%7B>0%,
         100% {
-            box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.2);
+            box-shadow: 0 0 0 0 rgba(218, 69, 63, 0.2);
         }
 
         50% {
@@ -2226,7 +2110,7 @@
         }
 
         .trust-pill:hover {
-            border-color: rgba(74, 222, 128, 0.4);
+            border-color: rgba(218, 69, 63, 0.4);
             color: var(--green-bright);
         }
 
@@ -2252,7 +2136,7 @@
         .cta-ring {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(200, 164, 90, 0.07);
+            border: 1px solid rgba(202, 220, 252, 0.07);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -2278,8 +2162,7 @@
             animation-delay: 2.4s;
         }
 
-        @@keyframes ringPulse {
-        0%,
+        <blade keyframes|%20ringPulse%20%7B>0%,
         100% {
             opacity: 0.3;
             transform: translate(-50%, -50%) scale(1);
@@ -2289,10 +2172,6 @@
             opacity: 0.9;
             transform: translate(-50%, -50%) scale(1.04);
         }
-        }
-
-        [data-theme="light"] .cta-ring {
-            border-color: rgba(200, 164, 90, 0.12);
         }
 
         .cta-inner {
@@ -2415,22 +2294,8 @@
         }
 
         /* ── THEME FLASH (overlay when toggling) ── */
-        #theme-flash {
-            position: fixed;
-            inset: 0;
-            z-index: 9000;
-            pointer-events: none;
-            opacity: 0;
-            background: var(--gold);
-            transition: opacity 0.18s;
-        }
 
-        #theme-flash.flash {
-            opacity: 0.06;
-        }
-
-        @@media (max-width: 1000px) {
-        nav {
+        <blade media|%20(max-width%3A%201000px)%20%7B>nav {
             padding: 16px 24px;
         }
 
@@ -2518,8 +2383,8 @@
         .price-card.featured {
             border-left: none;
             border-right: none;
-            border-top: 1px solid rgba(200, 164, 90, 0.22);
-            border-bottom: 1px solid rgba(200, 164, 90, 0.22);
+            border-top: 1px solid rgba(202, 220, 252, 0.22);
+            border-bottom: 1px solid rgba(202, 220, 252, 0.22);
         }
 
         .rewards-inner {
@@ -2587,8 +2452,6 @@
 </head>
 
 <body>
-
-    <div id="theme-flash"></div>
     <div id="cursor"></div>
     <div id="cursor-ring"></div>
     <canvas id="particle-canvas"></canvas>
@@ -2606,12 +2469,6 @@
         </div>
         <div class="nav-right">
             <!-- THEME TOGGLE -->
-            <button class="theme-toggle mag" id="themeToggle" aria-label="Toggle theme" title="Toggle light/dark mode">
-                <div class="toggle-thumb">
-                    <span class="icon-moon">🌙</span>
-                    <span class="icon-sun">☀️</span>
-                </div>
-            </button>
             <a href="#" class="nav-btn mag"><span>Start Free</span></a>
         </div>
     </nav>
@@ -2658,7 +2515,7 @@
                 </div>
                 <div class="mini-card mc-1">
                     <div class="mc-label">This month</div>
-                    <div class="mc-val" style="color:#4ade80;">+£2,100</div>
+                    <div class="mc-val" style="color:#1a3a7a;">+£2,100</div>
                     <div class="mc-sub">group total</div>
                 </div>
                 <div class="mini-card mc-2">
@@ -2850,7 +2707,7 @@
                 <div class="testi-q">"We saved for a family holiday to Portugal in 8 months. I never had to chase anyone
                     — GroupSave kept the whole group accountable automatically."</div>
                 <div class="testi-foot">
-                    <div class="tav" style="background:#667eea;">AN</div>
+                    <div class="tav" style="background:#CADCFC;">AN</div>
                     <div>
                         <div class="tav-name">Amara Nwosu</div>
                         <div class="tav-role">Group Leader · Manchester</div>
@@ -2862,7 +2719,7 @@
                 <div class="testi-q">"Our work team used it for a Christmas party fund. The live tracker kept morale
                     high — watching the number climb every month was genuinely exciting."</div>
                 <div class="testi-foot">
-                    <div class="tav" style="background:var(--gold);color:#120f22;">DJ</div>
+                    <div class="tav" style="background:var(--gold);color:#00246B;">DJ</div>
                     <div>
                         <div class="tav-name">Daniel Johnson</div>
                         <div class="tav-role">Member of 3 Groups · Birmingham</div>
@@ -3131,36 +2988,6 @@
 
     <script>
         // ══════════════════════════════════════
-        // THEME TOGGLE
-        // ══════════════════════════════════════
-        const html = document.documentElement;
-        const toggleBtn = document.getElementById('themeToggle');
-        const flash = document.getElementById('theme-flash');
-
-        // Respect OS preference on first load
-        const stored = localStorage.getItem('gs-theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const initial = stored || (prefersDark ? 'dark' : 'light');
-        html.setAttribute('data-theme', initial);
-
-        function setTheme(theme) {
-            // Flash effect
-            flash.classList.add('flash');
-            setTimeout(() => flash.classList.remove('flash'), 300);
-
-            html.setAttribute('data-theme', theme);
-            localStorage.setItem('gs-theme', theme);
-
-            // Update particle colours
-            updateParticleColors(theme);
-        }
-
-        toggleBtn.addEventListener('click', () => {
-            const current = html.getAttribute('data-theme');
-            setTheme(current === 'dark' ? 'light' : 'dark');
-        });
-
-        // ══════════════════════════════════════
         // CUSTOM CURSOR
         // ══════════════════════════════════════
         const cursor = document.getElementById('cursor');
@@ -3189,7 +3016,7 @@
             el.addEventListener('mouseleave', () => {
                 ring.style.width = '38px';
                 ring.style.height = '38px';
-                ring.style.borderColor = 'rgba(200,164,90,0.6)';
+                ring.style.borderColor = 'rgba(202,220,252,0.6)';
             });
         });
 
@@ -3227,7 +3054,7 @@
             resizeTimer = setTimeout(resize, 200);
         });
 
-        let darkMode = html.getAttribute('data-theme') === 'dark';
+        let darkMode = true;
 
         // 32 particles — visually rich but O(n²) stays at ~500 pairs max
         const parts = Array.from({
@@ -3244,9 +3071,9 @@
 
         function getColors(isDark) {
             return {
-                a: isDark ? [200, 164, 90] : [170, 130, 50],
-                b: isDark ? [124, 92, 232] : [80, 55, 170],
-                line: isDark ? '200,164,90' : '100,80,180'
+                a: isDark ? [202, 220, 252] : [0, 36, 107],
+                b: isDark ? [42, 82, 160] : [0, 36, 107],
+                line: isDark ? '202,220,252' : '0,36,107'
             };
         }
         let colors = getColors(darkMode);
@@ -3255,7 +3082,6 @@
             darkMode = theme === 'dark';
             colors = getColors(darkMode);
         }
-        updateParticleColors(html.getAttribute('data-theme'));
 
         // Throttle to 30fps — halves GPU work vs 60fps
         let lastFrame = 0;
@@ -3415,7 +3241,7 @@
         const feedEvents = [{
                 name: 'Amara N.',
                 initials: 'AN',
-                color: '#667eea',
+                color: '#00246B',
                 desc: 'Paid into "Family Holiday Fund"',
                 amount: '+£350',
                 badge: 'paid',
@@ -3425,7 +3251,7 @@
             {
                 name: 'Daniel J.',
                 initials: 'DJ',
-                color: '#c8a45a',
+                color: '#2a52a0',
                 desc: 'Created group "Christmas 2025"',
                 amount: 'New',
                 badge: 'new',
@@ -3435,7 +3261,7 @@
             {
                 name: 'Saoirse P.',
                 initials: 'SP',
-                color: '#1e7a50',
+                color: '#2a52a0',
                 desc: '"House Deposit" hit 100% goal! 🎉',
                 amount: '£18,500',
                 badge: 'goal',
@@ -3445,7 +3271,7 @@
             {
                 name: 'Marcus T.',
                 initials: 'MT',
-                color: '#e06b6b',
+                color: '#1a3a7a',
                 desc: 'Joined "Office Party Fund"',
                 amount: '',
                 badge: 'joined',
@@ -3455,7 +3281,7 @@
             {
                 name: 'Priya K.',
                 initials: 'PK',
-                color: '#7c5ce8',
+                color: '#2a52a0',
                 desc: 'Paid into "World Trip Fund"',
                 amount: '+£200',
                 badge: 'paid',
@@ -3465,7 +3291,7 @@
             {
                 name: 'Liam O.',
                 initials: 'LO',
-                color: '#38bdf8',
+                color: '#1a3a7a',
                 desc: 'Created group "Wedding Savings"',
                 amount: 'New',
                 badge: 'new',
@@ -3485,7 +3311,7 @@
             {
                 name: 'James R.',
                 initials: 'JR',
-                color: '#a78bfa',
+                color: '#9ab8b2',
                 desc: '"Education Fund" reached 50%',
                 amount: '£3,150',
                 badge: 'goal',
@@ -3525,7 +3351,7 @@
             {
                 name: 'Ngozi M.',
                 initials: 'NM',
-                color: '#c8a45a',
+                color: '#00246B',
                 desc: 'Paid into "Wedding Savings"',
                 amount: '+£400',
                 badge: 'paid',
@@ -3598,7 +3424,6 @@
 
         // Seed with initial items
         function seedFeed() {
-            const initial = feedEvents.slice(0, MAX_VISIBLE);
             initial.forEach((event, i) => {
                 const el = buildFeedItem(event);
                 feedList.appendChild(el);
