@@ -2385,7 +2385,8 @@
 
         /* ── THEME FLASH (overlay when toggling) ── */
 
-        <blade media|%20(max-width%3A%201000px)%20%7B>nav {
+        @@media (max-width: 1000px) {
+        nav {
             padding: 16px 24px;
         }
 
