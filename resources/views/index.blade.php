@@ -3488,6 +3488,7 @@
 
         // Seed with initial items
         function seedFeed() {
+            const initial = feedEvents.slice(0, MAX_VISIBLE);
             initial.forEach((event, i) => {
                 const el = buildFeedItem(event);
                 feedList.appendChild(el);
