@@ -297,21 +297,19 @@
             animation-delay: -2.5s;
         }
 
-        <blade keyframes|%20morphBlob%20%7B>0%,
-        100% {
-            border-radius: 60% 40% 70% 30%/50% 60% 40% 50%;
-            transform: scale(1);
-        }
-
-        33% {
-            border-radius: 40% 60% 30% 70%/60% 40% 60% 40%;
-            transform: scale(1.06);
-        }
-
-        66% {
-            border-radius: 70% 30% 50% 50%/40% 70% 30% 60%;
-            transform: scale(0.94);
-        }
+        @@keyframes morphBlob {
+            0%, 100% {
+                border-radius: 60% 40% 70% 30%/50% 60% 40% 50%;
+                transform: scale(1);
+            }
+            33% {
+                border-radius: 40% 60% 30% 70%/60% 40% 60% 40%;
+                transform: scale(1.06);
+            }
+            66% {
+                border-radius: 70% 30% 50% 50%/40% 70% 30% 60%;
+                transform: scale(0.94);
+            }
         }
 
         .hero-inner {
@@ -350,14 +348,13 @@
             animation: pulseDot 2s infinite;
         }
 
-        <blade keyframes|%20pulseDot%20%7B>0%,
-        100% {
-            box-shadow: 0 0 0 0 rgba(202, 220, 252, 0.5);
-        }
-
-        50% {
-            box-shadow: 0 0 0 6px transparent;
-        }
+        @@keyframes pulseDot {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(202, 220, 252, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 0 6px transparent;
+            }
         }
 
         .hero h1 {
@@ -389,7 +386,14 @@
             font-style: italic;
         }
 
-        <blade keyframes|%20lineReveal%20%7B%20to%20%7B%20opacity%3A%201%3B%20transform%3A%20translateY(0)%3B%20%7D%20%7D>.hero-sub {
+        @@keyframes lineReveal {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero-sub {
             font-size: 17px;
             color: var(--text-muted);
             line-height: 1.75;
@@ -401,7 +405,18 @@
             transition: color 0.45s;
         }
 
-        <blade keyframes|%20fadeSlideRight%20%7B%20from%20%7B%20opacity%3A0%3B%20transform%3AtranslateX(-24px)%3B%20%7D%20to%20%7B%20opacity%3A1%3B%20transform%3AtranslateX(0)%3B%20%7D%20%7D>.hero-actions {
+        @@keyframes fadeSlideRight {
+            from {
+                opacity: 0;
+                transform: translateX(-24px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .hero-actions {
             display: flex;
             gap: 18px;
             align-items: center;
@@ -469,7 +484,18 @@
             animation: heroCardIn 1s 0.5s cubic-bezier(.16, 1, .3, 1) forwards;
         }
 
-        <blade keyframes|%20heroCardIn%20%7B%20from%20%7B%20opacity%3A0%3B%20transform%3AtranslateY(50px)%20scale(0.93)%3B%20%7D%20to%20%7B%20opacity%3A1%3B%20transform%3AtranslateY(0)%20scale(1)%3B%20%7D%20%7D>.card-main {
+        @@keyframes heroCardIn {
+            from {
+                opacity: 0;
+                transform: translateY(50px) scale(0.93);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .card-main {
             background: var(--surface);
             backdrop-filter: blur(30px);
             border: 1px solid var(--border-hi);
@@ -599,7 +625,21 @@
             animation: shimmer 2.5s 3s ease-in-out infinite;
         }
 
-        <blade keyframes|%20shimmer%20%7B%200%25%7Btransform%3AtranslateX(-100px)%3Bopacity%3A0%3B%7D%2040%25%7Bopacity%3A1%3B%7D%20100%25%7Btransform%3AtranslateX(100px)%3Bopacity%3A0%3B%7D%20%7D>.prog-labels {
+        @@keyframes shimmer {
+            0% {
+                transform: translateX(-100px);
+                opacity: 0;
+            }
+            40% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        .prog-labels {
             display: flex;
             justify-content: space-between;
             font-size: 12px;
@@ -731,7 +771,25 @@
             animation: floatA 5s 1s ease-in-out infinite;
         }
 
-        <blade keyframes|%20floatA%20%7B%200%25%2C100%25%7Btransform%3AtranslateY(0)%20rotate(-1deg)%3B%7D%2050%25%7Btransform%3AtranslateY(-10px)%20rotate(1deg)%3B%7D%20%7D><blade keyframes|%20floatB%20%7B%200%25%2C100%25%7Btransform%3AtranslateY(0)%20rotate(1deg)%3B%7D%2050%25%7Btransform%3AtranslateY(-14px)%20rotate(-1deg)%3B%7D%20%7D>.notif-pop {
+        @@keyframes floatA {
+            0%, 100% {
+                transform: translateY(0) rotate(-1deg);
+            }
+            50% {
+                transform: translateY(-10px) rotate(1deg);
+            }
+        }
+
+        @@keyframes floatB {
+            0%, 100% {
+                transform: translateY(0) rotate(1deg);
+            }
+            50% {
+                transform: translateY(-14px) rotate(-1deg);
+            }
+        }
+
+        .notif-pop {
             position: absolute;
             top: -18px;
             left: -18px;
@@ -748,7 +806,18 @@
             transition: background 0.45s;
         }
 
-        <blade keyframes|%20popIn%20%7B%20from%7Bopacity%3A0%3Btransform%3Ascale(0.6)%20translateY(10px)%3B%7D%20to%7Bopacity%3A1%3Btransform%3Ascale(1)%20translateY(0)%3B%7D%20%7D>.notif-icon {
+        @@keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.6) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .notif-icon {
             font-size: 18px;
         }
 
@@ -779,9 +848,6 @@
             inset: 0;
             background: linear-gradient(135deg, rgba(202, 220, 252, 0.04) 0%, transparent 50%, rgba(0, 36, 107, 0.04) 100%);
             transition: opacity 0.45s;
-        }
-
-        background: linear-gradient(135deg, rgba(202, 220, 252, 0.07) 0%, transparent 50%, rgba(0, 36, 107, 0.06) 100%);
         }
 
         .activity-inner {
@@ -906,30 +972,30 @@
             animation: feedSlideOut 0.4s ease forwards;
         }
 
-        <blade keyframes|%20feedSlideIn%20%7B>from {
-            opacity: 0;
-            transform: translateX(30px) scale(0.97);
+        @@keyframes feedSlideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px) scale(0.97);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
         }
 
-        to {
-            opacity: 1;
-            transform: translateX(0) scale(1);
-        }
-        }
-
-        <blade keyframes|%20feedSlideOut%20%7B>from {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            max-height: 80px;
-            margin-bottom: 0;
-        }
-
-        to {
-            opacity: 0;
-            transform: translateY(-8px) scale(0.97);
-            max-height: 0;
-            margin-bottom: -12px;
-        }
+        @@keyframes feedSlideOut {
+            from {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+                max-height: 80px;
+                margin-bottom: 0;
+            }
+            to {
+                opacity: 0;
+                transform: translateY(-8px) scale(0.97);
+                max-height: 0;
+                margin-bottom: -12px;
+            }
         }
 
         .feed-avatar {
@@ -2060,14 +2126,13 @@
             animation: lockPulse 3s ease-in-out infinite;
         }
 
-        <blade keyframes|%20lockPulse%20%7B>0%,
-        100% {
-            box-shadow: 0 0 0 0 rgba(218, 69, 63, 0.2);
-        }
-
-        50% {
-            box-shadow: 0 0 0 16px transparent;
-        }
+        @@keyframes lockPulse {
+            0%, 100% {
+                box-shadow: 0 0 0 0 rgba(218, 69, 63, 0.2);
+            }
+            50% {
+                box-shadow: 0 0 0 16px transparent;
+            }
         }
 
         .trust-title {
@@ -2162,16 +2227,15 @@
             animation-delay: 2.4s;
         }
 
-        <blade keyframes|%20ringPulse%20%7B>0%,
-        100% {
-            opacity: 0.3;
-            transform: translate(-50%, -50%) scale(1);
-        }
-
-        50% {
-            opacity: 0.9;
-            transform: translate(-50%, -50%) scale(1.04);
-        }
+        @@keyframes ringPulse {
+            0%, 100% {
+                opacity: 0.3;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                opacity: 0.9;
+                transform: translate(-50%, -50%) scale(1.04);
+            }
         }
 
         .cta-inner {
