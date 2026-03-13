@@ -812,6 +812,7 @@ class UserController extends Controller
                     'name' => $user->name,
                     'email' => $user->email,
                     'mobile' => $user->mobile,
+                    'plan' => $user->userPlans()->where('status', 'active')->first()?->plan->name ?? 'No active plan',
                     'created_at' => $user->created_at,
                 ],
                 'stats' => $stats,
