@@ -1,16 +1,16 @@
 @extends('emails.layouts.email')
 
-@section('subject', 'Welcome to  GroupSave!')
+@section('subject', 'Welcome to {{ config("app.name") }}!')
 @section('eyebrow', 'Welcome Aboard')
 @section('icon', '🎉')
 @section('icon_style', 'ic-gold')
-@section('title', 'Welcome to  GroupSave!')
+@section('title', 'Welcome to {{ config("app.name") }}!')
 <blade
     section|(%26%2339%3Bsubtitle%26%2339%3B%2C%20%26%2339%3BYour%20community%20savings%20journey%20starts%20here%26%2339%3B) />
 
 @section('content')
 <p>Hello <strong>{{ $userName }}</strong>,</p>
-<p>Thank you for joining <strong> GroupSave</strong>. We're thrilled to have you in our community of disciplined,
+<p>Thank you for joining <strong>{{ config('app.name') }}</strong>. We're thrilled to have you in our community of disciplined,
     transparent savers.</p>
 
 <div class="icard">

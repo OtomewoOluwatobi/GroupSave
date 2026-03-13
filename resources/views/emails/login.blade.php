@@ -9,7 +9,7 @@
 
 @section('content')
   <p>Hello <strong>{{ $userName }}</strong>,</p>
-  <p>We detected a new login to your GroupSave account.</p>
+  <p>We detected a new login to your {{ config('app.name') }} account.</p>
 
   <div class="icard">
     <div class="ilabel">Login Details</div>

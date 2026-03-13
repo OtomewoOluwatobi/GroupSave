@@ -42,7 +42,7 @@
         letter-spacing: 0.5px;
     }
     .swagger-ui .topbar .topbar-wrapper::before {
-        content: 'GroupSave API';
+        content: '{{ config('app.name') }} API';
         color: #c8a45a;
         font-size: 18px;
         font-weight: 800;

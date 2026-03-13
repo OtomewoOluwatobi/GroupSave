@@ -9,7 +9,7 @@
 
 @section('content')
   <p>Hello <strong>{{ $userName }}</strong>,</p>
-  <p><strong>{{ $inviterName }}</strong> has invited you to join the savings group <strong>"{{ $groupName }}"</strong> on GroupSave.</p>
+  <p><strong>{{ $inviterName }}</strong> has invited you to join the savings group <strong>"{{ $groupName }}"</strong> on {{ config('app.name') }}.</p>
 
   @isset($groupDetails)
   <div class="icard">

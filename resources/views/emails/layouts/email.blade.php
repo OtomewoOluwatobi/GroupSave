@@ -542,20 +542,20 @@
                 <hr class="divider">
                 <p style="font-size:14px;color:#6b6578;margin:0;">
                     Warm regards,<br>
-                    <strong style="color:#120f22;">The GroupSave Team</strong>
+                    <strong style="color:#120f22;">The {{ config('app.name') }} Team</strong>
                 </p>
             </div>
 
             <div class="ft">
-                <div class="ftlogo"> <span>GroupSave</span></div>
+                <div class="ftlogo"> <span>{{ config('app.name') }}</span></div>
                 <p class="fttag">Transparency · Accountability · Community Trust<br>We never hold or process money —
                     just your shared ledger.</p>
                 <div class="ftlinks">
                     <a href="{{ config('app.frontend_url') }}/privacy">Privacy</a>
                     <a href="{{ config('app.frontend_url') }}/terms">Terms</a>
-                    <a href="mailto:support@GroupSave.com">Support</a>
+                    <a href="mailto:support@{{ strtolower(config('app.name')) }}.com">Support</a>
                 </div>
-                <p class="ftlegal">© {{ date('Y') }} GroupSave Ltd. All rights reserved.</p>
+                <p class="ftlegal">© {{ date('Y') }} {{ config('app.name') }} Ltd. All rights reserved.</p>
             </div>
 
         </div>

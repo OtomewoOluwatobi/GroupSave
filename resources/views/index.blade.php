@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GroupSave — Save Together, Grow Together</title>
+    <title>{{ config('app.name') }} — Save Together, Grow Together</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=neue-montreal:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -2550,7 +2550,7 @@
     <!-- NAV -->
     <nav id="nav">
         <div class="nav-left">
-            <a href="#" class="logo">Group<span>Save</span></a>
+            <a href="#" class="logo">{{ config('app.name') }}</a>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how">Process</a></li>
@@ -2579,7 +2579,7 @@
                     <span class="hero-line">Together We</span>
                     <span class="hero-line">Grow Richer.</span>
                 </h1>
-                <p class="hero-sub">GroupSave brings your circles together — family, friends, colleagues — to save with
+                <p class="hero-sub">{{ config('app.name') }} brings your circles together — family, friends, colleagues — to save with
                     purpose, transparency, and zero stress.</p>
                 <div class="hero-actions">
                     <a href="#" class="btn-primary mag">
@@ -2655,7 +2655,7 @@
                 <div class="activity-eyebrow">Real-Time Activity</div>
                 <h2 class="activity-title">Your community is<br>saving as you read this</h2>
                 <p class="activity-sub">Every second, someone across the UK makes a contribution, hits a goal, or starts
-                    a new group. GroupSave never sleeps.</p>
+                    a new group. {{ config('app.name') }} never sleeps.</p>
                 <div class="activity-stat">
                     <div class="astat">
                         <div class="astat-num">£284</div>
@@ -2695,7 +2695,7 @@
 
     <!-- FEATURES -->
     <section class="features" id="features">
-        <div class="eyebrow reveal">Why GroupSave</div>
+        <div class="eyebrow reveal">Why {{ config('app.name') }}</div>
         <h2 class="section-h reveal">Built for serious savers</h2>
         <p class="section-p reveal">Every tool you need, beautifully designed. From creating your first group to
             celebrating your biggest financial win.</p>
@@ -2722,7 +2722,7 @@
                 <div class="bento-icon">🔔</div>
                 <div class="bento-title">Smart Reminders</div>
                 <div class="bento-text">Automated email alerts ensure no one misses a payment. Set it, forget it —
-                    GroupSave keeps everyone accountable.</div>
+                    {{ config('app.name') }} keeps everyone accountable.</div>
             </div>
             <div class="bento-card reveal" style="transition-delay:.2s">
                 <div class="bento-icon">🔒</div>
@@ -2796,7 +2796,7 @@
             <div class="testi-card reveal" style="transition-delay:.05s">
                 <div class="stars">★★★★★</div>
                 <div class="testi-q">"We saved for a family holiday to Portugal in 8 months. I never had to chase anyone
-                    — GroupSave kept the whole group accountable automatically."</div>
+                    — {{ config('app.name') }} kept the whole group accountable automatically."</div>
                 <div class="testi-foot">
                     <div class="tav" style="background:#c8a45a;">AN</div>
                     <div>
@@ -2836,7 +2836,7 @@
     <section class="pricing" id="pricing">
         <div class="eyebrow reveal">Simple, Transparent Pricing</div>
         <h2 class="section-h reveal">Run Your Ajo With Confidence</h2>
-        <p class="section-p reveal">Whether you're just getting started or managing multiple groups, GroupSave
+        <p class="section-p reveal">Whether you're just getting started or managing multiple groups, {{ config('app.name') }}
             gives you the tools to stay organised, transparent, and trusted — with no hidden fees.</p>
 
         <div class="pricing-grid reveal" style="transition-delay:.1s">
@@ -3003,7 +3003,7 @@
         <div class="trust-inner reveal">
             <div class="trust-lock">🔒</div>
             <h2 class="trust-title">Built for Trust, By Design</h2>
-            <p class="trust-body">GroupSave does <strong>not</strong> hold or process money. All contributions
+            <p class="trust-body">{{ config('app.name') }} does <strong>not</strong> hold or process money. All contributions
                 happen directly between members, outside the platform. We simply provide a secure, transparent, shared
                 ledger so your community stays organised and dispute-free.</p>
             <div class="trust-pills">
@@ -3042,7 +3042,7 @@
     <footer>
         <div class="footer-grid">
             <div>
-                <span class="footer-logo">Group<span>Save</span></span>
+                <span class="footer-logo">{{ config('app.name') }}</span>
                 <p class="footer-desc">Building a community of disciplined, collaborative savers across the United
                     Kingdom since 2023.</p>
             </div>
@@ -3073,7 +3073,7 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom"><span>© 2025 GroupSave Ltd. All rights reserved.</span><span>Made with ♥ in the
+        <div class="footer-bottom"><span>© {{ date('Y') }} {{ config('app.name') }} Ltd. All rights reserved.</span><span>Made with ♥ in the
                 UK</span></div>
     </footer>
 

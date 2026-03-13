@@ -21,6 +21,6 @@
   <p>If you believe this is an error or would like more information, please contact the group administrator or reach out to our support team.</p>
 
   <div class="btn-wrap">
-    <a href="mailto:support@GroupSave.com" class="btn-o">Contact Support</a>
+    <a href="mailto:support@{{ strtolower(config('app.name')) }}.com" class="btn-o">Contact Support</a>
   </div>
 @endsection
