@@ -156,13 +156,6 @@ class UserController extends Controller
                 }
             }
 
-            // Trigger registered event
-            try {
-                event(new Registered($user));
-            } catch (Exception $eventError) {
-                Log::warning('Registered event error: ' . $eventError->getMessage());
-            }
-
             // Send onboarding notification
             try {
                 NotificationService::send($user, new UserOnboardingNotification());
