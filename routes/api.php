@@ -3,9 +3,11 @@
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReferralController;
 use App\Http\Controllers\SupportTicketController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserPlanController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +28,11 @@ Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
 Route::get('/ping', function () {
     return response()->json(['message' => 'pong'], 200);
 });
+
+/**
+ * Public plan listing
+ */
+Route::get('/plans', [PlanController::class, 'index']);
 
 /**
  * Public Referral Route
@@ -148,4 +155,26 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Submit feedback on resolved ticket
         Route::post('/tickets/{ticketId}/feedback', [SupportTicketController::class, 'feedback']);
     });
+
+    /**
+     * Plan Routes (authenticated user)
+     * Prefix: /user/plan
+     */
+    Route::prefix('plan')->group(function () {
+        // Get current user's active plan
+        Route::get('/', [UserPlanController::class, 'show']);
+        // Select / join a plan (free plans only; paid are admin-assigned)
+        Route::post('/{plan}', [UserPlanController::class, 'join']);
+    });
+});
+
+/**
+ * Admin Routes
+ * Requires auth + admin role
+ */
+Route::prefix('admin')->middleware(['auth:api', 'role:admin'])->group(function () {
+    // Plan management
+    Route::post('/plans', [PlanController::class, 'store']);
+    Route::put('/plans/{plan}', [PlanController::class, 'update']);
+    Route::delete('/plans/{plan}', [PlanController::class, 'destroy']);
 });

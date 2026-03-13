@@ -3,16 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use Notifiable;
     use SoftDeletes;
+    use HasRoles;
 
     protected $fillable = [
         'name',
@@ -102,6 +106,35 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     {
         return $this->morphMany(Notification::class, 'notifiable')
             ->orderBy('created_at', 'desc');
+    }
+
+    /**
+     * All plan subscriptions for this user
+     */
+    public function userPlans(): HasMany
+    {
+        return $this->hasMany(UserPlan::class);
+    }
+
+    /**
+     * The user's current active plan subscription
+     */
+    public function activePlan(): HasOne
+    {
+        return $this->hasOne(UserPlan::class)->where('status', 'active')->latestOfMany();
+    }
+
+    /**
+     * Whether the user can create another group as admin
+     */
+    public function canCreateGroup(): bool
+    {
+        $plan = $this->activePlan?->plan;
+        if (! $plan) {
+            return false;
+        }
+        $owned = $this->groups()->wherePivot('role', 'admin')->count();
+        return $owned < $plan->max_groups;
     }
 
     /**

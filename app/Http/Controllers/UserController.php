@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Models\Group;
+use App\Models\Plan;
 use App\Models\User;
 use App\Notifications\AccountUpdatedNotification;
 use App\Notifications\LoginNotification;
@@ -161,6 +162,22 @@ class UserController extends Controller
                 NotificationService::send($user, new UserOnboardingNotification());
             } catch (Exception $notificationError) {
                 Log::warning('Onboarding notification error: ' . $notificationError->getMessage());
+            }
+
+            // Assign starter plan + role
+            try {
+                $starterPlan = Plan::where('slug', 'starter')->first();
+                if ($starterPlan) {
+                    $user->userPlans()->create([
+                        'plan_id'    => $starterPlan->id,
+                        'started_at' => now(),
+                        'expires_at' => null,
+                        'status'     => 'active',
+                    ]);
+                    $user->assignRole('starter');
+                }
+            } catch (Exception $planError) {
+                Log::warning('Starter plan assignment error: ' . $planError->getMessage());
             }
 
             return response()->json([
