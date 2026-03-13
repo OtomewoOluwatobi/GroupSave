@@ -44,7 +44,7 @@ class AccountUpdatedNotification extends BaseNotification
                 'updatedFields' => array_keys($this->updatedFields),
                 'updatedAt' => $this->updatedAt,
             ])
-            ->subject('Your GroupSave Account Was Updated');
+            ->subject('Your ' . config('app.name') . ' Account Was Updated');
     }
 
     /**

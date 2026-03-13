@@ -41,7 +41,7 @@ class UserOnboardingNotification extends BaseNotification
                 'verificationUrl' => $verificationUrl,
                 'expiresIn' => $expiresIn,
             ])
-            ->subject('Welcome to GroupSave!');
+            ->subject('Welcome to ' . config('app.name') . '!');
     }
 
     /**

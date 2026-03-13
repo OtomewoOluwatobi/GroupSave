@@ -48,7 +48,7 @@ class LoginNotification extends Notification
                 'ipAddress' => $this->ipAddress,
                 'device' => $this->parseUserAgent($this->userAgent),
             ])
-            ->subject('New Login to Your GroupSave Account');
+            ->subject('New Login to Your ' . config('app.name') . ' Account');
     }
 
     /**

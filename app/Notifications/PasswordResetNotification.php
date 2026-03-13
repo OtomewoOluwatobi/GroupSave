@@ -43,7 +43,7 @@ class PasswordResetNotification extends BaseNotification
                 'email' => $this->userEmail,
                 'resetCode' => $this->resetCode,
             ])
-            ->subject('Password Reset Request - GroupSave');
+            ->subject('Password Reset Request - ' . config('app.name'));
     }
 
     /**

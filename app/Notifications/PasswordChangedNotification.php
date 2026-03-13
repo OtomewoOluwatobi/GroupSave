@@ -42,7 +42,7 @@ class PasswordChangedNotification extends BaseNotification
                 'changedAt' => $this->changedAt,
                 'action' => $action,
             ])
-            ->subject('Your GroupSave Password Has Been ' . ucfirst($action));
+            ->subject('Your ' . config('app.name') . ' Password Has Been ' . ucfirst($action));
     }
 
     /**

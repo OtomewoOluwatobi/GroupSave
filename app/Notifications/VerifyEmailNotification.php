@@ -25,7 +25,7 @@ class VerifyEmailNotification extends BaseNotification
                 'verificationUrl' => $verificationUrl,
                 'expiresIn' => $expiresIn,
             ])
-            ->subject('Verify Your Email Address - GroupSave');
+            ->subject('Verify Your Email Address - ' . config('app.name'));
     }
 
     /**
