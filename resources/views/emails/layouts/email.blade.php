@@ -523,7 +523,7 @@
         <div class="box">
 
             <div class="hd">
-                <div class="logo">Group<span> Save</span></div>
+                <div class="logo">{{ config('app.name') }}</div>
                 <blade
                     hasSection|(%26%2339%3Beyebrow%26%2339%3B)%3Cdiv%20class%3D%26%2334%3Beyebrow%26%2334%3B%3E%40yield(%26%2339%3Beyebrow%26%2339%3B)%3C%2Fdiv%3E%40endif>
             </div>
