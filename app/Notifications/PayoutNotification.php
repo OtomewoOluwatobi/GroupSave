@@ -29,6 +29,7 @@ class PayoutNotification extends Notification
     {
         return (new MailMessage)
             ->view('emails.payout', [
+                'userName' => $notifiable->name,
                 'groupName' => $this->group->name,
                 'groupId' => $this->group->id,
                 'amount' => $this->payout->amount,

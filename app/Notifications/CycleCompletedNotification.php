@@ -29,6 +29,7 @@ class CycleCompletedNotification extends Notification
     {
         return (new MailMessage)
             ->view('emails.cycle-completed', [
+                'userName' => $notifiable->name,
                 'groupName' => $this->group->name,
                 'groupId' => $this->group->id,
                 'cycleNumber' => $this->cycle->cycle_number,

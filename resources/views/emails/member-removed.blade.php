@@ -8,7 +8,7 @@
 @section('subtitle', 'Your group membership has changed')
 
 @section('content')
-  <p>Hello,</p>
+  <p>Hello <strong>{{ $userName }}</strong>,</p>
   <p>You have been removed from the savings group <strong>"{{ $groupName }}"</strong>.</p>
 
   @if($reason)
@@ -21,6 +21,6 @@
   <p>If you believe this is an error or would like more information, please contact the group administrator or reach out to our support team.</p>
 
   <div class="btn-wrap">
-    <a href="mailto:support@digitalAjoLedger.com" class="btn-o">Contact Support</a>
+    <a href="mailto:support@GroupSave.com" class="btn-o">Contact Support</a>
   </div>
 @endsection

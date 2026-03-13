@@ -9,7 +9,7 @@
 
 @section('content')
   <p>Hello <strong>{{ $userName }}</strong>,</p>
-  <p><strong>{{ $inviterName }}</strong> has invited you to join the savings group <strong>"{{ $groupName }}"</strong> on Digital Ajo Ledger.</p>
+  <p><strong>{{ $inviterName }}</strong> has invited you to join the savings group <strong>"{{ $groupName }}"</strong> on GroupSave.</p>
 
   @isset($groupDetails)
   <div class="icard">

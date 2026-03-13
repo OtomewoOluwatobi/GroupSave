@@ -9,7 +9,7 @@
 
 @section('content')
   <p>Hello <strong>{{ $userName }}</strong>,</p>
-  <p>Please verify your email address to complete your <strong>Digital Ajo Ledger</strong> account setup and gain full access.</p>
+  <p>Please verify your email address to complete your <strong>GroupSave</strong> account setup and gain full access.</p>
 
   <div class="btn-wrap">
     <a href="{{ $verificationUrl }}" class="btn-g">Verify Email Address</a>
@@ -22,5 +22,5 @@
     ⏰ <strong>Time sensitive:</strong> This link expires in <strong>{{ $expiresIn }} minutes</strong>.
   </div>
 
-  <p>If you didn't create this account, please <a href="mailto:support@digitalAjoLedger.com" style="color:#a07c35;">contact our support team</a> immediately.</p>
+  <p>If you didn't create this account, please <a href="mailto:support@GroupSave.com" style="color:#a07c35;">contact our support team</a> immediately.</p>
 @endsection

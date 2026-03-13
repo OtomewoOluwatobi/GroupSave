@@ -29,6 +29,7 @@ class MemberRemovedNotification extends Notification
     {
         return (new MailMessage)
             ->view('emails.member-removed', [
+                'userName' => $notifiable->name,
                 'groupName' => $this->group->name,
                 'reason' => $this->reason,
             ])

@@ -8,7 +8,7 @@
 @section('subtitle', 'Your group ledger has been updated')
 
 @section('content')
-  <p>Hello,</p>
+  <p>Hello <strong>{{ $userName }}</strong>,</p>
   <p><strong>{{ $contributorName }}</strong> has made a contribution to <strong>"{{ $groupName }}"</strong>. The shared ledger has been updated.</p>
 
   <div class="ablock">

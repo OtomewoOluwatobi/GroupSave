@@ -14,7 +14,7 @@
   <div class="cblock">
     <div class="clabel">Your Reset Code</div>
     <div class="cval">{{ $resetCode }}</div>
-    <div class="cexp">Expires in 24 hours — do not share this code with anyone</div>
+    <div class="cexp">Expires in 15 minutes — do not share this code with anyone</div>
   </div>
 
   <div class="icard">

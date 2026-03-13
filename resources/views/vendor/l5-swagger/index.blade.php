@@ -25,6 +25,77 @@
       background: #fafafa;
     }
     </style>
+    <style>
+    /* ── GroupSave Brand Overrides ── */
+    body {
+        background: #120f22;
+        font-family: 'Helvetica Neue', Arial, sans-serif;
+    }
+    .swagger-ui .topbar {
+        background-color: #120f22;
+        border-bottom: 1px solid rgba(200, 164, 90, 0.2);
+    }
+    .swagger-ui .topbar a,
+    .swagger-ui .topbar .topbar-wrapper span {
+        color: #c8a45a;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+    }
+    .swagger-ui .topbar .topbar-wrapper::before {
+        content: 'GroupSave API';
+        color: #c8a45a;
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.3px;
+    }
+    .swagger-ui .info .title {
+        color: #c8a45a;
+    }
+    .swagger-ui .info .base-url,
+    .swagger-ui .info li,
+    .swagger-ui .info p,
+    .swagger-ui .info table {
+        color: rgba(242, 237, 228, 0.75);
+    }
+    .swagger-ui .scheme-container {
+        background: #1a1530;
+        box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.4);
+    }
+    .swagger-ui section.models {
+        border-color: rgba(200, 164, 90, 0.15);
+    }
+    .swagger-ui section.models h4 span {
+        color: #c8a45a;
+    }
+    .swagger-ui .btn.authorize {
+        border-color: #7c5ce8;
+        color: #7c5ce8;
+    }
+    .swagger-ui .btn.authorize svg {
+        fill: #7c5ce8;
+    }
+    .swagger-ui .btn.authorize:hover {
+        background: rgba(124, 92, 232, 0.12);
+    }
+    .swagger-ui .opblock-tag {
+        border-bottom-color: rgba(200, 164, 90, 0.15);
+        color: #f2ede4;
+    }
+    .swagger-ui .opblock-tag:hover {
+        background: rgba(200, 164, 90, 0.06);
+    }
+    .swagger-ui select {
+        background: #1a1530;
+        color: #f2ede4;
+        border-color: rgba(200, 164, 90, 0.25);
+    }
+    .swagger-ui .swagger-ui,
+    .swagger-ui .wrapper,
+    .swagger-ui .model-box,
+    .swagger-ui .model {
+        color: #f2ede4;
+    }
+    </style>
     @if(config('l5-swagger.defaults.ui.display.dark_mode'))
         <style>
             body#dark-mode,

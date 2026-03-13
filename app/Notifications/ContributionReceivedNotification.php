@@ -31,6 +31,7 @@ class ContributionReceivedNotification extends Notification
     {
         return (new MailMessage)
             ->view('emails.contribution-received', [
+                'userName' => $notifiable->name,
                 'groupName' => $this->group->name,
                 'groupId' => $this->group->id,
                 'contributorName' => $this->contributor->name,

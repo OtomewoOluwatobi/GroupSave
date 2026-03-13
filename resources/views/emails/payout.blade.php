@@ -8,7 +8,7 @@
 @section('subtitle', 'Your turn has come — congratulations!')
 
 @section('content')
-  <p>Hello,</p>
+  <p>Hello <strong>{{ $userName }}</strong>,</p>
   <p>Congratulations! Your payout from <strong>"{{ $groupName }}"</strong> has been processed and recorded on the ledger.</p>
 
   <div class="ablock">

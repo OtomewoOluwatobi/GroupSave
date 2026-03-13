@@ -8,7 +8,7 @@
 @section('subtitle', 'Another milestone reached together')
 
 @section('content')
-  <p>Hello,</p>
+  <p>Hello <strong>{{ $userName }}</strong>,</p>
   <p>Cycle <strong>#{{ $cycleNumber }}</strong> for <strong>"{{ $groupName }}"</strong> has been completed successfully. Every member fulfilled their commitment — that's the power of community savings.</p>
 
   <div class="icard">

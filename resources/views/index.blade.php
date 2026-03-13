@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rukuni — Save Together, Grow Together</title>
+    <title>GroupSave — Save Together, Grow Together</title>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=neue-montreal:400,500,600,700,800&display=swap" rel="stylesheet">
     <style>
@@ -21,42 +21,42 @@
     ══════════════════════════════════════ */
         /*
       BRAND PALETTE
-      #00246B  deep navy blue    — primary dark / text
-      #2a52a0  mid blue          — secondary accent
-      #CADCFC  periwinkle blue   — primary accent
-      #a8c4f8  light blue        — light accent
-      #1a3a7a  dark navy blue    — highlight / CTA
+      #120f22  deep near-black   — primary dark / text
+      #7c5ce8  violet            — secondary accent
+      #c8a45a  gold              — primary accent
+      #e0c48a  light gold        — light accent
+      #16a34a  green             — highlight / CTA
     */
         :root {
-            --gold: #CADCFC;
-            --gold-light: #a8c4f8;
-            --gold-glow: rgba(0, 36, 107, 0.25);
-            --violet-bright: #2a52a0;
-            --green-bright: #1a3a7a;
-            --blue-mid: #2a52a0;
-            --red-accent: #1a3a7a;
-            --navy-dark: #00246B;
+            --gold: #c8a45a;
+            --gold-light: #e0c48a;
+            --gold-glow: rgba(200, 164, 90, 0.25);
+            --violet-bright: #7c5ce8;
+            --green-bright: #16a34a;
+            --blue-mid: #7c5ce8;
+            --red-accent: #dc2626;
+            --navy-dark: #120f22;
             --trans: all 0.45s cubic-bezier(.4, 0, .2, 1);
         }
 
         /* DARK */
         :root {
-            --bg: #000f2e;
+            --bg: #120f22;
             --bg-alt: rgba(255, 255, 255, 0.015);
             --surface: rgba(255, 255, 255, 0.04);
             --surface-2: rgba(255, 255, 255, 0.025);
             --border: rgba(255, 255, 255, 0.07);
             --border-hi: rgba(255, 255, 255, 0.12);
-            --text: #e8f0fd;
-            --text-muted: rgba(232, 240, 253, 0.45);
-            --text-dim: rgba(232, 240, 253, 0.22);
-            --nav-bg: rgba(0, 15, 46, 0.85);
-            --card-bg: rgba(0, 20, 60, 0.90);
+            --text: #f2ede4;
+            --text-muted: rgba(242, 237, 228, 0.5);
+            --text-dim: rgba(242, 237, 228, 0.22);
+            --nav-bg: rgba(18, 15, 34, 0.85);
+            --card-bg: rgba(18, 15, 34, 0.90);
             --stat-div: rgba(255, 255, 255, 0.05);
             --how-bg: rgba(255, 255, 255, 0.015);
             --how-border: rgba(255, 255, 255, 0.05);
-            --av-border: rgba(0, 15, 46, 0.9);
-            --footer-bg: rgba(0, 0, 0, 0.45);
+            --av-border: rgba(18, 15, 34, 0.9);
+            --footer-bg: rgba(18, 15, 34, 0.45);
             --footer-border: rgba(255, 255, 255, 0.06);
 
             --shadow-card: rgba(0, 0, 0, 0.5);
@@ -93,7 +93,7 @@
             z-index: 9998;
             width: 38px;
             height: 38px;
-            border: 1.5px solid rgba(202, 220, 252, 0.6);
+            border: 1.5px solid rgba(200, 164, 90, 0.6);
             border-radius: 50%;
             pointer-events: none;
             transition: width 0.3s, height 0.3s, border-color 0.3s;
@@ -149,7 +149,7 @@
         nav.scrolled {
             background: var(--nav-bg);
             backdrop-filter: blur(22px);
-            border-bottom: 1px solid rgba(202, 220, 252, 0.13);
+            border-bottom: 1px solid rgba(200, 164, 90, 0.13);
             padding: 15px 64px;
         }
 
@@ -218,7 +218,7 @@
             position: relative;
             overflow: hidden;
             background: transparent;
-            border: 1px solid rgba(202, 220, 252, 0.45);
+            border: 1px solid rgba(200, 164, 90, 0.45);
             color: var(--gold);
             padding: 11px 26px;
             border-radius: 40px;
@@ -274,7 +274,7 @@
         .blob-1 {
             width: 650px;
             height: 650px;
-            background: radial-gradient(circle, rgba(0, 36, 107, 0.22), transparent 70%);
+            background: radial-gradient(circle, rgba(124, 92, 232, 0.22), transparent 70%);
             top: -150px;
             right: -150px;
         }
@@ -282,7 +282,7 @@
         .blob-2 {
             width: 450px;
             height: 450px;
-            background: radial-gradient(circle, rgba(202, 220, 252, 0.18), transparent 70%);
+            background: radial-gradient(circle, rgba(200, 164, 90, 0.18), transparent 70%);
             bottom: -50px;
             left: 5%;
             animation-delay: -5s;
@@ -330,8 +330,8 @@
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: rgba(202, 220, 252, 0.08);
-            border: 1px solid rgba(202, 220, 252, 0.28);
+            background: rgba(200, 164, 90, 0.08);
+            border: 1px solid rgba(200, 164, 90, 0.28);
             color: var(--gold);
             padding: 8px 18px;
             border-radius: 40px;
@@ -356,7 +356,7 @@
 
             0%,
             100% {
-                box-shadow: 0 0 0 0 rgba(202, 220, 252, 0.5);
+                box-shadow: 0 0 0 0 rgba(200, 164, 90, 0.5);
             }
 
             50% {
@@ -437,7 +437,7 @@
             align-items: center;
             gap: 12px;
             background: var(--gold);
-            color: #00246B;
+            color: #120f22;
             padding: 17px 36px;
             border-radius: 50px;
             font-size: 14px;
@@ -523,14 +523,14 @@
             left: 0;
             right: 0;
             height: 1px;
-            background: linear-gradient(90deg, transparent, rgba(202, 220, 252, 0.7), transparent);
+            background: linear-gradient(90deg, transparent, rgba(200, 164, 90, 0.7), transparent);
         }
 
         .card-inner-glow {
             position: absolute;
             width: 250px;
             height: 250px;
-            background: radial-gradient(circle, rgba(0, 36, 107, 0.2), transparent);
+            background: radial-gradient(circle, rgba(124, 92, 232, 0.2), transparent);
             top: -80px;
             right: -80px;
             pointer-events: none;
@@ -701,20 +701,20 @@
         }
 
         .av-a {
-            background: #00246B;
+            background: #120f22;
         }
 
         .av-b {
-            background: #2a52a0;
+            background: #7c5ce8;
         }
 
         .av-c {
             background: var(--gold);
-            color: #00246B;
+            color: #120f22;
         }
 
         .av-d {
-            background: #1a3a7a;
+            background: #16a34a;
         }
 
         .av-e {
@@ -864,7 +864,7 @@
             content: '';
             position: absolute;
             inset: 0;
-            background: linear-gradient(135deg, rgba(202, 220, 252, 0.04) 0%, transparent 50%, rgba(0, 36, 107, 0.04) 100%);
+            background: linear-gradient(135deg, rgba(200, 164, 90, 0.04) 0%, transparent 50%, rgba(124, 92, 232, 0.04) 100%);
             transition: opacity 0.45s;
         }
 
@@ -1087,26 +1087,26 @@
         }
 
         .badge-paid {
-            background: rgba(202, 220, 252, 0.15);
-            color: #00246B;
-            border: 1px solid rgba(202, 220, 252, 0.4);
+            background: rgba(200, 164, 90, 0.15);
+            color: #120f22;
+            border: 1px solid rgba(200, 164, 90, 0.4);
         }
 
         .badge-joined {
-            background: rgba(202, 220, 252, 0.12);
+            background: rgba(200, 164, 90, 0.12);
             color: var(--gold);
-            border: 1px solid rgba(202, 220, 252, 0.25);
+            border: 1px solid rgba(200, 164, 90, 0.25);
         }
 
         .badge-goal {
-            background: rgba(0, 36, 107, 0.12);
-            color: #CADCFC;
-            border: 1px solid rgba(0, 36, 107, 0.3);
+            background: rgba(124, 92, 232, 0.12);
+            color: #c8a45a;
+            border: 1px solid rgba(124, 92, 232, 0.3);
         }
 
         .badge-new {
             background: rgba(42, 82, 160, 0.12);
-            color: #2a52a0;
+            color: #7c5ce8;
             border: 1px solid rgba(42, 82, 160, 0.3);
         }
 
@@ -1117,7 +1117,7 @@
             gap: 7px;
             font-size: 11px;
             font-weight: 700;
-            color: #1a3a7a;
+            color: #16a34a;
             margin-bottom: 10px;
         }
 
@@ -1126,7 +1126,7 @@
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background: #1a3a7a;
+            background: #16a34a;
             animation: pulseDot 2s infinite;
         }
 
@@ -1168,7 +1168,7 @@
         }
 
         .stat-box:hover {
-            background: rgba(202, 220, 252, 0.04);
+            background: rgba(200, 164, 90, 0.04);
         }
 
         .stat-num {
@@ -1266,8 +1266,8 @@
 
         .bento-card:hover {
             transform: translateY(-7px);
-            border-color: rgba(202, 220, 252, 0.3);
-            box-shadow: 0 24px 60px var(--shadow-card), 0 0 40px rgba(202, 220, 252, 0.07);
+            border-color: rgba(200, 164, 90, 0.3);
+            box-shadow: 0 24px 60px var(--shadow-card), 0 0 40px rgba(200, 164, 90, 0.07);
         }
 
         .bento-card.wide {
@@ -1279,7 +1279,7 @@
             position: absolute;
             width: 220px;
             height: 220px;
-            background: radial-gradient(circle, rgba(202, 220, 252, 0.1), transparent 70%);
+            background: radial-gradient(circle, rgba(200, 164, 90, 0.1), transparent 70%);
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.4s;
@@ -1296,8 +1296,8 @@
             width: 54px;
             height: 54px;
             border-radius: 16px;
-            background: rgba(202, 220, 252, 0.09);
-            border: 1px solid rgba(202, 220, 252, 0.2);
+            background: rgba(200, 164, 90, 0.09);
+            border: 1px solid rgba(200, 164, 90, 0.2);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1308,7 +1308,7 @@
 
         .bento-card:hover .bento-icon {
             transform: rotate(-8deg) scale(1.12);
-            background: rgba(202, 220, 252, 0.2);
+            background: rgba(200, 164, 90, 0.2);
         }
 
         .bento-title {
@@ -1348,8 +1348,8 @@
         }
 
         .chip:hover {
-            background: rgba(202, 220, 252, 0.1);
-            border-color: rgba(202, 220, 252, 0.3);
+            background: rgba(200, 164, 90, 0.1);
+            border-color: rgba(200, 164, 90, 0.3);
             color: var(--gold);
         }
 
@@ -1376,7 +1376,7 @@
             top: 20px;
             bottom: 20px;
             width: 1px;
-            background: linear-gradient(180deg, transparent, rgba(202, 220, 252, 0.3) 15%, rgba(202, 220, 252, 0.3) 85%, transparent);
+            background: linear-gradient(180deg, transparent, rgba(200, 164, 90, 0.3) 15%, rgba(200, 164, 90, 0.3) 85%, transparent);
         }
 
         .step-row {
@@ -1404,8 +1404,8 @@
             width: 80px;
             height: 80px;
             border-radius: 50%;
-            background: rgba(202, 220, 252, 0.07);
-            border: 1px solid rgba(202, 220, 252, 0.25);
+            background: rgba(200, 164, 90, 0.07);
+            border: 1px solid rgba(200, 164, 90, 0.25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -1416,7 +1416,7 @@
 
         .step-row:hover .step-circle {
             transform: scale(1.1) rotate(6deg);
-            background: rgba(202, 220, 252, 0.18);
+            background: rgba(200, 164, 90, 0.18);
         }
 
         .step-circle span {
@@ -1450,8 +1450,8 @@
         .step-badge {
             display: inline-block;
             margin-top: 16px;
-            background: rgba(202, 220, 252, 0.07);
-            border: 1px solid rgba(202, 220, 252, 0.2);
+            background: rgba(200, 164, 90, 0.07);
+            border: 1px solid rgba(200, 164, 90, 0.2);
             color: var(--gold);
             font-size: 11px;
             font-weight: 700;
@@ -1486,7 +1486,7 @@
 
         .testi-card:hover {
             transform: translateY(-8px);
-            border-color: rgba(202, 220, 252, 0.25);
+            border-color: rgba(200, 164, 90, 0.25);
         }
 
         .stars {
@@ -1564,7 +1564,7 @@
             transform: translateX(-50%);
             width: 900px;
             height: 600px;
-            background: radial-gradient(ellipse, rgba(202, 220, 252, 0.06) 0%, transparent 70%);
+            background: radial-gradient(ellipse, rgba(200, 164, 90, 0.06) 0%, transparent 70%);
             pointer-events: none;
         }
 
@@ -1604,9 +1604,9 @@
 
         /* Featured (Growth) — highlighted column */
         .price-card.featured {
-            background: linear-gradient(180deg, rgba(202, 220, 252, 0.07) 0%, rgba(0, 36, 107, 0.06) 100%);
-            border-right: 1px solid rgba(202, 220, 252, 0.22);
-            border-left: 1px solid rgba(202, 220, 252, 0.22);
+            background: linear-gradient(180deg, rgba(200, 164, 90, 0.07) 0%, rgba(124, 92, 232, 0.06) 100%);
+            border-right: 1px solid rgba(200, 164, 90, 0.22);
+            border-left: 1px solid rgba(200, 164, 90, 0.22);
             z-index: 1;
         }
 
@@ -1634,7 +1634,7 @@
             align-items: center;
             gap: 6px;
             background: var(--gold);
-            color: #00246B;
+            color: #120f22;
             font-size: 10px;
             font-weight: 900;
             letter-spacing: 1.5px;
@@ -1647,7 +1647,7 @@
             transform: translateX(-50%);
             white-space: nowrap;
             z-index: 2;
-            box-shadow: 0 4px 16px rgba(0, 36, 107, 0.25);
+            box-shadow: 0 4px 16px rgba(124, 92, 232, 0.25);
         }
 
         .price-tier {
@@ -1796,8 +1796,8 @@
         }
 
         .price-note.gold-note {
-            background: rgba(202, 220, 252, 0.07);
-            border-color: rgba(202, 220, 252, 0.2);
+            background: rgba(200, 164, 90, 0.07);
+            border-color: rgba(200, 164, 90, 0.2);
         }
 
         .price-for-whom {
@@ -1849,8 +1849,8 @@
         .price-tag-enterprise {
             display: inline-block;
             margin-bottom: 8px;
-            background: rgba(0, 36, 107, 0.12);
-            border: 1px solid rgba(0, 36, 107, 0.25);
+            background: rgba(124, 92, 232, 0.12);
+            border: 1px solid rgba(124, 92, 232, 0.25);
             color: #9ab8b2;
             font-size: 9px;
             font-weight: 900;
@@ -1895,13 +1895,13 @@
         .pb-out:hover {
             border-color: var(--gold);
             color: var(--gold);
-            background: rgba(202, 220, 252, 0.05);
+            background: rgba(200, 164, 90, 0.05);
         }
 
         .pb-gold {
             background: var(--gold);
-            color: #00246B;
-            box-shadow: 0 4px 24px rgba(202, 220, 252, 0.4);
+            color: #120f22;
+            box-shadow: 0 4px 24px rgba(200, 164, 90, 0.4);
         }
 
         .pb-gold::after {
@@ -1918,17 +1918,17 @@
         }
 
         .pb-gold:hover {
-            box-shadow: 0 8px 40px rgba(202, 220, 252, 0.5);
+            box-shadow: 0 8px 40px rgba(200, 164, 90, 0.5);
         }
 
         .pb-violet {
-            border: 1px solid rgba(0, 36, 107, 0.4);
+            border: 1px solid rgba(124, 92, 232, 0.4);
             color: #9ab8b2;
-            background: rgba(0, 36, 107, 0.07);
+            background: rgba(124, 92, 232, 0.07);
         }
 
         .pb-violet:hover {
-            background: rgba(0, 36, 107, 0.15);
+            background: rgba(124, 92, 232, 0.15);
             border-color: #9ab8b2;
         }
 
@@ -2006,8 +2006,8 @@
         .price-tag-enterprise {
             display: inline-block;
             margin-bottom: 6px;
-            background: rgba(0, 36, 107, 0.12);
-            border: 1px solid rgba(0, 36, 107, 0.25);
+            background: rgba(124, 92, 232, 0.12);
+            border: 1px solid rgba(124, 92, 232, 0.25);
             color: #9ab8b2;
             font-size: 10px;
             font-weight: 800;
@@ -2089,7 +2089,7 @@
 
         .reward-pill:hover {
             transform: translateY(-4px);
-            border-color: rgba(202, 220, 252, 0.3);
+            border-color: rgba(200, 164, 90, 0.3);
         }
 
         .reward-pill-icon {
@@ -2224,7 +2224,7 @@
         .cta-ring {
             position: absolute;
             border-radius: 50%;
-            border: 1px solid rgba(202, 220, 252, 0.07);
+            border: 1px solid rgba(200, 164, 90, 0.07);
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
@@ -2474,8 +2474,8 @@
         .price-card.featured {
             border-left: none;
             border-right: none;
-            border-top: 1px solid rgba(202, 220, 252, 0.22);
-            border-bottom: 1px solid rgba(202, 220, 252, 0.22);
+            border-top: 1px solid rgba(200, 164, 90, 0.22);
+            border-bottom: 1px solid rgba(200, 164, 90, 0.22);
         }
 
         .rewards-inner {
@@ -2550,7 +2550,7 @@
     <!-- NAV -->
     <nav id="nav">
         <div class="nav-left">
-            <a href="#" class="logo">Ruku<span>ni</span></a>
+            <a href="#" class="logo">Group<span>Save</span></a>
             <ul class="nav-links">
                 <li><a href="#features">Features</a></li>
                 <li><a href="#how">Process</a></li>
@@ -2579,7 +2579,7 @@
                     <span class="hero-line">Together We</span>
                     <span class="hero-line">Grow Richer.</span>
                 </h1>
-                <p class="hero-sub">Rukuni brings your circles together — family, friends, colleagues — to save with
+                <p class="hero-sub">GroupSave brings your circles together — family, friends, colleagues — to save with
                     purpose, transparency, and zero stress.</p>
                 <div class="hero-actions">
                     <a href="#" class="btn-primary mag">
@@ -2606,7 +2606,7 @@
                 </div>
                 <div class="mini-card mc-1">
                     <div class="mc-label">This month</div>
-                    <div class="mc-val" style="color:#1a3a7a;">+£2,100</div>
+                    <div class="mc-val" style="color:#16a34a;">+£2,100</div>
                     <div class="mc-sub">group total</div>
                 </div>
                 <div class="mini-card mc-2">
@@ -2655,7 +2655,7 @@
                 <div class="activity-eyebrow">Real-Time Activity</div>
                 <h2 class="activity-title">Your community is<br>saving as you read this</h2>
                 <p class="activity-sub">Every second, someone across the UK makes a contribution, hits a goal, or starts
-                    a new group. Rukuni never sleeps.</p>
+                    a new group. GroupSave never sleeps.</p>
                 <div class="activity-stat">
                     <div class="astat">
                         <div class="astat-num">£284</div>
@@ -2695,7 +2695,7 @@
 
     <!-- FEATURES -->
     <section class="features" id="features">
-        <div class="eyebrow reveal">Why Rukuni</div>
+        <div class="eyebrow reveal">Why GroupSave</div>
         <h2 class="section-h reveal">Built for serious savers</h2>
         <p class="section-p reveal">Every tool you need, beautifully designed. From creating your first group to
             celebrating your biggest financial win.</p>
@@ -2722,7 +2722,7 @@
                 <div class="bento-icon">🔔</div>
                 <div class="bento-title">Smart Reminders</div>
                 <div class="bento-text">Automated email alerts ensure no one misses a payment. Set it, forget it —
-                    Rukuni keeps everyone accountable.</div>
+                    GroupSave keeps everyone accountable.</div>
             </div>
             <div class="bento-card reveal" style="transition-delay:.2s">
                 <div class="bento-icon">🔒</div>
@@ -2796,9 +2796,9 @@
             <div class="testi-card reveal" style="transition-delay:.05s">
                 <div class="stars">★★★★★</div>
                 <div class="testi-q">"We saved for a family holiday to Portugal in 8 months. I never had to chase anyone
-                    — Rukuni kept the whole group accountable automatically."</div>
+                    — GroupSave kept the whole group accountable automatically."</div>
                 <div class="testi-foot">
-                    <div class="tav" style="background:#CADCFC;">AN</div>
+                    <div class="tav" style="background:#c8a45a;">AN</div>
                     <div>
                         <div class="tav-name">Amara Nwosu</div>
                         <div class="tav-role">Group Leader · Manchester</div>
@@ -2810,7 +2810,7 @@
                 <div class="testi-q">"Our work team used it for a Christmas party fund. The live tracker kept morale
                     high — watching the number climb every month was genuinely exciting."</div>
                 <div class="testi-foot">
-                    <div class="tav" style="background:var(--gold);color:#00246B;">DJ</div>
+                    <div class="tav" style="background:var(--gold);color:#120f22;">DJ</div>
                     <div>
                         <div class="tav-name">Daniel Johnson</div>
                         <div class="tav-role">Member of 3 Groups · Birmingham</div>
@@ -2836,7 +2836,7 @@
     <section class="pricing" id="pricing">
         <div class="eyebrow reveal">Simple, Transparent Pricing</div>
         <h2 class="section-h reveal">Run Your Ajo With Confidence</h2>
-        <p class="section-p reveal">Whether you're just getting started or managing multiple groups, Digital Ajo Ledger
+        <p class="section-p reveal">Whether you're just getting started or managing multiple groups, GroupSave
             gives you the tools to stay organised, transparent, and trusted — with no hidden fees.</p>
 
         <div class="pricing-grid reveal" style="transition-delay:.1s">
@@ -3003,7 +3003,7 @@
         <div class="trust-inner reveal">
             <div class="trust-lock">🔒</div>
             <h2 class="trust-title">Built for Trust, By Design</h2>
-            <p class="trust-body">Digital Ajo Ledger does <strong>not</strong> hold or process money. All contributions
+            <p class="trust-body">GroupSave does <strong>not</strong> hold or process money. All contributions
                 happen directly between members, outside the platform. We simply provide a secure, transparent, shared
                 ledger so your community stays organised and dispute-free.</p>
             <div class="trust-pills">
@@ -3073,7 +3073,7 @@
                 </ul>
             </div>
         </div>
-        <div class="footer-bottom"><span>© 2025 Rukuni Ltd. All rights reserved.</span><span>Made with ♥ in the
+        <div class="footer-bottom"><span>© 2025 GroupSave Ltd. All rights reserved.</span><span>Made with ♥ in the
                 UK</span></div>
     </footer>
 
@@ -3107,7 +3107,7 @@
             el.addEventListener('mouseleave', () => {
                 ring.style.width = '38px';
                 ring.style.height = '38px';
-                ring.style.borderColor = 'rgba(202,220,252,0.6)';
+                ring.style.borderColor = 'rgba(200,164,90,0.6)';
             });
         });
 
@@ -3162,9 +3162,9 @@
 
         function getColors(isDark) {
             return {
-                a: isDark ? [202, 220, 252] : [0, 36, 107],
-                b: isDark ? [42, 82, 160] : [0, 36, 107],
-                line: isDark ? '202,220,252' : '0,36,107'
+                a: isDark ? [200, 164, 90] : [18, 15, 34],
+                b: isDark ? [124, 92, 232] : [18, 15, 34],
+                line: isDark ? '200,164,90' : '18,15,34'
             };
         }
         let colors = getColors(darkMode);
@@ -3332,7 +3332,7 @@
         const feedEvents = [{
                 name: 'Amara N.',
                 initials: 'AN',
-                color: '#00246B',
+                color: '#120f22',
                 desc: 'Paid into "Family Holiday Fund"',
                 amount: '+£350',
                 badge: 'paid',
@@ -3342,7 +3342,7 @@
             {
                 name: 'Daniel J.',
                 initials: 'DJ',
-                color: '#2a52a0',
+                color: '#7c5ce8',
                 desc: 'Created group "Christmas 2025"',
                 amount: 'New',
                 badge: 'new',
@@ -3352,7 +3352,7 @@
             {
                 name: 'Saoirse P.',
                 initials: 'SP',
-                color: '#2a52a0',
+                color: '#7c5ce8',
                 desc: '"House Deposit" hit 100% goal! 🎉',
                 amount: '£18,500',
                 badge: 'goal',
@@ -3362,7 +3362,7 @@
             {
                 name: 'Marcus T.',
                 initials: 'MT',
-                color: '#1a3a7a',
+                color: '#16a34a',
                 desc: 'Joined "Office Party Fund"',
                 amount: '',
                 badge: 'joined',
@@ -3372,7 +3372,7 @@
             {
                 name: 'Priya K.',
                 initials: 'PK',
-                color: '#2a52a0',
+                color: '#7c5ce8',
                 desc: 'Paid into "World Trip Fund"',
                 amount: '+£200',
                 badge: 'paid',
@@ -3382,7 +3382,7 @@
             {
                 name: 'Liam O.',
                 initials: 'LO',
-                color: '#1a3a7a',
+                color: '#16a34a',
                 desc: 'Created group "Wedding Savings"',
                 amount: 'New',
                 badge: 'new',
@@ -3442,7 +3442,7 @@
             {
                 name: 'Ngozi M.',
                 initials: 'NM',
-                color: '#00246B',
+                color: '#120f22',
                 desc: 'Paid into "Wedding Savings"',
                 amount: '+£400',
                 badge: 'paid',
