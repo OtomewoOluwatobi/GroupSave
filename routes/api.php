@@ -125,16 +125,28 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
 
 
     Route::prefix('group')->group(function () {
+        // Read-only — no plan required
         Route::get('/', [GroupController::class, 'index']);
         Route::get('/{id}', [GroupController::class, 'show']);
-        Route::post('/store', [GroupController::class, 'store']);
-        Route::get('/{id}/accept-invitation', [GroupController::class, 'acceptInvitation']);
+
+        // Action routes — require an active plan
+        Route::post('/store', [GroupController::class, 'store'])
+            ->middleware('requires.plan:create_group');
+
+        Route::get('/{id}/accept-invitation', [GroupController::class, 'acceptInvitation'])
+            ->middleware('requires.plan');
 
         // Join request routes
-        Route::get('/{id}/send-join-request', [GroupController::class, 'sendJoinRequest']);
+        Route::get('/{id}/send-join-request', [GroupController::class, 'sendJoinRequest'])
+            ->middleware('requires.plan');
+
         // Route::get('/{id}/join-requests', [GroupController::class, 'getPendingJoinRequests']);
-        Route::put('/{groupId}/join-requests/{requestId}/approve', [GroupController::class, 'approveJoinRequest']);
-        Route::put('/{groupId}/join-requests/{requestId}/reject', [GroupController::class, 'rejectJoinRequest']);
+
+        Route::put('/{groupId}/join-requests/{requestId}/approve', [GroupController::class, 'approveJoinRequest'])
+            ->middleware('requires.plan');
+
+        Route::put('/{groupId}/join-requests/{requestId}/reject', [GroupController::class, 'rejectJoinRequest'])
+            ->middleware('requires.plan');
     });
 
     /**

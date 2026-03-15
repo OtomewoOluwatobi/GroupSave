@@ -380,39 +380,12 @@ class GroupController extends Controller
             return response()->json(['message' => 'Join request is no longer pending'], 400);
         }
 
-        // Check if group is at capacity (total members including pending invitations)
         $totalMembers = $group->users()->count();
-        $activeMembers = $group->users()->where('group_user.is_active', true)->count();
         $totalUsers = $group->total_users;
         $replacedMemberId = null;
 
         try {
             DB::beginTransaction();
-
-            // If total members (active + pending) equals or exceeds capacity, remove an inactive member
-            if ($totalMembers >= $totalUsers) {
-                $inactiveMember = $group->users()
-                    ->where('group_user.is_active', false)
-                    ->orderBy('group_user.created_at', 'asc')
-                    ->first();
-
-                if ($inactiveMember) {
-                    $replacedMemberId = $inactiveMember->id;
-                    $group->users()->detach($inactiveMember->id);
-
-                    Log::info('Inactive member replaced in group', [
-                        'replaced_user_id' => $inactiveMember->id,
-                        'group_id' => $group->id,
-                        'new_user_id' => $joinRequest->user_id
-                    ]);
-                } else {
-                    // No inactive members to replace and group is full with active members
-                    DB::rollBack();
-                    return response()->json([
-                        'message' => 'Group is at full capacity with no pending invitations to replace',
-                    ], 400);
-                }
-            }
 
             // Add the new user to the group
             if (!$group->users()->where('user_id', $joinRequest->user_id)->exists()) {
@@ -429,28 +402,38 @@ class GroupController extends Controller
 
             DB::commit();
 
+            // Recalculate group economics based on new active member count
+            $newActiveCount = $group->users()->where('group_user.is_active', true)->count();
+            if ($newActiveCount > 0) {
+                $newPayableAmount = round((float) $group->target_amount / $newActiveCount, 2);
+                $newExpectedEndDate = \Carbon\Carbon::parse($group->expected_start_date)
+                    ->addMonths($newActiveCount)
+                    ->format('Y-m-d');
+
+                $group->update([
+                    'payable_amount'    => $newPayableAmount,
+                    'expected_end_date' => $newExpectedEndDate,
+                ]);
+            }
+
             // Store data for deferred notifications
             $approvedUserId = $joinRequest->user_id;
             $groupId = $group->id;
             $groupTitle = $group->title;
 
-            Log::info('Join request approved', [
-                'user_id' => $approvedUserId,
-                'group_id' => $groupId,
-                'replaced_member_id' => $replacedMemberId
-            ]);
-
             // Return response first, then send notifications
             $response = response()->json([
                 'message' => 'Join request approved successfully',
                 'data' => [
-                    'request_id' => $requestId,
-                    'status' => 'approved',
-                    'new_member_id' => $approvedUserId,
+                    'request_id'         => $requestId,
+                    'status'             => 'approved',
+                    'new_member_id'      => $approvedUserId,
                     'replaced_member_id' => $replacedMemberId,
-                    'total_members' => $totalMembers,
-                    'active_members' => $activeMembers + 1,
-                    'group_capacity' => $totalUsers
+                    'total_members'      => $totalMembers,
+                    'active_members'     => $newActiveCount,
+                    'group_capacity'     => $totalUsers,
+                    'payable_amount'     => $newPayableAmount ?? null,
+                    'expected_end_date'  => $newExpectedEndDate ?? null,
                 ]
             ], 200);
 
