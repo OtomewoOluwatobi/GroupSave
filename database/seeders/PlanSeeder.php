@@ -77,7 +77,7 @@ class PlanSeeder extends Seeder
             [
                 'name'                  => 'Growth',
                 'slug'                  => 'growth',
-                'tagline'               => 'Scale Your Ajo',
+                'tagline'               => 'Scale Your Savings',
                 'price'                 => 499,
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
