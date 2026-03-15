@@ -78,7 +78,7 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Growth',
                 'slug'                  => 'growth',
                 'tagline'               => 'Scale Your Savings',
-                'price'                 => 499,
+                'price'                 => 9.99,
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
                 'max_groups'            => 9999, // unlimited
@@ -101,10 +101,10 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Enterprise',
                 'slug'                  => 'enterprise',
                 'tagline'               => 'Lead Your Community',
-                'price'                 => 19900,
+                'price'                 => 99.99,
                 'currency'              => 'GBP',
                 'billing'               => 'yearly',
-                'max_groups'            => 9999,
+                'max_groups'            => 9999, // unlimited
                 'max_members_per_group' => 9999,
                 'features'              => [
                     'Everything in Growth',
