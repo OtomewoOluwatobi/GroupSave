@@ -82,9 +82,8 @@ Route::prefix('auth')->group(function () {
     Route::get('/logout', [UserController::class, 'logout'])
         ->middleware('auth:api');
 
-    // Refresh token (requires authentication)
-    Route::post('/refresh', [UserController::class, 'refreshToken'])
-        ->middleware('auth:api');
+    // Refresh token — no auth middleware: expired tokens must be able to reach this endpoint
+    Route::post('/refresh', [UserController::class, 'refreshToken']);
 });
 
 Route::prefix('user')->middleware(['auth:api'])->group(function () {

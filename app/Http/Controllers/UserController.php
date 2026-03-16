@@ -914,7 +914,7 @@ class UserController extends Controller
     public function refreshToken(): JsonResponse
     {
         try {
-            $newToken = Auth::guard('api')->refresh();
+            $newToken = \Tymon\JWTAuth\Facades\JWTAuth::parseToken()->refresh();
 
             return response()->json([
                 'status' => 'success',
@@ -934,6 +934,12 @@ class UserController extends Controller
                 'error' => 'Token is invalid',
                 'code' => 'TOKEN_INVALID',
             ], 401);
+        } catch (\Tymon\JWTAuth\Exceptions\JWTException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Token not provided',
+                'code' => 'TOKEN_ABSENT',
+            ], 400);
         } catch (Exception $e) {
             Log::error('Token refresh error: ' . $e->getMessage());
             return response()->json([
