@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Group;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Closure;
@@ -13,6 +14,7 @@ class RequiresPlan
      *
      * Optional $feature parameter enables feature-specific limit checks:
      *   - 'create_group'  → checks max_groups limit on the user's plan
+     *   - 'invite_member' → checks max_members_per_group limit on the user's plan
      *
      * Usage in routes:
      *   ->middleware('requires.plan')                  // any active plan
@@ -21,7 +23,7 @@ class RequiresPlan
     public function handle(Request $request, Closure $next, ?string $feature = null): Response
     {
         $user = $request->user();
-        $userPlan = $user->activePlan;
+        $userPlan = $user->activePlan()->with('plan')->first();
 
         if (!$userPlan || !$userPlan->plan) {
             return response()->json([
@@ -46,28 +48,11 @@ class RequiresPlan
         }
 
         if ($feature === 'invite_member') {
-            $maxMembers = $userPlan->plan->max_members_per_group;
-            $current = Group::find($request->route('id'))?->members()->count() ?? 0;
-            if ($current >= $maxMembers) {
-                return response()->json([
-                    'message' => "Your plan allows max {$maxMembers} members per group.",
-                    'code' => 'MEMBER_LIMIT_REACHED',
-                ], 403);
-            }
-        }
-
-        if ($feature === 'create_group' && $user->groups()->count() >= $userPlan->plan->max_groups) {
-            return response()->json([
-                'message' => "Your plan allows a maximum of {$userPlan->plan->max_groups} group(s).",
-                'code' => 'GROUP_LIMIT_REACHED',
-            ], 403);
-        }
-
-        if ($feature === 'invite_member') {
+            $plan = $userPlan->plan;
             $group = Group::find($request->route('id'));
-            if ($group && $group->members()->count() >= $userPlan->plan->max_members_per_group) {
+            if ($group && $group->users()->count() >= $plan->max_members_per_group) {
                 return response()->json([
-                    'message' => "Your plan allows a maximum of {$userPlan->plan->max_members_per_group} members per group.",
+                    'message' => "Your {$plan->name} plan allows a maximum of {$plan->max_members_per_group} members per group.",
                     'code' => 'MEMBER_LIMIT_REACHED',
                 ], 403);
             }

@@ -11,8 +11,20 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Group extends Model
 {
     use HasFactory, SoftDeletes;
-    
-    protected $guarded = [];
+
+    protected $fillable = [
+        'owner_id',
+        'title',
+        'total_users',
+        'target_amount',
+        'payable_amount',
+        'expected_start_date',
+        'expected_end_date',
+        'payment_out_day',
+        'contribution_frequency',
+        'payment_out_weekday',
+        'status',
+    ];
 
     public function owner()
     {

@@ -29,32 +29,38 @@ class GroupController extends Controller
         }
 
         $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'total_users' => 'required|integer|min:2|max:300',
-            'target_amount' => 'required|numeric|min:0',
-            'expected_start_date' => 'required|date|after:today',
-            'payment_out_day' => 'required|integer|min:1|max:31',
-            'members_emails' => 'required|array',  // Changed from members_emails
-            'members_emails.*' => 'required|email'  // Changed from members_emails.*
+            'title'                  => 'required|string|max:255',
+            'total_users'            => 'required|integer|min:2|max:300',
+            'target_amount'          => 'required|numeric|min:0',
+            'expected_start_date'    => 'required|date|after:today',
+            'contribution_frequency' => 'required|in:daily,weekly,monthly',
+            'payment_out_day'        => 'required_if:contribution_frequency,monthly|nullable|integer|min:1|max:31',
+            'payment_out_weekday'    => 'required_if:contribution_frequency,weekly|nullable|integer|min:0|max:6',
+            'members_emails'         => 'required|array',
+            'members_emails.*'       => 'required|email',
         ]);
 
-        $payableAmount = (float) $validated['target_amount'] / (int) $validated['total_users'];
-        $expectedEndDate = \Carbon\Carbon::parse($validated['expected_start_date'])
-            ->addMonths($validated['total_users'])
-            ->format('Y-m-d');
+        $payableAmount   = (float) $validated['target_amount'] / (int) $validated['total_users'];
+        $expectedEndDate = $this->calculateEndDate(
+            $validated['expected_start_date'],
+            $validated['total_users'],
+            $validated['contribution_frequency']
+        );
 
         try {
             $group = DB::transaction(function () use ($validated, $payableAmount, $expectedEndDate) {
                 $group = Group::create([
-                    'title' => $validated['title'],
-                    'total_users' => (int) $validated['total_users'],
-                    'target_amount' => (float) $validated['target_amount'],
-                    'payable_amount' => $payableAmount,
-                    'expected_start_date' => $validated['expected_start_date'],
-                    'expected_end_date' => $expectedEndDate,
-                    'payment_out_day' => (int) $validated['payment_out_day'],
-                    'owner_id' => Auth::id(),
-                    'status' => 'active'
+                    'title'                  => $validated['title'],
+                    'total_users'            => (int) $validated['total_users'],
+                    'target_amount'          => (float) $validated['target_amount'],
+                    'payable_amount'         => $payableAmount,
+                    'expected_start_date'    => $validated['expected_start_date'],
+                    'expected_end_date'      => $expectedEndDate,
+                    'contribution_frequency' => $validated['contribution_frequency'],
+                    'payment_out_day'        => isset($validated['payment_out_day']) ? (int) $validated['payment_out_day'] : null,
+                    'payment_out_weekday'    => isset($validated['payment_out_weekday']) ? (int) $validated['payment_out_weekday'] : null,
+                    'owner_id'               => Auth::id(),
+                    'status'                 => 'active',
                 ]);
 
                 $group->users()->attach(Auth::id(), [
@@ -405,10 +411,12 @@ class GroupController extends Controller
             // Recalculate group economics based on new active member count
             $newActiveCount = $group->users()->where('group_user.is_active', true)->count();
             if ($newActiveCount > 0) {
-                $newPayableAmount = round((float) $group->target_amount / $newActiveCount, 2);
-                $newExpectedEndDate = \Carbon\Carbon::parse($group->expected_start_date)
-                    ->addMonths($newActiveCount)
-                    ->format('Y-m-d');
+                $newPayableAmount   = round((float) $group->target_amount / $newActiveCount, 2);
+                $newExpectedEndDate = $this->calculateEndDate(
+                    $group->expected_start_date,
+                    $newActiveCount,
+                    $group->contribution_frequency
+                );
 
                 $group->update([
                     'payable_amount'    => $newPayableAmount,
@@ -658,6 +666,20 @@ class GroupController extends Controller
             'message' => 'Group updated successfully',
             'data' => $group
         ], 200);
+    }
+
+    /**
+     * Calculate group end date based on contribution frequency.
+     */
+    private function calculateEndDate(string $startDate, int $cycles, string $frequency): string
+    {
+        $date = \Carbon\Carbon::parse($startDate);
+
+        return match ($frequency) {
+            'daily'   => $date->addDays($cycles)->format('Y-m-d'),
+            'weekly'  => $date->addWeeks($cycles)->format('Y-m-d'),
+            'monthly' => $date->addMonths($cycles)->format('Y-m-d'),
+        };
     }
 
     /**
