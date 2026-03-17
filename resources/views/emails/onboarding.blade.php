@@ -1,10 +1,10 @@
 @extends('emails.layouts.email')
 
-@section('subject', 'Welcome to {{ config("app.name") }}!')
+@section('subject', 'Welcome to ' . config('app.name') . '!')
 @section('eyebrow', 'Welcome Aboard')
 @section('icon', '🎉')
 @section('icon_style', 'ic-gold')
-@section('title', 'Welcome to {{ config("app.name") }}!')
+@section('title', 'Welcome to ' . config('app.name') . '!')
 <blade
     section|(%26%2339%3Bsubtitle%26%2339%3B%2C%20%26%2339%3BYour%20community%20savings%20journey%20starts%20here%26%2339%3B) />
 
