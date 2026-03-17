@@ -1284,13 +1284,11 @@ class UserController extends Controller
 
             $plan = Plan::find($validatedData['plan_id']);
 
-            // Check if user already has an active plan
-            if ($user->userPlans()->where('status', 'active')->exists()) {
-                return response()->json([
-                    'status' => 'error',
-                    'error' => 'You already have an active plan',
-                ], 400);
-            }
+            // Cancel any existing active plan (upgrade flow)
+            $user->userPlans()->where('status', 'active')->update([
+                'status'     => 'cancelled',
+                'expires_at' => now(),
+            ]);
 
             // Create user plan
             UserPlan::create([
