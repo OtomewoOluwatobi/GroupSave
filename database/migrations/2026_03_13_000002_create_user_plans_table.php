@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::create('user_plans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('plan_id')->constrained();
+            $table->foreignUuid('plan_id')->constrained();
             $table->timestamp('started_at');
             $table->timestamp('expires_at')->nullable(); // null = free_forever
             $table->enum('status', ['active', 'cancelled', 'expired'])->default('active');
