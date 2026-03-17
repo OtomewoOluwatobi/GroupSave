@@ -6,15 +6,18 @@ use App\Http\Requests\LoginRequest;
 use App\Models\Group;
 use App\Models\Plan;
 use App\Models\User;
+use App\Models\UserPlan;
 use App\Notifications\AccountUpdatedNotification;
 use App\Notifications\LoginNotification;
 use App\Notifications\PasswordChangedNotification;
 use App\Notifications\PasswordResetNotification;
+use App\Notifications\PlanActivatedNotification;
 use App\Notifications\ReferralSignupNotification;
 use App\Notifications\UserOnboardingNotification;
 use App\Notifications\VerifyEmailNotification;
 use App\Services\NotificationService;
 use App\Services\ReferralService;
+use Exception;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
@@ -26,7 +29,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
-use Exception;
 
 class UserController extends Controller
 {
@@ -162,22 +164,6 @@ class UserController extends Controller
                 NotificationService::send($user, new UserOnboardingNotification());
             } catch (Exception $notificationError) {
                 Log::warning('Onboarding notification error: ' . $notificationError->getMessage());
-            }
-
-            // Assign starter plan + role
-            try {
-                $starterPlan = Plan::where('slug', 'starter')->first();
-                if ($starterPlan) {
-                    $user->userPlans()->create([
-                        'plan_id'    => $starterPlan->id,
-                        'started_at' => now(),
-                        'expires_at' => null,
-                        'status'     => 'active',
-                    ]);
-                    $user->assignRole('starter');
-                }
-            } catch (Exception $planError) {
-                Log::warning('Starter plan assignment error: ' . $planError->getMessage());
             }
 
             return response()->json([
@@ -1269,6 +1255,73 @@ class UserController extends Controller
             return response()->json([
                 'status' => 'error',
                 'error' => 'Failed to update profile',
+                'message' => 'Please try again later',
+            ], 500);
+        }
+    }
+
+    public function addPlan(Request $request): JsonResponse
+    {
+        try {
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Unauthorized',
+                ], 401);
+            }
+
+            $validatedData = $request->validate(
+                [
+                    'plan_id' => 'required|exists:plans,id',
+                ],
+                [
+                    'plan_id.required' => 'Plan ID is required',
+                    'plan_id.exists' => 'Selected plan does not exist',
+                ]
+            );
+
+            $plan = Plan::find($validatedData['plan_id']);
+
+            // Check if user already has an active plan
+            if ($user->userPlans()->where('status', 'active')->exists()) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'You already have an active plan',
+                ], 400);
+            }
+
+            // Create user plan
+            $userPlan = UserPlan::create([
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'status' => 'active',
+                'start_date' => now(),
+                'end_date' => now()->addMonth(), // Assuming monthly plans for simplicity
+            ]);
+
+            NotificationService::send($user, new PlanActivatedNotification($user->name, $plan->name));
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "You've successfully subscribed to the {$plan->name} plan",
+                'data' => [
+                    'plan_name' => $plan->name,
+                    'plan_slug' => $plan->slug,
+                    // Include other relevant plan details if needed
+                ]
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Failed to add plan',
                 'message' => 'Please try again later',
             ], 500);
         }

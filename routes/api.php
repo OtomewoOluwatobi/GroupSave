@@ -90,6 +90,7 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::post('/change-password', [UserController::class, 'changePassword']);
+    Route::post('/add-plan', [UserController::class, 'addPlan']);
 
     /**
      * Referral Routes Group
