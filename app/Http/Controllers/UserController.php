@@ -1293,15 +1293,26 @@ class UserController extends Controller
             }
 
             // Create user plan
-            $userPlan = UserPlan::create([
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-                'status' => 'active',
-                'start_date' => now(),
-                'end_date' => now()->addMonth(), // Assuming monthly plans for simplicity
+            UserPlan::create([
+                'user_id'    => $user->id,
+                'plan_id'    => $plan->id,
+                'status'     => 'active',
+                'started_at' => now(),
+                'expires_at' => match ($plan->billing) {
+                    'monthly'      => now()->addMonth(),
+                    'yearly'       => now()->addYear(),
+                    default        => null, // free_forever
+                },
             ]);
 
+            $user->syncRoles([$plan->slug]);
+
             NotificationService::send($user, new PlanActivatedNotification($user->name, $plan->name));
+
+            Log::info('Plan added to user', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+            ]);
 
             return response()->json([
                 'status' => 'success',
@@ -1309,7 +1320,6 @@ class UserController extends Controller
                 'data' => [
                     'plan_name' => $plan->name,
                     'plan_slug' => $plan->slug,
-                    // Include other relevant plan details if needed
                 ]
             ], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -1319,6 +1329,7 @@ class UserController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (Exception $e) {
+            Log::error('Add plan error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
                 'error' => 'Failed to add plan',
