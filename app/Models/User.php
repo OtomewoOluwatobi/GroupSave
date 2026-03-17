@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -116,6 +117,16 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function userPlans(): HasMany
     {
         return $this->hasMany(UserPlan::class);
+    }
+
+    /**
+     * Groups this user belongs to
+     */
+    public function groups(): BelongsToMany
+    {
+        return $this->belongsToMany(Group::class, 'group_user')
+            ->withPivot(['role', 'is_active'])
+            ->withTimestamps();
     }
 
     /**
