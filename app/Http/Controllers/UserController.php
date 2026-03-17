@@ -348,7 +348,6 @@ class UserController extends Controller
 
             // Check if user exists
             if (!$user) {
-                Log::warning('Login failed: User not found', ['email' => $credentials['email']]);
                 return new Response([
                     'error' => 'Invalid credentials',
                     'debug' => 'user_not_found'
@@ -357,7 +356,6 @@ class UserController extends Controller
 
             // Check password
             if (!Hash::check($credentials['password'], $user->password)) {
-                Log::warning('Login failed: Password mismatch', ['email' => $credentials['email']]);
                 return new Response([
                     'error' => 'Invalid credentials',
                     'debug' => 'password_mismatch'
@@ -373,7 +371,6 @@ class UserController extends Controller
 
             // Use JWT guard specifically
             if (!$token = Auth::guard('api')->attempt($credentials)) {
-                Log::warning('Login failed: JWT attempt failed', ['email' => $credentials['email']]);
                 return new Response([
                     'error' => 'Invalid credentials',
                     'debug' => 'jwt_failed'
