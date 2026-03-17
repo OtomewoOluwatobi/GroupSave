@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('referrals', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('referrer_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('referred_id')->constrained('users')->cascadeOnDelete();
+            $table->uuid('id')->primary();
+            $table->foreignUuid('referrer_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignUuid('referred_id')->constrained('users')->cascadeOnDelete();
             $table->unsignedInteger('points_awarded')->default(0);
             $table->enum('status', ['pending', 'active', 'expired'])->default('pending');
             $table->timestamp('activated_at')->nullable();

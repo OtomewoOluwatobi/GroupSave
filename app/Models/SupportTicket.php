@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -10,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class SupportTicket extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasUuids;
 
     protected $fillable = [
         'ticket_id',
@@ -83,7 +84,7 @@ class SupportTicket extends Model
      */
     public static function generateUniqueTicketId(): string
     {
-        $lastTicket = self::orderBy('id', 'desc')->first();
+        $lastTicket = self::orderBy('created_at', 'desc')->first();
         $nextNumber = $lastTicket ? (intval(substr($lastTicket->ticket_id, 3)) + 1) : 1;
         return 'TK-' . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }

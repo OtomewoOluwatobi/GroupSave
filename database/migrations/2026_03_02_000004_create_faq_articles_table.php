@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('faq_articles', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('category_id')->constrained('faq_categories')->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('category_id')->constrained('faq_categories')->onDelete('cascade');
             $table->string('question');
             $table->text('answer');
             $table->integer('sort_order')->default(0);

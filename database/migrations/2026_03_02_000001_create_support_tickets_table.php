@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('support_tickets', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('ticket_id', 20)->unique(); // TK-001 format
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->string('subject');
             $table->enum('category', [
                 'account',      // Account & Security

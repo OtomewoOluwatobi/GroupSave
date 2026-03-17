@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('groups', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('owner_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('owner_id')->constrained('users')->onDelete('cascade');
             $table->string('title');
             $table->integer('total_users')->default(0);
             $table->decimal('target_amount', 10, 2);
@@ -23,8 +23,6 @@ return new class extends Migration
             $table->integer('payment_out_day')->default(1);
             $table->enum('status', ['active', 'inactive'])->default('active');
             $table->timestamps();
-
-            $table->foreign('owner_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 

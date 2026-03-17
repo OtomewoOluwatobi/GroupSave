@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('users', function (Blueprint $table) {
             $table->string('referral_code', 10)->unique()->nullable();
-            $table->foreignId('referred_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignUuid('referred_by')->nullable()->constrained('users')->nullOnDelete();
             $table->unsignedInteger('referral_points')->default(0);
         });
     }

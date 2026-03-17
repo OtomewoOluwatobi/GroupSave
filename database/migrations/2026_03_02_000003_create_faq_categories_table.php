@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('faq_categories', function (Blueprint $table) {
-            $table->id();
+            $table->uuid('id')->primary();
             $table->string('slug')->unique(); // account, groups, payments, etc.
             $table->string('label');          // "Account & Security"
             $table->string('icon');           // Emoji or icon class

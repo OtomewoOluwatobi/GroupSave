@@ -9,9 +9,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('group_user', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
-            $table->foreignId('group_id')->constrained()->onDelete('cascade');
+            $table->uuid('id')->primary();
+            $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
+            $table->foreignUuid('group_id')->constrained()->onDelete('cascade');
             $table->enum('role', ['admin', 'member'])->default('member');
             $table->boolean('is_active')->default(true);
             $table->timestamps();

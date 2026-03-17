@@ -12,9 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('support_ticket_replies', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('ticket_id')->constrained('support_tickets')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null'); // null = support agent
+            $table->uuid('id')->primary();
+            $table->foreignUuid('ticket_id')->constrained('support_tickets')->onDelete('cascade');
+            $table->foreignUuid('user_id')->nullable()->constrained()->onDelete('set null'); // null = support agent
             $table->boolean('is_from_support')->default(false);
             $table->string('agent_name')->nullable(); // For support replies
             $table->text('message');
