@@ -6,7 +6,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class GroupMemberRemovedNotification extends DatabaseNotification
 {
-    private int $groupId;
+    private string $groupId;
     private string $groupTitle;
 
     /**

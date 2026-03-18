@@ -9,7 +9,7 @@ class PasswordResetNotification extends BaseNotification
     private string $userEmail;
     private string $userName;
     private string $resetCode;
-    private int $userId;
+    private string $userId;
 
     /**
      * Create a new notification instance.

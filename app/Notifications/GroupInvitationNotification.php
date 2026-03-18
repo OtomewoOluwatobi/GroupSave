@@ -9,12 +9,12 @@ class GroupInvitationNotification extends DatabaseNotification
     /**
      * Store only scalar values to avoid serialization issues
      */
-    protected int $groupId;
+    protected string $groupId;
     protected string $groupName;
-    protected int $inviteeId;
+    protected string $inviteeId;
     protected string $inviteeEmail;
     protected string $inviteeFirstName;
-    protected int $inviterId;
+    protected string $inviterId;
     protected string $inviterName;
     protected string $generatedPassword;
 

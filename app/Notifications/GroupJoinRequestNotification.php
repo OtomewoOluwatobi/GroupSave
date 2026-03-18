@@ -6,9 +6,9 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class GroupJoinRequestNotification extends DatabaseNotification
 {
-    private int $groupId;
+    private string $groupId;
     private string $groupTitle;
-    private int $userId;
+    private string $userId;
     private string $userName;
 
     public function __construct(int $groupId, string $groupTitle, int $userId, string $userName)

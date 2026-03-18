@@ -6,7 +6,7 @@ use Illuminate\Notifications\Messages\MailMessage;
 
 class GroupJoinApprovedNotification extends DatabaseNotification
 {
-    private int $groupId;
+    private string $groupId;
     private string $groupTitle;
 
     public function __construct(int $groupId, string $groupTitle)
