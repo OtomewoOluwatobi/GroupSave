@@ -47,6 +47,28 @@ class GroupController extends Controller
             $validated['contribution_frequency']
         );
 
+        // Enforce plan member limits
+        $userPlan = Auth::user()->activePlan()->with('plan')->first();
+        if ($userPlan && $userPlan->plan) {
+            $maxMembers = $userPlan->plan->max_members_per_group;
+
+            if ((int) $validated['total_users'] > $maxMembers) {
+                return response()->json([
+                    'message' => "Your {$userPlan->plan->name} plan allows a maximum of {$maxMembers} members per group.",
+                    'code'    => 'MEMBER_LIMIT_REACHED',
+                ], 403);
+            }
+
+            // +1 for the creator who is auto-added
+            $inviteCount = count($validated['members_emails']);
+            if ($inviteCount >= $maxMembers) {
+                return response()->json([
+                    'message' => "Your {$userPlan->plan->name} plan allows a maximum of {$maxMembers} members per group (including yourself).",
+                    'code'    => 'MEMBER_LIMIT_REACHED',
+                ], 403);
+            }
+        }
+
         try {
             $group = DB::transaction(function () use ($validated, $payableAmount, $expectedEndDate) {
                 $group = Group::create([
