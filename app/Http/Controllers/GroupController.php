@@ -150,12 +150,6 @@ class GroupController extends Controller
                         ]);
 
                         $this->sendInvitationEmail($group, $user, $generatedPassword);
-
-                        Log::info('User invited to group', [
-                            'user_id' => $user->id,
-                            'group_id' => $group->id,
-                            'email' => $email
-                        ]);
                     }
                 });
             } catch (\Exception $e) {
@@ -214,20 +208,22 @@ class GroupController extends Controller
         }
 
         try {
-            $group->users()->updateExistingPivot($user->id, ['is_active' => true]);
+            DB::transaction(function () use ($group, $user) {
+                $group->users()->updateExistingPivot($user->id, ['is_active' => true]);
 
-            // Award invite_accepted points to group owner
-            $groupOwner = User::find($group->owner_id);
-            if ($groupOwner) {
-                PointsService::award(
-                    $groupOwner,
-                    PointsService::ACTION_INVITE_ACCEPTED,
-                    'Invite member to group \u2014 ' . $group->title,
-                    ['group_id' => $group->id, 'group_title' => $group->title, 'member' => $user->name]
-                );
-            }
+                // Award invite_accepted points to group owner
+                $groupOwner = User::find($group->owner_id);
+                if ($groupOwner) {
+                    PointsService::award(
+                        $groupOwner,
+                        PointsService::ACTION_INVITE_ACCEPTED,
+                        'Invite member to group — ' . $group->title,
+                        ['group_id' => $group->id, 'group_title' => $group->title, 'member' => $user->name]
+                    );
+                }
+            });
 
-            // Send notification to group admin/owner
+            // Send notification to group admin/owner (outside transaction — non-critical)
             $groupOwner = User::find($group->owner_id);
             NotificationService::send($groupOwner, new GroupInvitationAcceptedNotification($group, $user));
 
