@@ -95,11 +95,6 @@ class UserController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::info('Registration validation failed', [
-                'errors' => $validator->errors()->toArray(),
-                'input_email' => $request->input('email'),
-                'input_mobile' => $request->input('mobile'),
-            ]);
             return response()->json([
                 'status' => 'error',
                 'error' => 'Validation failed',
@@ -151,10 +146,6 @@ class UserController extends Controller
                         $referralData['referrer'],
                         new ReferralSignupNotification($referralData['newUser'])
                     );
-                    Log::info('Referral signup notification sent', [
-                        'referrer_id' => $referralData['referrer']->id,
-                        'referred_id' => $referralData['newUser']->id,
-                    ]);
                 } catch (Exception $e) {
                     Log::warning('Referral notification error: ' . $e->getMessage());
                 }

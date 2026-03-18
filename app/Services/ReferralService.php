@@ -15,7 +15,7 @@ class ReferralService
     /**
      * Points awarded per successful referral
      */
-    public const POINTS_PER_REFERRAL = 10;
+    public const POINTS_PER_REFERRAL = 50;
 
     /**
      * Milestone thresholds for achievements
