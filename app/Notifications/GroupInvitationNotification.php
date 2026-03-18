@@ -38,7 +38,7 @@ class GroupInvitationNotification extends DatabaseNotification
      */
     public function via($notifiable): array
     {
-        return ['database']; //'mail',
+        return ['database', 'mail'];
     }
 
     /**

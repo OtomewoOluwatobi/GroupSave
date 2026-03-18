@@ -129,8 +129,10 @@ class GroupController extends Controller
         $memberEmails = array_filter($emails, fn($email) => $email !== $creatorEmail);
 
         foreach ($memberEmails as $email) {
+            $notifyData = null;
+
             try {
-                DB::transaction(function () use ($group, $email) {
+                DB::transaction(function () use ($group, $email, &$notifyData) {
                     $generatedPassword = Str::random(10);
 
                     // Create user if they don't already exist
@@ -149,9 +151,18 @@ class GroupController extends Controller
                             'is_active' => false
                         ]);
 
-                        $this->sendInvitationEmail($group, $user, $generatedPassword);
+                        // Capture for notification after transaction commits
+                        $notifyData = ['user' => $user, 'password' => $generatedPassword];
                     }
                 });
+
+                // Send both DB + mail notifications AFTER the transaction commits
+                if ($notifyData && $notifyData['user']->id !== Auth::id()) {
+                    NotificationService::send(
+                        $notifyData['user'],
+                        new GroupInvitationNotification($group, $notifyData['user'], $notifyData['password'])
+                    );
+                }
             } catch (\Exception $e) {
                 Log::error('Failed to invite user', [
                     'email' => $email,
@@ -162,21 +173,6 @@ class GroupController extends Controller
                 // Continue with next email instead of breaking the entire process
                 continue;
             }
-        }
-    }
-
-    /**
-     * Send invitation email to user
-     *
-     * @param Group $group
-     * @param User $user
-     * @return void
-     */
-    private function sendInvitationEmail(Group $group, User $user, $generatedPassword)
-    {
-        // Double check to ensure we're not sending to the creator
-        if ($user->id !== Auth::id()) {
-            NotificationService::send($user, new GroupInvitationNotification($group, $user, $generatedPassword));
         }
     }
 
