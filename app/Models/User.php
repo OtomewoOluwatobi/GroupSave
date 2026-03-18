@@ -33,6 +33,10 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'referral_code',
         'referred_by',
         'referral_points',
+        'points',
+        'login_streak',
+        'last_login_date',
+        'extra_group_slots',
     ];
 
     protected $hidden = [
@@ -40,8 +44,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     ];
 
     protected $casts = [
-        'email_verified_at' => 'datetime',
-        'referral_points' => 'integer',
+        'email_verified_at'  => 'datetime',
+        'last_login_date'    => 'date',
+        'points'             => 'integer',
+        'login_streak'       => 'integer',
+        'extra_group_slots'  => 'integer',
     ];
 
     /**
@@ -147,7 +154,8 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
             return false;
         }
         $owned = $this->groups()->wherePivot('role', 'admin')->count();
-        return $owned < $plan->max_groups;
+        $limit = $plan->max_groups + ($this->extra_group_slots ?? 0);
+        return $owned < $limit;
     }
 
     /**
@@ -183,11 +191,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     }
 
     /**
-     * Add referral points
+     * Point transaction history
      */
-    public function addReferralPoints(int $points): void
+    public function pointTransactions(): HasMany
     {
-        $this->increment('referral_points', $points);
+        return $this->hasMany(PointTransaction::class)->latest();
     }
 
     /**
@@ -196,10 +204,10 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
     public function getReferralStats(): array
     {
         return [
-            'total_referrals' => $this->referrals()->count(),
-            'active_referrals' => $this->activeReferrals()->count(),
+            'total_referrals'   => $this->referrals()->count(),
+            'active_referrals'  => $this->activeReferrals()->count(),
             'pending_referrals' => $this->pendingReferrals()->count(),
-            'total_points' => $this->referral_points,
+            'total_points'      => $this->pointTransactions()->where('action', \App\Services\PointsService::ACTION_REFERRAL)->sum('points'),
         ];
     }
 }

@@ -12,6 +12,7 @@ use App\Notifications\GroupJoinRequestNotification;
 use App\Notifications\GroupJoinRejectedNotification;
 use App\Notifications\GroupMemberRemovedNotification;
 use App\Services\NotificationService;
+use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -214,6 +215,17 @@ class GroupController extends Controller
 
         try {
             $group->users()->updateExistingPivot($user->id, ['is_active' => true]);
+
+            // Award invite_accepted points to group owner
+            $groupOwner = User::find($group->owner_id);
+            if ($groupOwner) {
+                PointsService::award(
+                    $groupOwner,
+                    PointsService::ACTION_INVITE_ACCEPTED,
+                    'Invite member to group \u2014 ' . $group->title,
+                    ['group_id' => $group->id, 'group_title' => $group->title, 'member' => $user->name]
+                );
+            }
 
             // Send notification to group admin/owner
             $groupOwner = User::find($group->owner_id);

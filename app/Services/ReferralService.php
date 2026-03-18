@@ -6,6 +6,7 @@ use App\Models\Referral;
 use App\Models\User;
 use App\Notifications\ReferralBonusNotification;
 use App\Notifications\ReferralSignupNotification;
+use App\Services\PointsService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -94,9 +95,14 @@ class ReferralService
                 'activated_at' => now(),
             ]);
 
-            // Award points to referrer
+            // Award points to referrer via PointsService (also writes to point_transactions)
             $referrer = $referral->referrer;
-            $referrer->addReferralPoints(self::POINTS_PER_REFERRAL);
+            PointsService::award(
+                $referrer,
+                PointsService::ACTION_REFERRAL,
+                'Refer a friend \u2014 ' . $referral->referred->name,
+                ['referred_user' => $referral->referred->name]
+            );
 
             // Check for milestone achievements
             $this->checkMilestones($referrer);
@@ -122,22 +128,20 @@ class ReferralService
      */
     protected function checkMilestones(User $user): void
     {
-        $points = $user->referral_points;
+        $points = $user->pointTransactions()
+            ->where('action', PointsService::ACTION_REFERRAL)
+            ->sum('points');
+
+        $previousPoints = $points - PointsService::REFERRAL;
 
         foreach (self::MILESTONES as $threshold => $title) {
-            // Check if user just crossed this milestone
-            $previousPoints = $points - self::POINTS_PER_REFERRAL;
-
             if ($points >= $threshold && $previousPoints < $threshold) {
-                // User just reached this milestone
                 Log::info("User {$user->id} reached milestone: {$title}", [
-                    'user_id' => $user->id,
+                    'user_id'   => $user->id,
                     'milestone' => $title,
-                    'points' => $points,
+                    'points'    => $points,
                 ]);
-
                 // TODO: Add milestone notification
-                // NotificationService::send($user, new MilestoneAchievedNotification($title, $threshold));
                 break;
             }
         }
@@ -190,8 +194,10 @@ class ReferralService
     {
         $stats = $user->getReferralStats();
 
-        // Calculate progress to next milestone
-        $currentPoints = $user->referral_points;
+        // Calculate referral-specific points from point_transactions
+        $currentPoints = $user->pointTransactions()
+            ->where('action', PointsService::ACTION_REFERRAL)
+            ->sum('points');
         $nextMilestone = null;
         $progressPercentage = 0;
 
@@ -211,8 +217,8 @@ class ReferralService
                 'total_points' => $stats['total_points'],
             ],
             'earnings_overview' => [
-                'total_points' => $currentPoints,
-                'points_per_referral' => self::POINTS_PER_REFERRAL,
+                'total_points'       => $currentPoints,
+                'points_per_referral' => PointsService::REFERRAL,
             ],
             'milestone' => [
                 'next_target' => $nextMilestone,

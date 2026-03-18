@@ -16,6 +16,7 @@ use App\Notifications\ReferralSignupNotification;
 use App\Notifications\UserOnboardingNotification;
 use App\Notifications\VerifyEmailNotification;
 use App\Services\NotificationService;
+use App\Services\PointsService;
 use App\Services\ReferralService;
 use Exception;
 use Illuminate\Auth\Events\Registered;
@@ -376,6 +377,9 @@ class UserController extends Controller
                     'debug' => 'jwt_failed'
                 ], 401);
             }
+
+            // Award daily login points + streak
+            PointsService::recordLogin($user);
 
             // Send login notification
             $ipAddress = $request->ip() ?? 'Unknown';
@@ -1255,6 +1259,72 @@ class UserController extends Controller
                 'message' => 'Please try again later',
             ], 500);
         }
+    }
+
+    /**
+     * Get points balance, streak info, and activity ledger.
+     */
+    public function pointsSummary(): JsonResponse
+    {
+        $user = Auth::user();
+
+        $nextRedemption = PointsService::REDEEM_EXTRA_GROUP_SLOT;
+        $progress       = ($user->points % $nextRedemption);
+        $remaining      = $nextRedemption - $progress;
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => [
+                'points'            => $user->points,
+                'login_streak'      => $user->login_streak,
+                'extra_group_slots' => $user->extra_group_slots,
+                'next_redemption'   => [
+                    'action'    => PointsService::ACTION_REDEEM_GROUP_SLOT,
+                    'label'     => 'Extra group slot',
+                    'cost'      => $nextRedemption,
+                    'progress'  => $progress,
+                    'remaining' => $remaining,
+                ],
+                'catalogue'  => PointsService::catalogue(),
+                'activity'   => $user->pointTransactions()->limit(20)->get(),
+            ],
+        ]);
+    }
+
+    /**
+     * Redeem points for a reward.
+     */
+    public function redeemPoints(Request $request): JsonResponse
+    {
+        $request->validate(['action' => 'required|string']);
+
+        $user   = Auth::user();
+        $action = $request->input('action');
+
+        $cost = PointsService::redemptionCost($action);
+        if ($cost === 0) {
+            return response()->json(['status' => 'error', 'error' => 'Invalid redemption action.'], 422);
+        }
+
+        if ($user->points < $cost) {
+            return response()->json([
+                'status' => 'error',
+                'error'  => "You need {$cost} points to redeem this reward. You have {$user->points}.",
+            ], 400);
+        }
+
+        PointsService::redeem($user, $action);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Redemption successful.',
+            'data'    => [
+                'action'            => $action,
+                'points_spent'      => $cost,
+                'points_balance'    => $user->fresh()->points,
+                'extra_group_slots' => $user->fresh()->extra_group_slots,
+            ],
+        ]);
     }
 
     public function addPlan(Request $request): JsonResponse
