@@ -1299,7 +1299,7 @@ class UserController extends Controller
         $request->validate(['action' => 'required|string']);
 
         $user   = Auth::user();
-        $action = $request->input('action');
+        $action = $request->input('action'); // e.g. 'redeem_extra_group_slot' 
 
         $cost = PointsService::redemptionCost($action);
         if ($cost === 0) {
