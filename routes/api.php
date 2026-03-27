@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\GroupController;
-use App\Http\Controllers\LeadController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReferralController;
@@ -34,12 +33,6 @@ Route::get('/ping', function () {
  * Public plan listing
  */
 Route::get('/plans', [PlanController::class, 'index']);
-
-/**
- * Public Leads Route
- * Submit interest / waitlist lead (no auth required)
- */
-Route::post('/leads', [LeadController::class, 'store']);
 
 /**
  * Public Referral Route
@@ -198,9 +191,4 @@ Route::prefix('admin')->middleware(['auth:api', 'role:admin'])->group(function (
     Route::post('/plans', [PlanController::class, 'store']);
     Route::put('/plans/{plan}', [PlanController::class, 'update']);
     Route::delete('/plans/{plan}', [PlanController::class, 'destroy']);
-
-    // Leads management
-    Route::get('/leads', [LeadController::class, 'index']);
-    Route::get('/leads/{id}', [LeadController::class, 'show']);
-    Route::delete('/leads/{id}', [LeadController::class, 'destroy']);
 });
