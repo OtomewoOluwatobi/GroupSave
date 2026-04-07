@@ -22,7 +22,7 @@ use Illuminate\Support\Facades\Route;
  * Requires valid authentication token
  */
 Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
-    return $request->user();ˆ
+    return $request->user();
 });
 
 Route::get('/ping', function () {
