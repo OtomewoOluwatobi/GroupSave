@@ -1,0 +1,1491 @@
+{
+  "info": {
+    "name": "Rukuni API",
+    "_postman_id": "rukuni-api-collection",
+    "description": "Complete Postman collection for the Rukuni backend API. Set `base_url` (e.g. `http://localhost:8000`) and `auth_token` (JWT) as collection variables before making authenticated requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:8000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "admin_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/ping",
+              "host": ["{{base_url}}"],
+              "path": ["api", "ping"]
+            },
+            "description": "Simple liveness check. Returns `{ \"message\": \"pong\" }`."
+          },
+          "response": [
+            {
+              "name": "200 Pong",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\"message\":\"pong\"}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"mobile\": \"+2348012345678\",\n  \"password\": \"Password@123\",\n  \"password_confirmation\": \"Password@123\",\n  \"referral_code\": \"GRP-ABCD\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/register",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "description": "Register a new user account. `referral_code` is optional. A verification email is sent after registration. Password must meet Laravel's default strength rules (min 8 chars, mixed case + numbers recommended)."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"User registration successful\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"mobile\": \"+2348012345678\",\n    \"created_at\": \"2026-03-28T10:00:00.000000Z\"\n  }\n}"
+            },
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Validation failed\",\n  \"message\": \"Please check your input\",\n  \"errors\": {\n    \"email\": [\"The email has already been taken.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Resend Email Verification",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/resend-verification",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "resend-verification"]
+            },
+            "description": "Resend the email verification link. Rate-limited to once every 60 seconds per user."
+          },
+          "response": [
+            {
+              "name": "200 Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Verification email sent successfully\",\n  \"data\": {\n    \"email\": \"joh***com\"\n  }\n}"
+            },
+            {
+              "name": "429 Rate Limited",
+              "status": "Too Many Requests",
+              "code": 429,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Please wait before requesting another verification email\",\n  \"retry_after\": 45\n}"
+            }
+          ]
+        },
+        {
+          "name": "Verify Email (Signed URL)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/auth/verify?id=1&hash=abc123&signature=xyz789",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "verify"],
+              "query": [
+                {"key": "id", "value": "1", "description": "User ID from the signed verification URL"},
+                {"key": "hash", "value": "abc123", "description": "Email hash"},
+                {"key": "signature", "value": "xyz789", "description": "URL signature for verification"}
+              ]
+            },
+            "description": "Verifies a user's email address using the signed URL sent via email. In practice the full URL is generated by the server and emailed to the user."
+          },
+          "response": [
+            {
+              "name": "200 Verified",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Email verified successfully\"\n}"
+            },
+            {
+              "name": "403 Invalid Signature",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Invalid or expired verification link\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('auth_token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"Password@123\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "description": "Authenticate and receive a JWT token. The test script auto-saves the token to the `auth_token` collection variable."
+          },
+          "response": [
+            {
+              "name": "200 Login Success",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\"\n  },\n  \"expires_in\": 604800\n}"
+            },
+            {
+              "name": "401 Invalid Credentials",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"error\": \"Invalid credentials\"\n}"
+            },
+            {
+              "name": "403 Email Not Verified",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"error\": \"Email not verified\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/forgot-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "forgot-password"]
+            },
+            "description": "Request a 6-digit OTP reset code to the user's email. The code expires in 15 minutes (900 seconds)."
+          },
+          "response": [
+            {
+              "name": "200 Code Sent",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Password reset code sent to your email. Please check your inbox.\",\n  \"data\": {\n    \"expires_in\": 900,\n    \"email\": \"joh***com\"\n  }\n}"
+            },
+            {
+              "name": "404 User Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"No account found with this email\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"code\": \"123456\",\n  \"password\": \"NewPassword@456\",\n  \"password_confirmation\": \"NewPassword@456\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/reset-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "reset-password"]
+            },
+            "description": "Reset the user's password using the 6-digit OTP received via email. The code must be exactly 6 characters."
+          },
+          "response": [
+            {
+              "name": "200 Password Reset",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Password has been reset successfully. Please log in with your new password.\",\n  \"data\": {\n    \"redirect\": \"login\",\n    \"email\": \"john.doe@example.com\"\n  }\n}"
+            },
+            {
+              "name": "400 Invalid / Expired Code",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Invalid or expired reset code\",\n  \"code\": \"INVALID_CODE\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/logout",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "logout"]
+            },
+            "description": "Invalidate the current JWT token. Requires `auth:api` middleware."
+          },
+          "response": [
+            {
+              "name": "204 No Content",
+              "status": "No Content",
+              "code": 204,
+              "header": [],
+              "body": ""
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var json = pm.response.json();",
+                  "if (json.token) {",
+                  "  pm.collectionVariables.set('auth_token', json.token);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            },
+            "description": "Exchange an existing (or recently expired) JWT for a new one. Does NOT require a valid non-expired token — expired tokens can reach this endpoint."
+          },
+          "response": [
+            {
+              "name": "200 Token Refreshed",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...\",\n  \"token_type\": \"bearer\",\n  \"expires_in\": 604800\n}"
+            },
+            {
+              "name": "401 Token Expired / Invalid",
+              "status": "Unauthorized",
+              "code": 401,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Token has expired and cannot be refreshed\",\n  \"code\": \"TOKEN_EXPIRED\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "User",
+      "item": [
+        {
+          "name": "Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/dashboard",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "dashboard"]
+            },
+            "description": "Returns the authenticated user's dashboard data: profile, groups (owned + member), suggested groups, pending invitations, and statistics."
+          },
+          "response": [
+            {
+              "name": "200 Dashboard Data",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Dashboard data retrieved successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"mobile\": \"+2348012345678\",\n    \"plan\": \"Starter\",\n    \"created_at\": \"2026-01-01T00:00:00.000000Z\"\n  },\n  \"stats\": {\n    \"total_groups\": 3,\n    \"owned_groups\": 1,\n    \"member_groups\": 2,\n    \"pending_invitations\": 1,\n    \"active_groups\": 3,\n    \"unread_notifications\": 5\n  },\n  \"user_groups\": [],\n  \"suggested_groups\": [],\n  \"pending_invitations\": [],\n  \"user_banks\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Updated Doe\",\n  \"mobile\": \"+2348099999999\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/profile",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "profile"]
+            },
+            "description": "Update the authenticated user's profile information (name, mobile, etc.)."
+          },
+          "response": [
+            {
+              "name": "200 Profile Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Profile updated successfully\",\n  \"user\": {\n    \"id\": 1,\n    \"name\": \"John Updated Doe\",\n    \"email\": \"john.doe@example.com\",\n    \"mobile\": \"+2348099999999\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_password\": \"Password@123\",\n  \"password\": \"NewPassword@456\",\n  \"password_confirmation\": \"NewPassword@456\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/change-password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "change-password"]
+            },
+            "description": "Change the authenticated user's password. Requires the current password to be valid."
+          },
+          "response": [
+            {
+              "name": "200 Password Changed",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Password changed successfully\"\n}"
+            },
+            {
+              "name": "400 Wrong Current Password",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Current password is incorrect\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Add Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"plan_id\": 2\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/add-plan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "add-plan"]
+            },
+            "description": "Add / upgrade the authenticated user's plan."
+          },
+          "response": []
+        },
+        {
+          "name": "Points Summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/points",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "points"]
+            },
+            "description": "Get the authenticated user's point balance, transaction history, and streak data."
+          },
+          "response": []
+        },
+        {
+          "name": "Redeem Points",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"points\": 100\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/points/redeem",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "points", "redeem"]
+            },
+            "description": "Redeem the authenticated user's earned points."
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Plans",
+      "item": [
+        {
+          "name": "List Plans (Public)",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/plans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "plans"]
+            },
+            "description": "Public endpoint. Returns all active plans ordered by price."
+          },
+          "response": [
+            {
+              "name": "200 Plans List",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"name\": \"Starter\",\n      \"slug\": \"starter\",\n      \"tagline\": \"Perfect for getting started\",\n      \"price\": 0,\n      \"currency\": \"NGN\",\n      \"billing\": \"free_forever\",\n      \"features\": [\"Up to 5 group members\", \"1 active group\"],\n      \"max_groups\": 1,\n      \"max_members_per_group\": 5,\n      \"is_active\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get My Plan",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/plan",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "plan"]
+            },
+            "description": "Returns the authenticated user's currently active plan."
+          },
+          "response": [
+            {
+              "name": "200 Active Plan",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"user_id\": 1,\n    \"plan_id\": 1,\n    \"status\": \"active\",\n    \"started_at\": \"2026-01-01T00:00:00.000000Z\",\n    \"expires_at\": null,\n    \"plan\": {\n      \"id\": 1,\n      \"name\": \"Starter\",\n      \"slug\": \"starter\",\n      \"price\": 0,\n      \"billing\": \"free_forever\"\n    }\n  }\n}"
+            },
+            {
+              "name": "404 No Active Plan",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": null,\n  \"message\": \"No active plan.\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Join a Plan",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/plan/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "plan", "1"]
+            },
+            "description": "User joins a plan by plan ID. Only `free_forever` plans are self-serve; paid plans must be admin-assigned. Replaces any existing active plan."
+          },
+          "response": [
+            {
+              "name": "201 Joined Plan",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"You have joined the Starter plan.\",\n  \"data\": {\n    \"id\": 1,\n    \"status\": \"active\",\n    \"started_at\": \"2026-03-28T10:00:00.000000Z\",\n    \"plan\": {\n      \"name\": \"Starter\",\n      \"billing\": \"free_forever\"\n    }\n  }\n}"
+            },
+            {
+              "name": "403 Paid Plan Restriction",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Paid plans must be activated by an administrator.\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "List Groups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group"]
+            },
+            "description": "Returns all groups the authenticated user owns or is a member of."
+          },
+          "response": [
+            {
+              "name": "200 Groups List",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": [\n    {\n      \"id\": 1,\n      \"title\": \"Family Ajo\",\n      \"target_amount\": 500000,\n      \"payable_amount\": 100000,\n      \"expected_start_date\": \"2026-04-01\",\n      \"status\": \"active\",\n      \"total_members\": 5,\n      \"user_role\": \"admin\",\n      \"is_owner\": true\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Group",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group/1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "1"]
+            },
+            "description": "Get a specific group by ID."
+          },
+          "response": [
+            {
+              "name": "200 Group Details",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": {\n    \"id\": 1,\n    \"title\": \"Family Ajo\",\n    \"target_amount\": 500000,\n    \"payable_amount\": 100000,\n    \"expected_start_date\": \"2026-04-01\",\n    \"expected_end_date\": \"2026-09-01\",\n    \"contribution_frequency\": \"monthly\",\n    \"payment_out_day\": 1,\n    \"status\": \"active\",\n    \"owner_id\": 1\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Group not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Group",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Family Ajo\",\n  \"total_users\": 5,\n  \"target_amount\": 500000,\n  \"expected_start_date\": \"2026-04-15\",\n  \"contribution_frequency\": \"monthly\",\n  \"payment_out_day\": 1,\n  \"members_emails\": [\n    \"member1@example.com\",\n    \"member2@example.com\",\n    \"member3@example.com\",\n    \"member4@example.com\"\n  ]\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/group/store",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "store"]
+            },
+            "description": "Create a new contribution group. Requires the `create_group` plan permission middleware.\n\n**contribution_frequency options:** `daily`, `weekly`, `monthly`\n\n- `payment_out_day` (1–31): required when frequency is `monthly`\n- `payment_out_weekday` (0–6, Mon=0): required when frequency is `weekly`\n\nThe creator is auto-added as admin. All provided `members_emails` are invited (accounts are created for non-existing emails)."
+          },
+          "response": [
+            {
+              "name": "201 Group Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Group created successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"title\": \"Family Ajo\",\n    \"target_amount\": 500000,\n    \"payable_amount\": 100000,\n    \"expected_start_date\": \"2026-04-15\",\n    \"expected_end_date\": \"2026-09-15\",\n    \"contribution_frequency\": \"monthly\",\n    \"payment_out_day\": 1,\n    \"status\": \"active\",\n    \"owner_id\": 1\n  }\n}"
+            },
+            {
+              "name": "403 Member Limit Exceeded",
+              "status": "Forbidden",
+              "code": 403,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Your Starter plan allows a maximum of 5 members per group.\",\n  \"code\": \"MEMBER_LIMIT_REACHED\"\n}"
+            },
+            {
+              "name": "422 Validation Error",
+              "status": "Unprocessable Entity",
+              "code": 422,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"The given data was invalid.\",\n  \"errors\": {\n    \"title\": [\"The title field is required.\"],\n    \"expected_start_date\": [\"The expected start date must be a date after today.\"]\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Accept Invitation",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group/1/accept-invitation",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "1", "accept-invitation"]
+            },
+            "description": "Accept a pending group invitation. Requires `requires.plan` middleware. Awards points to the group owner."
+          },
+          "response": [
+            {
+              "name": "200 Invitation Accepted",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Invitation accepted successfully\",\n  \"data\": {\n    \"id\": 1,\n    \"title\": \"Family Ajo\"\n  }\n}"
+            },
+            {
+              "name": "404 Invitation Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Invitation not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Send Join Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group/1/send-join-request",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "1", "send-join-request"]
+            },
+            "description": "Send a join request to a group's admin. Requires `requires.plan` middleware. The group admin receives a notification."
+          },
+          "response": [
+            {
+              "name": "200 Request Sent",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Join request sent successfully\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Approve Join Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group/1/join-requests/5/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "1", "join-requests", "5", "approve"]
+            },
+            "description": "Approve a pending join request for a group. Only the group admin can approve. Requires `requires.plan` middleware."
+          },
+          "response": [
+            {
+              "name": "200 Approved",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Join request approved\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reject Join Request",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/group/1/join-requests/5/reject",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "group", "1", "join-requests", "5", "reject"]
+            },
+            "description": "Reject a pending join request for a group. Only the group admin can reject. Requires `requires.plan` middleware."
+          },
+          "response": [
+            {
+              "name": "200 Rejected",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Join request rejected\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Referral",
+      "item": [
+        {
+          "name": "Validate Referral Code (Public)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"referral_code\": \"GRP-ABCD\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/referral/validate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "referral", "validate"]
+            },
+            "description": "Validate a referral code before user signs up. Returns the referrer's name so the UI can display it."
+          },
+          "response": [
+            {
+              "name": "200 Valid Code",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Valid referral code\",\n  \"data\": {\n    \"referrer_name\": \"Jane Smith\"\n  }\n}"
+            },
+            {
+              "name": "404 Invalid Code",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": false,\n  \"message\": \"Invalid referral code\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Referral Dashboard",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/referral",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "referral"]
+            },
+            "description": "Returns the authenticated user's referral code, stats (active, pending, total_points), earnings overview, milestone progress, and referral history."
+          },
+          "response": [
+            {
+              "name": "200 Referral Dashboard",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"data\": {\n    \"referral_code\": \"GRP-ABCD\",\n    \"stats\": {\n      \"active\": 2,\n      \"pending\": 1,\n      \"total_points\": 20\n    },\n    \"earnings_overview\": {\n      \"total_points\": 20,\n      \"points_per_referral\": 10\n    },\n    \"milestone\": {\n      \"next_target\": 50,\n      \"current_points\": 20,\n      \"points_to_go\": 30,\n      \"progress_percentage\": 40.0\n    },\n    \"history\": []\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Referral History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/referral/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "referral", "history"]
+            },
+            "description": "Returns the list of users referred by the authenticated user."
+          },
+          "response": [
+            {
+              "name": "200 Referral History",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": 1,\n      \"referred_user\": {\n        \"name\": \"James Adeyemi\",\n        \"initials\": \"JA\"\n      },\n      \"points_awarded\": 10,\n      \"status\": \"active\",\n      \"date\": \"10 Feb 2026\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Regenerate Referral Code",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/referral/regenerate-code",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "referral", "regenerate-code"]
+            },
+            "description": "Generates a fresh unique referral code for the authenticated user, replacing the old one."
+          },
+          "response": [
+            {
+              "name": "200 Code Regenerated",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Referral code regenerated\",\n  \"data\": {\n    \"referral_code\": \"GRP-WXYZ\"\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "List Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/notifications?read=false&type=group",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "notifications"],
+              "query": [
+                {"key": "read", "value": "false", "description": "Filter by read status: `true` or `false`"},
+                {"key": "type", "value": "group", "description": "Filter by notification type (partial match e.g. `group`, `referral`, `login`)"}
+              ]
+            },
+            "description": "Get paginated notifications for the authenticated user. Both query params are optional."
+          },
+          "response": [
+            {
+              "name": "200 Notifications List",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"notifications\": {\n    \"data\": [],\n    \"current_page\": 1,\n    \"per_page\": 20,\n    \"total\": 0\n  },\n  \"unread_count\": 3\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Notification",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/notifications/NOTIFICATION_UUID",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "notifications", "NOTIFICATION_UUID"]
+            },
+            "description": "Get a single notification by UUID. Automatically marks the notification as read."
+          },
+          "response": [
+            {
+              "name": "200 Notification",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"data\": {\n    \"id\": \"uuid\",\n    \"type\": \"App\\\\Notifications\\\\GroupInvitationNotification\",\n    \"data\": {},\n    \"read_at\": \"2026-03-28T10:00:00.000000Z\"\n  }\n}"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"message\": \"Notification not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark Notification as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/notifications/NOTIFICATION_UUID/read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "notifications", "NOTIFICATION_UUID", "read"]
+            },
+            "description": "Mark a specific notification as read by UUID."
+          },
+          "response": [
+            {
+              "name": "200 Marked as Read",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Notification marked as read\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Mark All Notifications as Read",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/notifications/mark-all-read",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "notifications", "mark-all-read"]
+            },
+            "description": "Mark all unread notifications for the authenticated user as read."
+          },
+          "response": [
+            {
+              "name": "200 All Marked as Read",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"All notifications marked as read\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Notification",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/notifications/NOTIFICATION_UUID",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "notifications", "NOTIFICATION_UUID"]
+            },
+            "description": "Permanently delete a notification by UUID."
+          },
+          "response": [
+            {
+              "name": "200 Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Notification deleted\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support — FAQ (Public)",
+      "item": [
+        {
+          "name": "Get All FAQ Categories",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/support/faq",
+              "host": ["{{base_url}}"],
+              "path": ["api", "support", "faq"]
+            },
+            "description": "Returns all active FAQ categories with their articles. No authentication required."
+          },
+          "response": [
+            {
+              "name": "200 FAQ Categories",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"categories\": [\n    {\n      \"id\": \"account\",\n      \"icon\": \"user\",\n      \"label\": \"Account\",\n      \"desc\": \"Account-related questions\",\n      \"color\": \"blue\",\n      \"article_count\": 5,\n      \"articles\": [\n        {\n          \"id\": 1,\n          \"q\": \"How do I reset my password?\",\n          \"a\": \"Click on Forgot Password on the login page...\",\n          \"helpful_count\": 12,\n          \"helpfulness\": 0.85\n        }\n      ]\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Search FAQ",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/support/faq/search?q=password",
+              "host": ["{{base_url}}"],
+              "path": ["api", "support", "faq", "search"],
+              "query": [
+                {"key": "q", "value": "password", "description": "Search keyword (minimum 2 characters)"}
+              ]
+            },
+            "description": "Full-text search across all active FAQ articles. Returns up to 20 results. Requires at least 2 characters."
+          },
+          "response": [
+            {
+              "name": "200 Search Results",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"query\": \"password\",\n  \"count\": 2,\n  \"results\": [\n    {\n      \"id\": 1,\n      \"q\": \"How do I reset my password?\",\n      \"a\": \"Click on Forgot Password...\",\n      \"category\": {\n        \"id\": \"account\",\n        \"icon\": \"user\",\n        \"label\": \"Account\",\n        \"color\": \"blue\"\n      }\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get FAQ Category",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/support/faq/account",
+              "host": ["{{base_url}}"],
+              "path": ["api", "support", "faq", "account"]
+            },
+            "description": "Get a specific FAQ category and all its active articles by slug. Common slugs: `account`, `groups`, `payments`, `payouts`, `billing`, `technical`."
+          },
+          "response": [
+            {
+              "name": "200 Category",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"category\": {\n    \"id\": \"account\",\n    \"icon\": \"user\",\n    \"label\": \"Account\",\n    \"desc\": \"Account-related questions\",\n    \"color\": \"blue\",\n    \"articles\": []\n  }\n}"
+            },
+            {
+              "name": "404 Category Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Category not found\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Article Feedback",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}, {"key": "Accept", "value": "application/json"}],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": true\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/support/faq/1/feedback",
+              "host": ["{{base_url}}"],
+              "path": ["api", "support", "faq", "1", "feedback"]
+            },
+            "description": "Submit helpful / not-helpful feedback on a FAQ article. `articleId` is the numeric article ID."
+          },
+          "response": [
+            {
+              "name": "200 Feedback Recorded",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Feedback recorded\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Contact Info",
+          "request": {
+            "method": "GET",
+            "header": [{"key": "Accept", "value": "application/json"}],
+            "url": {
+              "raw": "{{base_url}}/api/support/contact",
+              "host": ["{{base_url}}"],
+              "path": ["api", "support", "contact"]
+            },
+            "description": "Returns support contact information and SLA details."
+          },
+          "response": [
+            {
+              "name": "200 Contact Info",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"contact\": {\n    \"email\": \"support@rukuni.io\",\n    \"sla\": {\n      \"low\": \"72h\",\n      \"medium\": \"24h\",\n      \"high\": \"8h\",\n      \"critical\": \"2h\"\n    }\n  }\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Support — Tickets (Authenticated)",
+      "item": [
+        {
+          "name": "List My Tickets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets?status=open&priority=high",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets"],
+              "query": [
+                {"key": "status", "value": "open", "description": "Filter by status: `open`, `in_review`, `awaiting`, `escalated`, `resolved`, `closed`"},
+                {"key": "priority", "value": "high", "description": "Filter by priority: `low`, `medium`, `high`, `critical`"},
+                {"key": "active_only", "value": "true", "description": "Return only active (unresolved) tickets", "disabled": true}
+              ]
+            },
+            "description": "Returns all support tickets for the authenticated user with optional filters. Also returns aggregate stats."
+          },
+          "response": [
+            {
+              "name": "200 Tickets",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"stats\": {\n    \"total\": 3,\n    \"open\": 2,\n    \"resolved\": 1,\n    \"closed\": 0\n  },\n  \"tickets\": [\n    {\n      \"id\": 1,\n      \"ticket_id\": \"TK-001\",\n      \"subject\": \"Payment not showing\",\n      \"category\": \"payments\",\n      \"category_label\": \"Payments\",\n      \"priority\": \"medium\",\n      \"status\": \"open\",\n      \"status_label\": \"Open\",\n      \"is_active\": true,\n      \"sla_deadline\": \"2026-03-29T10:00:00.000000Z\",\n      \"sla_breached\": false,\n      \"created_at\": \"2026-03-28T10:00:00.000000Z\",\n      \"date\": \"2026-03-28\"\n    }\n  ]\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"subject\": \"Payment not reflecting in dashboard\",\n  \"category\": \"payments\",\n  \"priority\": \"medium\",\n  \"message\": \"My payment of ₦100,000 made on March 27th is not showing in my dashboard even after 24 hours. Transaction reference: TXN-12345.\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets"]
+            },
+            "description": "Submit a new support ticket.\n\n**category options:** `account`, `groups`, `payments`, `payouts`, `notifications`, `billing`, `technical`, `fraud`\n\n**priority options:** `low`, `medium` (default), `high`, `critical`\n\n`message` must be between 20 and 5000 characters."
+          },
+          "response": [
+            {
+              "name": "201 Ticket Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Ticket submitted successfully\",\n  \"ticket\": {\n    \"id\": 1,\n    \"ticket_id\": \"TK-001\",\n    \"subject\": \"Payment not reflecting in dashboard\",\n    \"category\": \"payments\",\n    \"priority\": \"medium\",\n    \"status\": \"open\",\n    \"sla\": \"24h\",\n    \"created_at\": \"2026-03-28T10:00:00.000000Z\"\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Ticket Details",
+          "request": {
+            "method": "GET",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets/TK-001",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets", "TK-001"]
+            },
+            "description": "Get detailed information about a specific ticket including all replies and a timeline. Use the human-readable ticket ID (e.g., `TK-001`), not the numeric database ID."
+          },
+          "response": [
+            {
+              "name": "200 Ticket Details",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"ticket\": {\n    \"id\": 1,\n    \"ticket_id\": \"TK-001\",\n    \"subject\": \"Payment not reflecting\",\n    \"category\": \"payments\",\n    \"priority\": \"medium\",\n    \"status\": \"open\",\n    \"message\": \"My payment is not showing...\",\n    \"sla_deadline\": \"2026-03-29T10:00:00.000000Z\",\n    \"sla_breached\": false\n  },\n  \"replies\": [],\n  \"timeline\": []\n}"
+            }
+          ]
+        },
+        {
+          "name": "Reply to Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"message\": \"I have attached the transaction receipt. The bank confirmed the debit. Please investigate further.\"\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets/TK-001/reply",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets", "TK-001", "reply"]
+            },
+            "description": "Add a reply to an open ticket. Cannot reply to closed tickets. `message` must be 5–5000 characters."
+          },
+          "response": [
+            {
+              "name": "201 Reply Added",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Reply sent successfully\",\n  \"reply\": {\n    \"id\": 1,\n    \"message\": \"I have attached the transaction receipt...\",\n    \"is_from_support\": false,\n    \"author\": \"John Doe\",\n    \"created_at\": \"2026-03-28T11:00:00.000000Z\"\n  }\n}"
+            },
+            {
+              "name": "400 Ticket Closed",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Cannot reply to a closed ticket\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Escalate Ticket",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets/TK-001/escalate",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets", "TK-001", "escalate"]
+            },
+            "description": "Escalate a ticket to senior support. Auto-upgrades the priority to `high`. Cannot escalate already-escalated or resolved/closed tickets."
+          },
+          "response": [
+            {
+              "name": "200 Escalated",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Ticket escalated to senior support\",\n  \"ticket\": {\n    \"ticket_id\": \"TK-001\",\n    \"status\": \"escalated\",\n    \"priority\": \"high\"\n  }\n}"
+            },
+            {
+              "name": "400 Already Escalated",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"error\",\n  \"error\": \"Ticket is already escalated\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "Submit Ticket Feedback",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{auth_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"helpful\": true\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/user/support/tickets/TK-001/feedback",
+              "host": ["{{base_url}}"],
+              "path": ["api", "user", "support", "tickets", "TK-001", "feedback"]
+            },
+            "description": "Submit feedback on a resolved ticket. Indicate whether the resolution was helpful."
+          },
+          "response": [
+            {
+              "name": "200 Feedback Submitted",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"status\": \"success\",\n  \"message\": \"Thank you for your feedback\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin — Plans",
+      "item": [
+        {
+          "name": "Create Plan (Admin)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Pro\",\n  \"slug\": \"pro\",\n  \"tagline\": \"For serious contributors\",\n  \"price\": 2000,\n  \"currency\": \"NGN\",\n  \"billing\": \"monthly\",\n  \"features\": [\n    \"Up to 50 group members\",\n    \"5 active groups\",\n    \"Priority support\"\n  ],\n  \"built_for\": [\"Businesses\", \"Power users\"],\n  \"max_groups\": 5,\n  \"max_members_per_group\": 50,\n  \"is_active\": true\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/plans",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "plans"]
+            },
+            "description": "Create a new subscription plan. Requires `admin` role.\n\n**billing options:** `free_forever`, `monthly`, `yearly`"
+          },
+          "response": [
+            {
+              "name": "201 Plan Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Pro\",\n    \"slug\": \"pro\",\n    \"price\": 2000,\n    \"currency\": \"NGN\",\n    \"billing\": \"monthly\",\n    \"max_groups\": 5,\n    \"max_members_per_group\": 50,\n    \"is_active\": true\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Plan (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"},
+              {"key": "Content-Type", "value": "application/json"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tagline\": \"Updated tagline\",\n  \"price\": 2500,\n  \"max_members_per_group\": 75,\n  \"is_active\": true\n}",
+              "options": {"raw": {"language": "json"}}
+            },
+            "url": {
+              "raw": "{{base_url}}/api/admin/plans/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "plans", "2"]
+            },
+            "description": "Update an existing plan by numeric plan ID. All fields are optional (partial update)."
+          },
+          "response": [
+            {
+              "name": "200 Plan Updated",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"data\": {\n    \"id\": 2,\n    \"name\": \"Pro\",\n    \"tagline\": \"Updated tagline\",\n    \"price\": 2500,\n    \"max_members_per_group\": 75\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Plan (Admin)",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {"key": "Authorization", "value": "Bearer {{admin_token}}"},
+              {"key": "Accept", "value": "application/json"}
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/admin/plans/2",
+              "host": ["{{base_url}}"],
+              "path": ["api", "admin", "plans", "2"]
+            },
+            "description": "Soft-delete (or hard-delete depending on model config) a plan by numeric ID. Requires `admin` role."
+          },
+          "response": [
+            {
+              "name": "200 Deleted",
+              "status": "OK",
+              "code": 200,
+              "header": [{"key": "Content-Type", "value": "application/json"}],
+              "body": "{\n  \"message\": \"Plan deleted.\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
