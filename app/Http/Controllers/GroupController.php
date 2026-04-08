@@ -280,9 +280,10 @@ class GroupController extends Controller
             DB::transaction(function () use ($group, $user) {
                 // Create join request
                 DB::table('group_join_requests')->insert([
-                    'group_id' => $group->id,
-                    'user_id' => $user->id,
-                    'status' => 'pending',
+                    'id'         => (string) \Illuminate\Support\Str::uuid(),
+                    'group_id'   => $group->id,
+                    'user_id'    => $user->id,
+                    'status'     => 'pending',
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
