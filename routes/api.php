@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\GroupController;
 use App\Http\Controllers\NotificationController;
@@ -149,6 +150,16 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
 
         Route::put('/{groupId}/join-requests/{requestId}/reject', [GroupController::class, 'rejectJoinRequest'])
             ->middleware('requires.plan');
+
+        // Contribution routes
+        Route::post('/{groupId}/contribute', [ContributionController::class, 'submit'])
+            ->middleware('requires.plan');
+        Route::get('/{groupId}/contributions', [ContributionController::class, 'index']);
+        Route::get('/{groupId}/contributions/{id}/proof', [ContributionController::class, 'proof']);
+
+        // Group admin: verify / reject member contributions
+        Route::put('/{groupId}/contributions/{id}/verify', [ContributionController::class, 'verify']);
+        Route::put('/{groupId}/contributions/{id}/reject', [ContributionController::class, 'reject']);
     });
 
     /**
