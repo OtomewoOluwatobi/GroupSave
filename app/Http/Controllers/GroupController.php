@@ -626,7 +626,7 @@ class GroupController extends Controller
                 $query->wherePivot('is_active', true);
             }])
             ->withCount(['users as active_members_count' => function ($query) {
-                $query->wherePivot('is_active', true);
+                $query->where('group_user.is_active', true);
             }])
             ->where('owner_id', Auth::id())
             ->get();
@@ -657,10 +657,10 @@ class GroupController extends Controller
                 },
             ])
             ->withCount(['users as active_members_count' => function ($query) {
-                $query->wherePivot('is_active', true);
+                $query->where('group_user.is_active', true);
             }])
             ->withCount(['users as pending_members_count' => function ($query) {
-                $query->wherePivot('is_active', false);
+                $query->where('group_user.is_active', false);
             }])
             ->find($id);
 
