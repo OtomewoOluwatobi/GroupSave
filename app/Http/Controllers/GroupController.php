@@ -384,7 +384,7 @@ class GroupController extends Controller
      * @param int $requestId
      * @return \Illuminate\Http\JsonResponse
      */
-    public function approveJoinRequest($groupId, $requestId)
+    public function approveJoinRequest(Request $request, $groupId, $requestId)
     {
         if (!Auth::check()) {
             return response()->json(['message' => 'Unauthorized'], 401);
@@ -413,12 +413,42 @@ class GroupController extends Controller
             return response()->json(['message' => 'Join request is no longer pending'], 400);
         }
 
+        // Optional: replace an existing member with the incoming one
+        $replaceMemberId = $request->input('replace_member_id');
+        if ($replaceMemberId) {
+            // Must be a current active member (and not the group admin)
+            $targetMember = $group->users()
+                ->where('user_id', $replaceMemberId)
+                ->wherePivot('is_active', true)
+                ->first();
+
+            if (!$targetMember) {
+                return response()->json([
+                    'message' => 'The member to replace was not found or is not an active member of this group.',
+                    'code'    => 'MEMBER_NOT_FOUND',
+                ], 422);
+            }
+
+            if ($replaceMemberId === $group->owner_id) {
+                return response()->json([
+                    'message' => 'The group admin cannot be replaced.',
+                    'code'    => 'CANNOT_REPLACE_ADMIN',
+                ], 422);
+            }
+        }
+
         $totalMembers = $group->users()->count();
         $totalUsers = $group->total_users;
         $replacedMemberId = null;
 
         try {
             DB::beginTransaction();
+
+            // If replacing a member, detach them first
+            if ($replaceMemberId) {
+                $group->users()->detach($replaceMemberId);
+                $replacedMemberId = $replaceMemberId;
+            }
 
             // Add the new user to the group
             if (!$group->users()->where('user_id', $joinRequest->user_id)->exists()) {
