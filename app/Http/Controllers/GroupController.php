@@ -419,13 +419,13 @@ class GroupController extends Controller
             // Must be a current active member (and not the group admin)
             $targetMember = $group->users()
                 ->where('user_id', $replaceMemberId)
-                ->wherePivot('is_active', true)
+                ->wherePivot('is_active', false)
                 ->first();
 
             if (!$targetMember) {
                 return response()->json([
-                    'message' => 'The member to replace was not found or is not an active member of this group.',
-                    'code'    => 'MEMBER_NOT_FOUND',
+                    'message' => 'The member to replace was not found or is already an active member and cannot be replaced.',
+                    'code'    => 'MEMBER_NOT_REPLACEABLE',
                 ], 422);
             }
 
