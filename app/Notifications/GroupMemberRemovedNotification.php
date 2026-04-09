@@ -12,7 +12,7 @@ class GroupMemberRemovedNotification extends DatabaseNotification
     /**
      * Create a new notification instance.
      */
-    public function __construct(int $groupId, string $groupTitle)
+    public function __construct(string $groupId, string $groupTitle)
     {
         $this->groupId = $groupId;
         $this->groupTitle = $groupTitle;

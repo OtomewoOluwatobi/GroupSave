@@ -9,7 +9,7 @@ class GroupJoinRejectedNotification extends DatabaseNotification
     private string $groupId;
     private string $groupTitle;
 
-    public function __construct(int $groupId, string $groupTitle)
+    public function __construct(string $groupId, string $groupTitle)
     {
         $this->groupId = $groupId;
         $this->groupTitle = $groupTitle;

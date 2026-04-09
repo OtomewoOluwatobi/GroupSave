@@ -14,7 +14,7 @@ class PasswordResetNotification extends BaseNotification
     /**
      * Create a new notification instance.
      */
-    public function __construct(string $userName, string $userEmail, string $resetCode, int $userId)
+    public function __construct(string $userName, string $userEmail, string $resetCode, string $userId)
     {
         parent::__construct();
         // Store only scalar values - never store User model

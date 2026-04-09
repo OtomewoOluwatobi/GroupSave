@@ -11,7 +11,7 @@ class GroupJoinRequestNotification extends DatabaseNotification
     private string $userId;
     private string $userName;
 
-    public function __construct(int $groupId, string $groupTitle, int $userId, string $userName)
+    public function __construct(string $groupId, string $groupTitle, string $userId, string $userName)
     {
         $this->groupId = $groupId;
         $this->groupTitle = $groupTitle;
