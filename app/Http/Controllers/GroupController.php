@@ -622,8 +622,12 @@ class GroupController extends Controller
         }
 
         // Get all groups with their users
-        $groups = Group::with('users')
-            ->withCount('members')
+        $groups = Group::with(['users' => function ($query) {
+                $query->wherePivot('is_active', true);
+            }])
+            ->withCount(['users as active_members_count' => function ($query) {
+                $query->wherePivot('is_active', true);
+            }])
             ->where('owner_id', Auth::id())
             ->get();
 
@@ -647,9 +651,16 @@ class GroupController extends Controller
         }
 
         // Find the group by ID
-        $group = Group::with('users')
-            ->withCount(['users as active_users_count' => function ($query) {
-                $query->where('group_user.is_active', true);
+        $group = Group::with([
+                'users' => function ($query) {
+                    $query->wherePivot('is_active', true);
+                },
+            ])
+            ->withCount(['users as active_members_count' => function ($query) {
+                $query->wherePivot('is_active', true);
+            }])
+            ->withCount(['users as pending_members_count' => function ($query) {
+                $query->wherePivot('is_active', false);
             }])
             ->find($id);
 
@@ -659,6 +670,7 @@ class GroupController extends Controller
 
         // Load join requests with user data (only for group owner)
         $joinRequests = [];
+        $pendingInvitees = [];
         if ($group->owner_id === Auth::id()) {
             $joinRequests = DB::table('group_join_requests')
                 ->where('group_id', $id)
@@ -674,13 +686,19 @@ class GroupController extends Controller
                 )
                 ->orderBy('group_join_requests.created_at', 'desc')
                 ->get();
+
+            // Members invited but who haven't accepted yet
+            $pendingInvitees = $group->users()
+                ->wherePivot('is_active', false)
+                ->get(['users.id', 'users.name', 'users.email']);
         }
 
         return response()->json([
             'message' => 'Group retrieved successfully',
             'data' => [
-                'group' => $group,
-                'join_requests' => $joinRequests,
+                'group'            => $group,
+                'pending_invitees' => $pendingInvitees,
+                'join_requests'    => $joinRequests,
             ]
         ], 200);
     }
