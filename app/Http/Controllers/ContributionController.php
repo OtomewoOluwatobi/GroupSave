@@ -81,7 +81,7 @@ class ContributionController extends Controller
                 ], 422);
             }
 
-            $uploaded      = $this->cloudinary->upload($file, 'rukuni/contributions/' . $groupId . '/' . $user->id);
+            $uploaded      = $this->cloudinary->upload($file, 'contributions/' . $groupId . '/' . $user->id);
             $proofPath     = $uploaded['url'];
             $proofPublicId = $uploaded['public_id'];
         }
