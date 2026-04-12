@@ -187,8 +187,11 @@ class ContributionController extends Controller
             return response()->json(['message' => 'You are not a member of this group'], 403);
         }
 
-        $contributions = Contribution::with(['group', 'user'])->where('group_id', $groupId)
-            // ->where('user_id', $user->id)
+        $isAdmin = $group->owner_id === $user->id;
+
+        $contributions = Contribution::with(['group', 'user'])
+            ->where('group_id', $groupId)
+            ->when(!$isAdmin, fn ($q) => $q->where('user_id', $user->id))
             ->orderByDesc('cycle_number')
             ->paginate(20);
 
