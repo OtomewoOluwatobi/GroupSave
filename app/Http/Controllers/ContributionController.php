@@ -188,7 +188,7 @@ class ContributionController extends Controller
         }
 
         $contributions = Contribution::with(['group', 'user'])->where('group_id', $groupId)
-            ->where('user_id', $user->id)
+            // ->where('user_id', $user->id)
             ->orderByDesc('cycle_number')
             ->paginate(20);
 
