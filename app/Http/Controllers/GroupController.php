@@ -654,8 +654,8 @@ class GroupController extends Controller
         $group = Group::with([
                 'users' => function ($query) {
                     $query->wherePivot('is_active', true);
-                },
-            ], 'contributions')
+                }, 'contributions'
+            ])
             ->withCount(['users as active_members_count' => function ($query) {
                 $query->where('group_user.is_active', true);
             }])
