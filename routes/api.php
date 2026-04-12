@@ -3,6 +3,7 @@
 use App\Http\Controllers\ContributionController;
 use App\Http\Controllers\FaqController;
 use App\Http\Controllers\GroupController;
+use App\Http\Controllers\LeadController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ReferralController;
@@ -29,6 +30,11 @@ Route::middleware(['auth:jwt'])->get('/user', function (Request $request) {
 Route::get('/ping', function () {
     return response()->json(['message' => 'pong'], 200);
 });
+
+/**
+ * Public leads / waitlist endpoint
+ */
+Route::post('/leads', [LeadController::class, 'store']);
 
 /**
  * Public plan listing
