@@ -18,6 +18,7 @@ class Contribution extends Model
         'cycle_number',
         'amount',
         'proof_path',
+        'proof_public_id',
         'note',
         'due_date',
         'status',

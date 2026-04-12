@@ -8,16 +8,18 @@ use App\Models\User;
 use App\Notifications\ContributionReceivedNotification;
 use App\Notifications\ContributionRejectedNotification;
 use App\Notifications\ContributionVerifiedNotification;
+use App\Services\CloudinaryService;
 use App\Services\NotificationService;
 use App\Services\PointsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class ContributionController extends Controller
 {
+    public function __construct(protected CloudinaryService $cloudinary) {}
+
     /**
      * Submit a contribution with optional proof of payment.
      *
@@ -62,8 +64,9 @@ class ContributionController extends Controller
             ], 409);
         }
 
-        // Store proof file securely (private disk, not publicly accessible)
-        $proofPath = null;
+        // Upload proof file to Cloudinary
+        $proofPath     = null;
+        $proofPublicId = null;
         if ($request->hasFile('proof')) {
             $file = $request->file('proof');
 
@@ -78,10 +81,9 @@ class ContributionController extends Controller
                 ], 422);
             }
 
-            $proofPath = $file->store(
-                'contributions/' . $groupId . '/' . $user->id,
-                'private'
-            );
+            $uploaded      = $this->cloudinary->upload($file, 'rukuni/contributions/' . $groupId . '/' . $user->id);
+            $proofPath     = $uploaded['url'];
+            $proofPublicId = $uploaded['public_id'];
         }
 
         $dueDate = $validated['due_date'];
@@ -89,15 +91,16 @@ class ContributionController extends Controller
 
         try {
             $contribution = DB::transaction(function () use (
-                $groupId, $user, $group, $validated, $proofPath, $dueDate, $existing
+                $groupId, $user, $group, $validated, $proofPath, $proofPublicId, $dueDate, $existing
             ) {
                 $data = [
-                    'group_id'     => $groupId,
-                    'user_id'      => $user->id,
-                    'cycle_number' => $validated['cycle_number'],
-                    'amount'       => $group->payable_amount,
-                    'proof_path'   => $proofPath,
-                    'note'         => $validated['note'] ?? null,
+                    'group_id'        => $groupId,
+                    'user_id'         => $user->id,
+                    'cycle_number'    => $validated['cycle_number'],
+                    'amount'          => $group->payable_amount,
+                    'proof_path'      => $proofPath,
+                    'proof_public_id' => $proofPublicId,
+                    'note'            => $validated['note'] ?? null,
                     'due_date'     => $dueDate,
                     'status'       => 'under_review',
                     'submitted_at' => now(),
@@ -144,9 +147,9 @@ class ContributionController extends Controller
                 'data'    => $contribution,
             ], 201);
         } catch (\Exception $e) {
-            // Clean up uploaded file if transaction failed
-            if ($proofPath) {
-                Storage::disk('private')->delete($proofPath);
+            // Clean up uploaded file from Cloudinary if transaction failed
+            if ($proofPublicId) {
+                $this->cloudinary->delete($proofPublicId);
             }
 
             Log::error('Contribution submission failed', [
@@ -358,10 +361,10 @@ class ContributionController extends Controller
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
-        if (!$contribution->proof_path || !Storage::disk('private')->exists($contribution->proof_path)) {
+        if (!$contribution->proof_path) {
             return response()->json(['message' => 'No proof file found'], 404);
         }
 
-        return Storage::disk('private')->response($contribution->proof_path);
+        return redirect($contribution->proof_path);
     }
 }
