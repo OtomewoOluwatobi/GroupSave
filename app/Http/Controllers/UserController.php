@@ -757,21 +757,7 @@ class UserController extends Controller
             $groupContributions = Contribution::with(['user', 'group'])
                 ->where('user_id', $user->id)
                 ->orderBy('due_date', 'desc')
-                ->get()
-                ->map(function ($contribution) {
-                    return [
-                        'id' => $contribution->id,
-                        'group_id' => $contribution->group_id,
-                        'group_title' => $contribution->group?->title,
-                        'group_status' => $contribution->group?->status,
-                        'cycle_number' => $contribution->cycle_number,
-                        'amount' => $contribution->amount,
-                        'status' => $contribution->status,
-                        'due_date' => $contribution->due_date,
-                        'submitted_at' => $contribution->submitted_at,
-                        'note' => $contribution->note,
-                    ];
-                });
+                ->get();
 
             // Get pending invitations
             $pendingInvitations = Group::with(['users' => function ($query) {
