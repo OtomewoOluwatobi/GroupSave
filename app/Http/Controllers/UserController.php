@@ -754,7 +754,7 @@ class UserController extends Controller
                 });
 
             // Get group contributions for groups the user is a member of
-            $groupContributions = Contribution::with(['group:id,title,status,payable_amount,contribution_frequency'])
+            $groupContributions = Contribution::with(['user', 'group'])
                 ->where('user_id', $user->id)
                 ->orderBy('due_date', 'desc')
                 ->get()
