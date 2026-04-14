@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
+use App\Models\Contribution;
 use App\Models\Group;
 use App\Models\Plan;
 use App\Models\User;
@@ -752,6 +753,26 @@ class UserController extends Controller
                     ];
                 });
 
+            // Get group contributions for groups the user is a member of
+            $groupContributions = Contribution::with(['group:id,title,status,payable_amount,contribution_frequency'])
+                ->where('user_id', $user->id)
+                ->orderBy('due_date', 'desc')
+                ->get()
+                ->map(function ($contribution) {
+                    return [
+                        'id' => $contribution->id,
+                        'group_id' => $contribution->group_id,
+                        'group_title' => $contribution->group?->title,
+                        'group_status' => $contribution->group?->status,
+                        'cycle_number' => $contribution->cycle_number,
+                        'amount' => $contribution->amount,
+                        'status' => $contribution->status,
+                        'due_date' => $contribution->due_date,
+                        'submitted_at' => $contribution->submitted_at,
+                        'note' => $contribution->note,
+                    ];
+                });
+
             // Get pending invitations
             $pendingInvitations = Group::with(['users' => function ($query) {
                 $query->where('group_user.role', 'admin');
@@ -781,6 +802,9 @@ class UserController extends Controller
                 'pending_invitations' => $pendingInvitations->count(),
                 'active_groups' => $userGroups->where('status', 'active')->count(),
                 'unread_notifications' => $user->notifications()->whereNull('read_at')->count(),
+                'total_contributions' => $groupContributions->count(),
+                'pending_contributions' => $groupContributions->where('status', 'pending')->count(),
+                'verified_contributions' => $groupContributions->where('status', 'verified')->count(),
             ];
 
             return response()->json([
@@ -798,6 +822,7 @@ class UserController extends Controller
                 'suggested_groups' => $suggestedGroups,
                 'pending_invitations' => $pendingInvitations,
                 // 'recent_notifications' => $recentNotifications,
+                'group_contributions' => $groupContributions,
                 'user_banks' => $user->userBank ?? [],
             ], 200);
         } catch (\Exception $e) {
