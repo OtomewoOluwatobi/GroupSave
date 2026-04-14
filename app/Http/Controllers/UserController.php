@@ -757,6 +757,7 @@ class UserController extends Controller
             $groupContributions = Contribution::with(['user', 'group'])
                 ->where('user_id', $user->id)
                 ->orderBy('due_date', 'desc')
+                ->limit(10)
                 ->get();
 
             // Get pending invitations
