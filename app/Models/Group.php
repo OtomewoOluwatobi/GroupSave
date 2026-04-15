@@ -39,7 +39,7 @@ class Group extends Model
     {
         return $this->belongsToMany(User::class, 'group_user')
             ->using(GroupUser::class)
-            ->withPivot(['role', 'is_active'])
+            ->withPivot(['role', 'is_active', 'payout_slot'])
             ->withTimestamps();
     }
 

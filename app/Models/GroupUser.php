@@ -15,11 +15,13 @@ class GroupUser extends Pivot
         'user_id',
         'group_id',
         'role',
-        'is_active'
+        'is_active',
+        'payout_slot',
     ];
 
     protected $casts = [
-        'is_active' => 'boolean'
+        'is_active'   => 'boolean',
+        'payout_slot' => 'integer',
     ];
 
     /**

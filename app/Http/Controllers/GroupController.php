@@ -39,6 +39,11 @@ class GroupController extends Controller
             'payment_out_weekday'    => 'required_if:contribution_frequency,weekly|nullable|integer|min:0|max:6',
             'members_emails'         => 'required|array',
             'members_emails.*'       => 'required|email',
+            // Optional ordered list of emails (from Step 4 – Payouts UI).
+            // Position 0 = Slot #1, position 1 = Slot #2, etc.
+            // Must be a subset of members_emails + creator email.
+            'payout_order'           => 'sometimes|array',
+            'payout_order.*'         => 'email',
         ]);
 
         $payableAmount   = (float) $validated['target_amount'] / (int) $validated['total_users'];
@@ -86,12 +91,25 @@ class GroupController extends Controller
                     'status'                 => 'active',
                 ]);
 
+                // Build a map of email → slot position from the optional payout_order array.
+                // payout_order[0] gets Slot #1, payout_order[1] gets Slot #2, etc.
+                $payoutOrderMap = [];
+                if (!empty($validated['payout_order'])) {
+                    foreach ($validated['payout_order'] as $index => $email) {
+                        $payoutOrderMap[strtolower($email)] = $index + 1;
+                    }
+                }
+
+                $creatorEmail = strtolower(Auth::user()->email);
+                $creatorSlot  = $payoutOrderMap[$creatorEmail] ?? null;
+
                 $group->users()->attach(Auth::id(), [
-                    'role' => 'admin',
-                    'is_active' => true
+                    'role'         => 'admin',
+                    'is_active'    => true,
+                    'payout_slot'  => $creatorSlot,
                 ]);
 
-                $this->inviteMembers($group, $validated['members_emails']);
+                $this->inviteMembers($group, $validated['members_emails'], $payoutOrderMap);
 
                 return $group;
             });
@@ -122,7 +140,7 @@ class GroupController extends Controller
      * @param array $emails
      * @return void
      */
-    private function inviteMembers(Group $group, array $emails)
+    private function inviteMembers(Group $group, array $emails, array $payoutOrderMap = [])
     {
         // Exclude the creator's email
         $creatorEmail = Auth::user()->email;
@@ -132,7 +150,7 @@ class GroupController extends Controller
             $notifyData = null;
 
             try {
-                DB::transaction(function () use ($group, $email, &$notifyData) {
+                DB::transaction(function () use ($group, $email, $payoutOrderMap, &$notifyData) {
                     $generatedPassword = Str::random(10);
 
                     // Create user if they don't already exist
@@ -146,9 +164,12 @@ class GroupController extends Controller
 
                     // Check if user is already a member of the group
                     if (!$group->users()->where('user_id', $user->id)->exists()) {
+                        $slot = $payoutOrderMap[strtolower($email)] ?? null;
+
                         $group->users()->attach($user->id, [
-                            'role' => 'member',
-                            'is_active' => false
+                            'role'        => 'member',
+                            'is_active'   => false,
+                            'payout_slot' => $slot,
                         ]);
 
                         // Capture for notification after transaction commits
@@ -783,5 +804,78 @@ class GroupController extends Controller
         return response()->json([
             'message' => 'Group deleted successfully'
         ], 200);
+    }
+
+    /**
+     * Update the payout slot order for all members of a group (admin only).
+     *
+     * PUT /user/group/{id}/payout-order
+     *
+     * Request body:
+     * {
+     *   "order": ["<user_id_slot1>", "<user_id_slot2>", ...]
+     * }
+     *
+     * The array position determines the slot number (index 0 = Slot #1).
+     * Every active member of the group must be present exactly once.
+     */
+    public function updatePayoutOrder(Request $request, string $id)
+    {
+        $group = Group::find($id);
+        if (!$group) {
+            return response()->json(['message' => 'Group not found'], 404);
+        }
+
+        if ($group->owner_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized: Only the group admin can change the payout order'], 403);
+        }
+
+        $validated = $request->validate([
+            'order'   => 'required|array|min:1',
+            'order.*' => 'required|uuid',
+        ]);
+
+        // Collect all member IDs currently in this group (active + pending invitees)
+        $memberIds = $group->users()->pluck('users.id')->map(fn($id) => (string) $id)->all();
+
+        $incoming = collect($validated['order'])->map(fn($id) => (string) $id);
+
+        // Validate: every submitted ID must belong to the group
+        $unknown = $incoming->diff($memberIds);
+        if ($unknown->isNotEmpty()) {
+            return response()->json([
+                'message' => 'Some user IDs do not belong to this group',
+                'invalid' => $unknown->values(),
+            ], 422);
+        }
+
+        // Validate: no duplicate IDs
+        if ($incoming->unique()->count() !== $incoming->count()) {
+            return response()->json(['message' => 'Duplicate user IDs are not allowed in the payout order'], 422);
+        }
+
+        DB::transaction(function () use ($group, $incoming) {
+            foreach ($incoming as $slot => $userId) {
+                $group->users()->updateExistingPivot($userId, [
+                    'payout_slot' => $slot + 1, // 1-based
+                ]);
+            }
+        });
+
+        // Return the updated member list with their new slot assignments
+        $members = $group->users()
+            ->orderBy('group_user.payout_slot')
+            ->get(['users.id', 'users.name', 'users.email'])
+            ->map(fn($u) => [
+                'id'          => $u->id,
+                'name'        => $u->name,
+                'email'       => $u->email,
+                'payout_slot' => $u->pivot->payout_slot,
+            ]);
+
+        return response()->json([
+            'message' => 'Payout order updated successfully',
+            'data'    => $members,
+        ]);
     }
 }

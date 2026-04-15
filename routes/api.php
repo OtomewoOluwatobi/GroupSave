@@ -166,6 +166,9 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Group admin: verify / reject member contributions
         Route::put('/{groupId}/contributions/{id}/verify', [ContributionController::class, 'verify']);
         Route::put('/{groupId}/contributions/{id}/reject', [ContributionController::class, 'reject']);
+
+        // Payout slot order — admin only
+        Route::put('/{id}/payout-order', [GroupController::class, 'updatePayoutOrder']);
     });
 
     /**
