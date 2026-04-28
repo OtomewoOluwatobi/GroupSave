@@ -6,6 +6,7 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Facades\Log;
+use Trin4ik\LaravelExpoPush\Channels\ExpoPushChannel;
 
 /**
  * Base notification class with best practices
@@ -50,5 +51,20 @@ abstract class BaseNotification extends Notification implements ShouldQueue
             'error' => $exception->getMessage(),
             'trace' => $exception->getTraceAsString(),
         ]);
+    }
+
+    /**
+     * Get the notification's delivery channels.
+     * Subclasses can override this to customise channels.
+     */
+    public function via($notifiable): array
+    {
+        $channels = ['database'];
+
+        if (!empty($notifiable->expo_push_token)) {
+            $channels[] = ExpoPushChannel::class;
+        }
+
+        return $channels;
     }
 }

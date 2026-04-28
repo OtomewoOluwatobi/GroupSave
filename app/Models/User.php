@@ -37,6 +37,7 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         'login_streak',
         'last_login_date',
         'extra_group_slots',
+        'expo_push_token',
     ];
 
     protected $hidden = [
@@ -73,6 +74,11 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         } while (self::where('referral_code', $code)->exists());
 
         return $code;
+    }
+
+    public function routeNotificationForExpoPush(): ?string
+    {
+        return $this->expo_push_token;
     }
 
     public function getJWTIdentifier()

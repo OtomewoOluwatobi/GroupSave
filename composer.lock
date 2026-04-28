@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "eb19b789af2c033c89cdc4afe28f6053",
+    "content-hash": "c128b50232343b2e8628a1e82cd776ec",
     "packages": [
         {
             "name": "brick/math",
@@ -6718,6 +6718,60 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.4.0"
             },
             "time": "2025-12-02T11:56:42+00:00"
+        },
+        {
+            "name": "trin4ik/laravel-expo-push",
+            "version": "v0.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/trin4ik/laravel-expo-push.git",
+                "reference": "d06beeb13022c28f6bb39cc90a9acea3ff6e2d51"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/trin4ik/laravel-expo-push/zipball/d06beeb13022c28f6bb39cc90a9acea3ff6e2d51",
+                "reference": "d06beeb13022c28f6bb39cc90a9acea3ff6e2d51",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": ">=8.0",
+                "php": "^7.4|^8.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Trin4ik\\LaravelExpoPush\\ExpoPushServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Trin4ik\\LaravelExpoPush\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "trin4ik",
+                    "email": "trin4ik@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Laravel Expo Push Notification",
+            "homepage": "https://github.com/trin4ik/laravel-expo-push",
+            "keywords": [
+                "laravel-expo-push",
+                "trin4ik"
+            ],
+            "support": {
+                "issues": "https://github.com/trin4ik/laravel-expo-push/issues",
+                "source": "https://github.com/trin4ik/laravel-expo-push/tree/v0.2.0"
+            },
+            "time": "2023-03-30T19:42:08+00:00"
         },
         {
             "name": "tymon/jwt-auth",
