@@ -11,7 +11,7 @@ class CreateExpoPushNotificationsTable extends Migration
 	 */
 	public function up()
 	{
-		Schema::create(app(config('expo-push.log.driver.instance'))->getTable(), function (Blueprint $table) {
+		Schema::create('expo_push_notifications', function (Blueprint $table) {
 			$table->id();
 			$table->string('item_type')->nullable();
 			$table->string('item_id')->nullable();
@@ -28,6 +28,6 @@ class CreateExpoPushNotificationsTable extends Migration
 	 */
 	public function down()
 	{
-		Schema::drop(app(config('expo-push.log.driver.instance'))->getTable());
+		Schema::drop('expo_push_notifications');
 	}
 }
