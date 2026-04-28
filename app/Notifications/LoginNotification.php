@@ -5,6 +5,8 @@ namespace App\Notifications;
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Trin4ik\LaravelExpoPush\Channels\ExpoPushChannel;
+use Trin4ik\LaravelExpoPush\ExpoPush;
 
 class LoginNotification extends Notification
 {
@@ -31,9 +33,17 @@ class LoginNotification extends Notification
      */
     public function via($notifiable): array
     {
-        // Only send email for new device logins
-        // Database first to ensure notification is saved before attempting email
-        return $this->isNewDevice ? ['database', 'mail'] : ['database'];
+        $channels = ['database'];
+
+        if ($this->isNewDevice) {
+            $channels[] = 'mail';
+        }
+
+        if (!empty($notifiable->expo_push_token)) {
+            $channels[] = ExpoPushChannel::class;
+        }
+
+        return $channels;
     }
 
     /**
@@ -77,6 +87,20 @@ class LoginNotification extends Notification
             'message' => 'Login successful',
             'login_time' => $this->loginTime,
         ];
+    }
+
+    /**
+     * Get the Expo push notification representation.
+     */
+    public function toExpoPush($notifiable): ExpoPush
+    {
+        return ExpoPush::create()
+            ->title('New Login Detected')
+            ->body('A login was made to your account from ' . $this->parseUserAgent($this->userAgent) . '.')
+            ->data([
+                'type'       => 'login',
+                'login_time' => $this->loginTime,
+            ]);
     }
 
     /**

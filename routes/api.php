@@ -100,6 +100,7 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::post('/add-plan', [UserController::class, 'addPlan']);
     Route::get('/points', [UserController::class, 'pointsSummary']);
     Route::post('/points/redeem', [UserController::class, 'redeemPoints']);
+    Route::post('/push-token', [UserController::class, 'updatePushToken']);
 
     /**
      * Referral Routes Group

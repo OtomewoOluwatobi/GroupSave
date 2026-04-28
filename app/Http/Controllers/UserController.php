@@ -869,6 +869,22 @@ class UserController extends Controller
     }
 
     /**
+     * Register or update the authenticated user's Expo push token.
+     */
+    public function updatePushToken(Request $request): JsonResponse
+    {
+        $request->validate([
+            'expo_push_token' => ['required', 'string', 'regex:/^ExponentPushToken\[.+\]$/'],
+        ]);
+
+        $request->user()->update([
+            'expo_push_token' => $request->expo_push_token,
+        ]);
+
+        return response()->json(['message' => 'Push token registered']);
+    }
+
+    /**
      * Refresh the authentication token.
      *
      * @return JsonResponse
