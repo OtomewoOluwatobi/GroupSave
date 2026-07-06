@@ -12,8 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('payments', function (Blueprint $table) {
-            $table->id();
-            $table->uuid()->unique();
+            $table->ulid()->primary(); // UUID primary key
             $table->foreignUuid('user_id')->constrained()->onDelete('cascade');
             $table->foreignUuid('plan_id')->nullable()->constrained()->onDelete('set null');
             $table->string('stripe_payment_intent_id')->nullable()->unique();
