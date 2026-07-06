@@ -17,6 +17,7 @@ class Plan extends Model
         'name',
         'slug',
         'tagline',
+        'description',
         'price',
         'currency',
         'billing',

@@ -58,10 +58,11 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Starter',
                 'slug'                  => 'starter',
                 'tagline'               => 'Begin Growing',
+                'description'           => 'Perfect for individuals or small groups just starting their savings journey. Get access to core features with one group and up to 5 members.',
                 'price'                 => 0,
                 'currency'              => 'GBP',
                 'billing'               => 'free_forever',
-                'stripe_price_id'       => null,
+                'stripe_price_id'       => 'prod_UpixvgB3eXhAGJ',
                 'max_groups'            => 1,
                 'max_members_per_group' => 5,
                 'features'              => [
@@ -79,11 +80,12 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Growth',
                 'slug'                  => 'growth',
                 'tagline'               => 'Scale Your Savings',
-                'price'                 => 999, // £9.99 in pence
+                'description'           => 'Designed for growing communities managing multiple savings groups. Unlimited groups, up to 20 members per group, advanced analytics, and priority support.',
+                'price'                 => 9.99, // £9.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
-                'stripe_price_id'       => env('STRIPE_GROWTH_MONTHLY_PRICE_ID'), // Add to .env
-                'max_groups'            => 9999, // unlimited
+                'stripe_price_id'       => 'prod_UpizlubTsC8ZY3', // Replace with your Stripe price ID
+                'max_groups'            => 99, // unlimited
                 'max_members_per_group' => 20,
                 'features'              => [
                     'Everything in Starter',
@@ -103,10 +105,11 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Enterprise',
                 'slug'                  => 'enterprise',
                 'tagline'               => 'Lead Your Community',
-                'price'                 => 9999, // £99.99 in pence
+                'description'           => 'Enterprise-grade solution for organizations and large networks. Unlimited everything, custom branding, organization-wide dashboards, multi-group oversight, and dedicated account manager.',
+                'price'                 => 999.99, // £999.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'yearly',
-                'stripe_price_id'       => env('STRIPE_ENTERPRISE_YEARLY_PRICE_ID'), // Add to .env
+                'stripe_price_id'       => 'prod_Upj10EkdQ0GmrI', // Replace with your Stripe price ID
                 'max_groups'            => 9999, // unlimited
                 'max_members_per_group' => 9999,
                 'features'              => [
