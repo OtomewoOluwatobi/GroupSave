@@ -81,11 +81,11 @@ class PlanSeeder extends Seeder
                 'slug'                  => 'growth',
                 'tagline'               => 'Scale Your Savings',
                 'description'           => 'Designed for growing communities managing multiple savings groups. Unlimited groups, up to 20 members per group, advanced analytics, and priority support.',
-                'price'                 => 9.99, // £9.99 in pence
+                'price'                 => 999, // £9.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
-                'stripe_price_id'       => 'prod_UpizlubTsC8ZY3', // Replace with your Stripe price ID
-                'max_groups'            => 99, // unlimited
+                'stripe_price_id'       => 'price_1TiX2IGVRxfohcvD7b5VkYZZ', // Replace with your Stripe PRICE ID (not product ID)
+                'max_groups'            => 9999,
                 'max_members_per_group' => 20,
                 'features'              => [
                     'Everything in Starter',
@@ -106,11 +106,11 @@ class PlanSeeder extends Seeder
                 'slug'                  => 'enterprise',
                 'tagline'               => 'Lead Your Community',
                 'description'           => 'Enterprise-grade solution for organizations and large networks. Unlimited everything, custom branding, organization-wide dashboards, multi-group oversight, and dedicated account manager.',
-                'price'                 => 999.99, // £999.99 in pence
+                'price'                 => 9999, // £99.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'yearly',
-                'stripe_price_id'       => 'prod_Upj10EkdQ0GmrI', // Replace with your Stripe price ID
-                'max_groups'            => 9999, // unlimited
+                'stripe_price_id'       => 'price_1TiX2IGVRxfohcvD9ab5cDEFG', // Replace with your Stripe PRICE ID (not product ID)
+                'max_groups'            => 9999,
                 'max_members_per_group' => 9999,
                 'features'              => [
                     'Everything in Growth',
