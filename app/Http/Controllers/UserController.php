@@ -986,11 +986,6 @@ class UserController extends Controller
                 ], 200);
             }
 
-            Log::info('Resend verification email requested', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
-
             // Rate limiting - prevent spam
             $lastSentAt = $user->email_verification_sent_at ?? null;
             if ($lastSentAt && now()->diffInSeconds($lastSentAt) < 60) {
@@ -1002,11 +997,6 @@ class UserController extends Controller
 
             NotificationService::send($user, new VerifyEmailNotification());
             $user->update(['email_verification_sent_at' => now()]);
-
-            Log::info('Verification email resent', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-            ]);
 
             return response()->json([
                 'message' => 'Verification email sent successfully',
