@@ -61,6 +61,7 @@ class PlanSeeder extends Seeder
                 'price'                 => 0,
                 'currency'              => 'GBP',
                 'billing'               => 'free_forever',
+                'stripe_price_id'       => null,
                 'max_groups'            => 1,
                 'max_members_per_group' => 5,
                 'features'              => [
@@ -78,9 +79,10 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Growth',
                 'slug'                  => 'growth',
                 'tagline'               => 'Scale Your Savings',
-                'price'                 => 9.99,
+                'price'                 => 999, // £9.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
+                'stripe_price_id'       => env('STRIPE_GROWTH_MONTHLY_PRICE_ID'), // Add to .env
                 'max_groups'            => 9999, // unlimited
                 'max_members_per_group' => 20,
                 'features'              => [
@@ -101,9 +103,10 @@ class PlanSeeder extends Seeder
                 'name'                  => 'Enterprise',
                 'slug'                  => 'enterprise',
                 'tagline'               => 'Lead Your Community',
-                'price'                 => 99.99,
+                'price'                 => 9999, // £99.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'yearly',
+                'stripe_price_id'       => env('STRIPE_ENTERPRISE_YEARLY_PRICE_ID'), // Add to .env
                 'max_groups'            => 9999, // unlimited
                 'max_members_per_group' => 9999,
                 'features'              => [
