@@ -23,8 +23,9 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('plans', function (Blueprint $table) {
-            $table->dropIndex(['stripe_price_id']);
-            $table->dropColumn('stripe_price_id');
+            if (Schema::hasColumn('plans', 'stripe_price_id')) {
+                $table->dropColumn('stripe_price_id');
+            }
         });
     }
 };

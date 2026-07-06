@@ -112,6 +112,7 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         Route::post('/subscribe', [StripeController::class, 'createSubscription']);
         Route::get('/subscription', [StripeController::class, 'subscriptionStatus']);
         Route::post('/cancel', [StripeController::class, 'cancelSubscription']);
+        Route::get('/history', [StripeController::class, 'paymentHistory']);
     });
 
     /**

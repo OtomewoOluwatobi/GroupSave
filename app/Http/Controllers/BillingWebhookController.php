@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Services\BillingEntitlementService;
+use App\Services\PaymentService;
 
 class BillingWebhookController extends \Laravel\Cashier\Http\Controllers\WebhookController
 {
-    public function __construct(protected BillingEntitlementService $entitlements)
-    {
+    public function __construct(
+        protected BillingEntitlementService $entitlements,
+        protected PaymentService $paymentService
+    ) {
         parent::__construct();
     }
 
@@ -49,6 +52,7 @@ class BillingWebhookController extends \Laravel\Cashier\Http\Controllers\Webhook
 
     protected function handleInvoicePaymentFailed(array $payload)
     {
+        $this->paymentService->handlePaymentFailed($payload['data']['object'] ?? $payload);
         $this->syncEntitlementForCustomer($payload['data']['object']['customer'] ?? null);
 
         return $this->successMethod();
@@ -56,6 +60,7 @@ class BillingWebhookController extends \Laravel\Cashier\Http\Controllers\Webhook
 
     protected function handleInvoicePaymentSucceeded(array $payload)
     {
+        $this->paymentService->handlePaymentSucceeded($payload['data']['object'] ?? $payload);
         $this->syncEntitlementForCustomer($payload['data']['object']['customer'] ?? null);
 
         return $this->successMethod();

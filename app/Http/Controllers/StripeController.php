@@ -5,14 +5,17 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Plan;
 use App\Services\BillingEntitlementService;
+use App\Services\PaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
-use Laravel\Cashier\Exceptions\IncompletePayment;
 use Throwable;
 
 class StripeController extends Controller
 {
-    public function __construct(protected BillingEntitlementService $entitlements) {}
+    public function __construct(
+        protected BillingEntitlementService $entitlements,
+        protected PaymentService $paymentService
+    ) {}
 
     /**
      * Create a SetupIntent so the frontend can safely collect / save a card.
@@ -58,81 +61,21 @@ class StripeController extends Controller
             'plan_id' => 'required|exists:plans,id',
         ]);
 
-        $user = $request->user(); // This works with JWT auth
+        $user = $request->user();
         $plan = Plan::findOrFail($validated['plan_id']);
 
-        if ($plan->billing === 'free_forever') {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Free plans should be joined via the plan endpoint.',
-            ], 422);
-        }
+        $result = $this->paymentService->createSubscription(
+            $user,
+            $plan,
+            $validated['payment_method_id']
+        );
 
-        // Ensure the plan has a Stripe price ID
-        if (!$plan->stripe_price_id) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'This plan is not configured for Stripe payments.'
-            ], 400);
-        }
-
-        try {
-            if (! $user->hasStripeId()) {
-                $user->createAsStripeCustomer();
-            }
-
-            $user->updateDefaultPaymentMethod($validated['payment_method_id']);
-
-            $activeSubscription = $user->subscription('default');
-
-            if ($activeSubscription && $activeSubscription->active()) {
-                $alreadyOnTargetPrice = $activeSubscription->items()
-                    ->where('stripe_price', $plan->stripe_price_id)
-                    ->exists();
-
-                if ($alreadyOnTargetPrice) {
-                    return response()->json([
-                        'status' => 'success',
-                        'message' => 'You are already subscribed to this plan.',
-                        'subscription' => $activeSubscription,
-                    ]);
-                }
-
-                $activeSubscription->swap($plan->stripe_price_id);
-                $subscription = $activeSubscription->fresh();
-            } else {
-                // Create subscription using Cashier.
-                $subscription = $user->newSubscription('default', $plan->stripe_price_id)
-                    ->create($validated['payment_method_id']);
-            }
-
-            $this->entitlements->activatePlan($user, $plan, $subscription->ends_at);
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Subscription is active.',
-                'subscription' => $subscription
-            ]);
-        } catch (IncompletePayment $e) {
-            return response()->json([
-                'status' => 'requires_action',
-                'message' => 'Additional authentication is required to complete payment.',
-                'payment' => [
-                    'payment_intent' => $e->payment->asStripePaymentIntent(),
-                ],
-            ], 402);
-        } catch (Throwable $e) {
-            Log::error('Stripe subscription error', [
-                'user_id' => $user?->id,
-                'plan_id' => $plan?->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to create subscription. Please try again.'
-            ], 400);
-        }
+        return response()->json([
+            'status' => $result['success'] ? 'success' : 'error',
+            'message' => $result['message'],
+            'subscription' => $result['subscription'] ?? null,
+            'payment' => $result['payment'] ?? null,
+        ], $result['code']);
     }
 
     /**
@@ -192,5 +135,21 @@ class StripeController extends Controller
                 'message' => 'Failed to cancel subscription. Please try again.',
             ], 400);
         }
+    }
+
+    /**
+     * Get payment history for the authenticated user
+     */
+    public function paymentHistory(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $limit = $request->query('limit', 50);
+
+        $history = $this->paymentService->getUserPaymentHistory($user, $limit);
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $history,
+        ]);
     }
 }
