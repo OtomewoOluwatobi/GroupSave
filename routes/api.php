@@ -128,13 +128,6 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         
         // Payment history
         Route::get('/history', [StripeController::class, 'paymentHistory']);
-        
-        // ========== DEPRECATED (Legacy Flow) ==========
-        // Setup intent for collecting/saving payment methods (deprecated - use checkout-session or add-plan)
-        Route::get('/setup-intent', [StripeController::class, 'createSetupIntent']);
-        
-        // Subscribe with collected payment method (deprecated - use checkout-session or add-plan)
-        Route::post('/subscribe', [StripeController::class, 'createSubscription']);
     });
 
     /**
