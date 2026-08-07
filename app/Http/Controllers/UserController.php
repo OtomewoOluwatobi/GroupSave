@@ -1366,7 +1366,22 @@ class UserController extends Controller
                     'status' => 'error',
                     'error' => 'Paid plans must be activated through billing.',
                     'code' => 'STRIPE_BILLING_REQUIRED',
-                ], 422);
+                    'message' => "This is a paid plan ({$plan->name} - {$plan->currency}{$plan->price_decimal}/month). Please use the billing endpoint to subscribe.",
+                    'redirect' => [
+                        'endpoint' => '/api/user/billing/subscribe',
+                        'method' => 'POST',
+                        'body' => [
+                            'plan_id' => $plan->id,
+                            'payment_method_id' => 'required - get from SetupIntent',
+                        ],
+                        'next_steps' => [
+                            '1. Call POST /api/user/billing/setup-intent to get SetupIntent client_secret',
+                            '2. Use Stripe.js to collect card and confirm payment method',
+                            '3. Extract payment_method_id from confirmation result',
+                            '4. Call POST /api/user/billing/subscribe with payment_method_id and plan_id',
+                        ],
+                    ],
+                ], 402);
             }
 
             // Cancel any existing active plan (upgrade flow)

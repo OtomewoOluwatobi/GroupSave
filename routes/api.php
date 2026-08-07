@@ -108,10 +108,22 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
      * Prefix: /user/billing
      */
     Route::prefix('billing')->group(function () {
+        // Setup intent for collecting/saving payment methods
         Route::get('/setup-intent', [StripeController::class, 'createSetupIntent']);
+        
+        // Subscribe with collected payment method (legacy flow)
         Route::post('/subscribe', [StripeController::class, 'createSubscription']);
+        
+        // Checkout session for Stripe Checkout (recommended flow - single redirect)
+        Route::post('/checkout-session', [StripeController::class, 'createCheckoutSession']);
+        
+        // Get subscription status
         Route::get('/subscription', [StripeController::class, 'subscriptionStatus']);
+        
+        // Cancel active subscription
         Route::post('/cancel', [StripeController::class, 'cancelSubscription']);
+        
+        // Payment history
         Route::get('/history', [StripeController::class, 'paymentHistory']);
     });
 

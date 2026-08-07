@@ -152,4 +152,92 @@ class StripeController extends Controller
             'data' => $history,
         ]);
     }
+
+    /**
+     * Create a Stripe Checkout Session for subscription
+     * User redirects to returned URL, completes payment, and returns to success_url
+     * Webhook will automatically create subscription in your DB
+     */
+    public function createCheckoutSession(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'plan_id' => 'required|exists:plans,id',
+            'success_url' => 'required|url',
+            'cancel_url' => 'required|url',
+        ]);
+
+        $user = $request->user();
+        $plan = Plan::findOrFail($validated['plan_id']);
+
+        try {
+            // Validate plan is not free
+            if ($plan->billing === 'free_forever') {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Free plans should be joined via the plan endpoint.',
+                    'code' => 422,
+                ], 422);
+            }
+
+            // Validate Stripe price ID exists
+            if (!$plan->stripe_price_id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This plan is not configured for Stripe payments.',
+                ], 400);
+            }
+
+            // Ensure user has Stripe customer ID
+            if (!$user->hasStripeId()) {
+                $user->createAsStripeCustomer();
+            }
+
+            // Create checkout session - Stripe handles payment + subscription creation
+            $session = $user->checkout(
+                [
+                    [
+                        'price' => $plan->stripe_price_id,  // Must be a price ID, not product
+                        'quantity' => 1,
+                    ]
+                ],
+                [
+                    'success_url' => $validated['success_url'],
+                    'cancel_url' => $validated['cancel_url'],
+                    'customer_email' => $user->email,
+                    'mode' => 'subscription',
+                    'metadata' => [
+                        'user_id' => $user->id,
+                        'plan_id' => $plan->id,
+                    ],
+                ]
+            );
+
+            Log::info('Stripe checkout session created', [
+                'user_id' => $user->id,
+                'plan_id' => $plan->id,
+                'session_id' => $session->id,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'checkout_url' => $session->url,
+                    'session_id' => $session->id,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Stripe checkout session error', [
+                'user_id' => $user?->id,
+                'plan_id' => $plan?->id,
+                'error' => $e->getMessage(),
+                'exception' => get_class($e),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create checkout session.',
+                'debug' => env('APP_DEBUG') ? $e->getMessage() : null,
+            ], 400);
+        }
+    }
 }
