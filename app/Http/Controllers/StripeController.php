@@ -203,7 +203,6 @@ class StripeController extends Controller
                 [
                     'success_url' => $validated['success_url'],
                     'cancel_url' => $validated['cancel_url'],
-                    'customer_email' => $user->email,
                     'mode' => 'subscription',
                     'metadata' => [
                         'user_id' => $user->id,

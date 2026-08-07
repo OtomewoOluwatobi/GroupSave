@@ -20,6 +20,7 @@ use App\Services\BillingEntitlementService;
 use App\Services\PointsService;
 use App\Services\ReferralService;
 use Exception;
+use Throwable;
 use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -1351,65 +1352,125 @@ class UserController extends Controller
 
             $validatedData = $request->validate(
                 [
-                    'plan_id' => 'required|exists:plans,id',
+                    'plan_id'     => 'required|exists:plans,id',
+                    'success_url' => 'nullable|url',
+                    'cancel_url'  => 'nullable|url',
                 ],
                 [
-                    'plan_id.required' => 'Plan ID is required',
-                    'plan_id.exists' => 'Selected plan does not exist',
+                    'plan_id.required'     => 'Plan ID is required',
+                    'plan_id.exists'       => 'Selected plan does not exist',
+                    'success_url.url'      => 'Success URL must be a valid URL',
+                    'cancel_url.url'       => 'Cancel URL must be a valid URL',
                 ]
             );
 
             $plan = Plan::find($validatedData['plan_id']);
 
-            if ($plan->billing !== 'free_forever') {
-                return response()->json([
-                    'status' => 'error',
-                    'error' => 'Paid plans must be activated through billing.',
-                    'code' => 'STRIPE_BILLING_REQUIRED',
-                    'message' => "This is a paid plan ({$plan->name} - {$plan->currency}{$plan->price_decimal}/month). Please use the billing endpoint to subscribe.",
-                    'redirect' => [
-                        'endpoint' => '/api/user/billing/subscribe',
-                        'method' => 'POST',
-                        'body' => [
-                            'plan_id' => $plan->id,
-                            'payment_method_id' => 'required - get from SetupIntent',
-                        ],
-                        'next_steps' => [
-                            '1. Call POST /api/user/billing/setup-intent to get SetupIntent client_secret',
-                            '2. Use Stripe.js to collect card and confirm payment method',
-                            '3. Extract payment_method_id from confirmation result',
-                            '4. Call POST /api/user/billing/subscribe with payment_method_id and plan_id',
-                        ],
-                    ],
-                ], 402);
-            }
-
-            // Cancel any existing active plan (upgrade flow)
+            // ========== FREE PLAN → Activate Immediately ==========
+            if ($plan->billing === 'free_forever') {
                 $this->entitlements->activatePlan(
                     $user,
                     $plan,
-                    match ($plan->billing) {
-                        'monthly'      => now()->addMonth(),
-                        'yearly'       => now()->addYear(),
-                        default        => null,
-                    }
+                    null // Free plans have no expiration
                 );
 
-            NotificationService::send($user, new PlanActivatedNotification($user->name, $plan->name));
+                NotificationService::send($user, new PlanActivatedNotification($user->name, $plan->name));
 
-            Log::info('Plan added to user', [
-                'user_id' => $user->id,
-                'plan_id' => $plan->id,
-            ]);
+                Log::info('Free plan activated', [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                ]);
 
-            return response()->json([
-                'status' => 'success',
-                'message' => "You've successfully joined the {$plan->name} plan",
-                'data' => [
-                    'plan_name' => $plan->name,
-                    'plan_slug' => $plan->slug,
-                ]
-            ], 200);
+                return response()->json([
+                    'status' => 'success',
+                    'message' => "You've successfully joined the {$plan->name} plan",
+                    'data' => [
+                        'plan_name' => $plan->name,
+                        'plan_slug' => $plan->slug,
+                    ]
+                ], 200);
+            }
+
+            // ========== PAID PLAN → Stripe Checkout ==========
+            // Safely extract URLs (nullable fields)
+            $successUrl = $validatedData['success_url'] ?? null;
+            $cancelUrl = $validatedData['cancel_url'] ?? null;
+
+            // Check if billing URLs are provided
+            if (!$successUrl || !$cancelUrl) {
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Billing URLs required for paid plans',
+                    'code' => 'BILLING_URLS_REQUIRED',
+                    'message' => "To subscribe to {$plan->name} (GBP {$plan->price_decimal}/month), please provide success and cancel URLs.",
+                    'required_fields' => [
+                        'success_url' => 'URL user returns to after successful payment',
+                        'cancel_url'  => 'URL user returns to if they cancel payment',
+                    ],
+                ], 422);
+            }
+
+            // Ensure user has Stripe customer ID
+            if (!$user->hasStripeId()) {
+                $user->createAsStripeCustomer();
+            }
+
+            // Validate Stripe price ID exists
+            if (!$plan->stripe_price_id) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'This plan is not configured for Stripe payments.',
+                ], 400);
+            }
+
+            // Create checkout session
+            try {
+                $session = $user->checkout(
+                    [
+                        [
+                            'price' => $plan->stripe_price_id,
+                            'quantity' => 1,
+                        ]
+                    ],
+                    [
+                        'success_url' => $successUrl,
+                        'cancel_url'  => $cancelUrl,
+                        'mode'        => 'subscription',
+                        'metadata'    => [
+                            'user_id' => $user->id,
+                            'plan_id' => $plan->id,
+                        ],
+                    ]
+                );
+
+                Log::info('Stripe checkout session created from addPlan', [
+                    'user_id'    => $user->id,
+                    'plan_id'    => $plan->id,
+                    'session_id' => $session->id,
+                ]);
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Checkout session created. Redirect user to complete payment.',
+                    'data' => [
+                        'checkout_url' => $session->url,
+                        'session_id'   => $session->id,
+                    ],
+                ], 200);
+
+            } catch (Throwable $e) {
+                Log::error('Stripe checkout session error from addPlan', [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'error'   => $e->getMessage(),
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Failed to create checkout session. Please try again.',
+                ], 400);
+            }
+
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'status' => 'error',
@@ -1417,7 +1478,12 @@ class UserController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         } catch (Exception $e) {
-            Log::error('Add plan error: ' . $e->getMessage());
+            Log::error('Add plan error: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             return response()->json([
                 'status' => 'error',
                 'error' => 'Failed to add plan',

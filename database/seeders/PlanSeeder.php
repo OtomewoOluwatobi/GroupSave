@@ -84,7 +84,7 @@ class PlanSeeder extends Seeder
                 'price'                 => 999, // £9.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'monthly',
-                'stripe_price_id'       => 'price_1TiX2IGVRxfohcvD7b5VkYZZ', // Replace with your Stripe PRICE ID (not product ID)
+                'stripe_price_id'       => 'price_1Tq3XAGVRxfohcvD1bnz99ni',
                 'max_groups'            => 9999,
                 'max_members_per_group' => 20,
                 'features'              => [
@@ -106,10 +106,10 @@ class PlanSeeder extends Seeder
                 'slug'                  => 'enterprise',
                 'tagline'               => 'Lead Your Community',
                 'description'           => 'Enterprise-grade solution for organizations and large networks. Unlimited everything, custom branding, organization-wide dashboards, multi-group oversight, and dedicated account manager.',
-                'price'                 => 9999, // £99.99 in pence
+                'price'                 => 99999, // £999.99 in pence
                 'currency'              => 'GBP',
                 'billing'               => 'yearly',
-                'stripe_price_id'       => 'price_1TiX2IGVRxfohcvD9ab5cDEFG', // Replace with your Stripe PRICE ID (not product ID)
+                'stripe_price_id'       => 'price_1Tq3Z1GVRxfohcvDFcz25uCK',
                 'max_groups'            => 9999,
                 'max_members_per_group' => 9999,
                 'features'              => [

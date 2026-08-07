@@ -98,6 +98,13 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
     Route::get('/dashboard', [UserController::class, 'dashboard']);
     Route::put('/profile', [UserController::class, 'updateProfile']);
     Route::post('/change-password', [UserController::class, 'changePassword']);
+    
+    /**
+     * Plan Management - Smart Consolidated Endpoint
+     * Handles both free and paid plans
+     * - Free plans: Activated immediately
+     * - Paid plans: Initiates Stripe Checkout (requires success_url and cancel_url)
+     */
     Route::post('/add-plan', [UserController::class, 'addPlan']);
     Route::get('/points', [UserController::class, 'pointsSummary']);
     Route::post('/points/redeem', [UserController::class, 'redeemPoints']);
@@ -108,15 +115,11 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
      * Prefix: /user/billing
      */
     Route::prefix('billing')->group(function () {
-        // Setup intent for collecting/saving payment methods
-        Route::get('/setup-intent', [StripeController::class, 'createSetupIntent']);
-        
-        // Subscribe with collected payment method (legacy flow)
-        Route::post('/subscribe', [StripeController::class, 'createSubscription']);
-        
-        // Checkout session for Stripe Checkout (recommended flow - single redirect)
+        // ========== MAIN FLOW ==========
+        // Smart consolidated endpoint (alternative to /add-plan with billing URLs)
         Route::post('/checkout-session', [StripeController::class, 'createCheckoutSession']);
         
+        // ========== UTILITIES ==========
         // Get subscription status
         Route::get('/subscription', [StripeController::class, 'subscriptionStatus']);
         
@@ -125,6 +128,13 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         
         // Payment history
         Route::get('/history', [StripeController::class, 'paymentHistory']);
+        
+        // ========== DEPRECATED (Legacy Flow) ==========
+        // Setup intent for collecting/saving payment methods (deprecated - use checkout-session or add-plan)
+        Route::get('/setup-intent', [StripeController::class, 'createSetupIntent']);
+        
+        // Subscribe with collected payment method (deprecated - use checkout-session or add-plan)
+        Route::post('/subscribe', [StripeController::class, 'createSubscription']);
     });
 
     /**
