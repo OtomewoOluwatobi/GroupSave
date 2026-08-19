@@ -40,6 +40,15 @@ class PlanController extends Controller
             'is_active'             => 'boolean',
         ]);
 
+        // Validate that paid plans have Stripe configuration
+        if ($validated['billing'] !== 'free_forever' && !$validated['stripe_price_id']) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Paid plans must be activated through billing.',
+                'code' => 'STRIPE_BILLING_REQUIRED'
+            ], 422);
+        }
+
         $plan = Plan::create($validated);
 
         return response()->json(['data' => $plan], 201);
@@ -65,6 +74,16 @@ class PlanController extends Controller
             'max_members_per_group' => 'sometimes|integer|min:1',
             'is_active'             => 'boolean',
         ]);
+
+        // Validate that paid plans have Stripe configuration
+        $billing = $validated['billing'] ?? $plan->billing;
+        if ($billing !== 'free_forever' && !($validated['stripe_price_id'] ?? $plan->stripe_price_id)) {
+            return response()->json([
+                'status' => 'error',
+                'error' => 'Paid plans must be activated through billing.',
+                'code' => 'STRIPE_BILLING_REQUIRED'
+            ], 422);
+        }
 
         $plan->update($validated);
 

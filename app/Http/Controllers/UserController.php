@@ -29,6 +29,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Laravel\Cashier\Exceptions\IncompletePayment;
+use Stripe\Exception\ApiErrorException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 
@@ -1419,6 +1422,7 @@ class UserController extends Controller
             if (!$plan->stripe_price_id) {
                 return response()->json([
                     'status' => 'error',
+                    'error' => 'Stripe billing not configured',
                     'message' => 'This plan is not configured for Stripe payments.',
                 ], 400);
             }
@@ -1458,8 +1462,8 @@ class UserController extends Controller
                     ],
                 ], 200);
 
-            } catch (Throwable $e) {
-                Log::error('Stripe checkout session error from addPlan', [
+            } catch (IncompletePayment $e) {
+                Log::warning('Incomplete payment on checkout session from addPlan', [
                     'user_id' => $user->id,
                     'plan_id' => $plan->id,
                     'error'   => $e->getMessage(),
@@ -1467,6 +1471,36 @@ class UserController extends Controller
 
                 return response()->json([
                     'status' => 'error',
+                    'error' => 'Payment incomplete',
+                    'message' => 'Payment requires additional verification. Please try again.',
+                ], 400);
+            } catch (ApiErrorException $e) {
+                Log::error('Stripe API error from addPlan', [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'stripe_error' => $e->getError()->message ?? $e->getMessage(),
+                    'stripe_code' => $e->getError()->code ?? 'unknown',
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Stripe error',
+                    'message' => 'Unable to create checkout session. ' . ($e->getError()->message ?? 'Please try again.'),
+                ], 400);
+            } catch (Throwable $e) {
+                Log::error('Stripe checkout session error from addPlan', [
+                    'user_id' => $user->id,
+                    'plan_id' => $plan->id,
+                    'exception' => get_class($e),
+                    'error'   => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+
+                return response()->json([
+                    'status' => 'error',
+                    'error' => 'Checkout failed',
                     'message' => 'Failed to create checkout session. Please try again.',
                 ], 400);
             }
