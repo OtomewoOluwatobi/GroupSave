@@ -126,6 +126,10 @@ Route::prefix('user')->middleware(['auth:api'])->group(function () {
         // Smart consolidated endpoint (alternative to /add-plan with billing URLs)
         Route::post('/checkout-session', [StripeController::class, 'createCheckoutSession']);
         
+        // ========== MOBILE APP FLOW ==========
+        // Verify checkout session payment status (mobile app calls after returning from Stripe)
+        Route::get('/verify-session', [StripeController::class, 'verifyCheckoutSession']);
+        
         // ========== UTILITIES ==========
         // Get subscription status
         Route::get('/subscription', [StripeController::class, 'subscriptionStatus']);

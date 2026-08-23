@@ -1457,7 +1457,7 @@ class UserController extends Controller
 
                 return response()->json([
                     'status' => 'error',
-                    'error' => 'Payment incomplete',
+                    'error_code' => 'INCOMPLETE_PAYMENT',
                     'message' => 'Payment requires additional verification. Please try again.',
                 ], 400);
             } catch (ApiErrorException $e) {
@@ -1470,8 +1470,8 @@ class UserController extends Controller
 
                 return response()->json([
                     'status' => 'error',
-                    'error' => 'Stripe error',
-                    'message' => 'Unable to create checkout session. ' . ($e->getError()->message ?? 'Please try again.'),
+                    'error_code' => $e->getError()->code ?? 'STRIPE_ERROR',
+                    'message' => $e->getError()->message ?? 'Failed to create checkout session.',
                 ], 400);
             } catch (Throwable $e) {
                 Log::error('Stripe checkout session error from addPlan', [
@@ -1486,9 +1486,9 @@ class UserController extends Controller
 
                 return response()->json([
                     'status' => 'error',
-                    'error' => 'Checkout failed',
-                    'message' => 'Failed to create checkout session. Please try again.',
-                ], 400);
+                    'error_code' => 'CHECKOUT_FAILED',
+                    'message' => env('APP_DEBUG') ? $e->getMessage() : 'Failed to create checkout session.',
+                ], 500);
             }
 
         } catch (\Illuminate\Validation\ValidationException $e) {

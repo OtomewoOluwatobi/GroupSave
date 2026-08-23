@@ -301,4 +301,48 @@ class StripeController extends Controller
             'session_id' => $sessionId,
         ], 200);
     }
+
+    /**
+     * Verify checkout session payment status
+     * Mobile app calls this after returning from Stripe checkout
+     * Does NOT activate the plan - webhook does that
+     */
+    public function verifyCheckoutSession(Request $request): JsonResponse
+    {
+        $request->validate([
+            'session_id' => 'required|string',
+        ]);
+
+        try {
+            $session = \Stripe\Checkout\Session::retrieve($request->session_id);
+
+            Log::info('Checkout session verified', [
+                'user_id' => $request->user()?->id,
+                'session_id' => $request->session_id,
+                'payment_status' => $session->payment_status,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'payment_status' => $session->payment_status,    // "paid", "unpaid", "no_payment_required"
+                    'session_id' => $session->id,
+                    'subscription_id' => $session->subscription,      // null until paid
+                    'customer_id' => $session->customer,
+                ],
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Verify checkout session error', [
+                'user_id' => $request->user()?->id,
+                'session_id' => $request->session_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'error_code' => 'SESSION_VERIFICATION_FAILED',
+                'message' => 'Failed to verify session.',
+            ], 400);
+        }
+    }
 }
