@@ -1423,8 +1423,8 @@ class UserController extends Controller
                         ]
                     ],
                     [
-                        'success_url' => $successUrl,
-                        'cancel_url'  => $cancelUrl,
+                        'success_url' => $successUrl . '?session_id={CHECKOUT_SESSION_ID}',
+                        'cancel_url'  => $cancelUrl . '?session_id={CHECKOUT_SESSION_ID}',
                         'mode'        => 'subscription',
                         'metadata'    => [
                             'user_id' => $user->id,
