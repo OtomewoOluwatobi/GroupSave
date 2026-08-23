@@ -239,4 +239,66 @@ class StripeController extends Controller
             ], 400);
         }
     }
+
+    /**
+     * Handle successful Stripe checkout
+     * Stripe redirects to this URL after successful payment
+     */
+    public function handleCheckoutSuccess(Request $request): JsonResponse
+    {
+        $sessionId = $request->query('session_id');
+
+        if (!$sessionId) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Missing session ID',
+            ], 400);
+        }
+
+        try {
+            // Retrieve session from Stripe to confirm payment
+            $session = \Stripe\Checkout\Session::retrieve($sessionId);
+
+            // Payment successful - Stripe webhook will handle subscription activation
+            Log::info('Checkout success - session retrieved', [
+                'session_id' => $sessionId,
+                'payment_status' => $session->payment_status,
+            ]);
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Payment successful! Your plan has been activated.',
+                'session_id' => $sessionId,
+            ]);
+        } catch (Throwable $e) {
+            Log::error('Checkout success handler error', [
+                'session_id' => $sessionId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to retrieve payment status.',
+            ], 400);
+        }
+    }
+
+    /**
+     * Handle cancelled Stripe checkout
+     * Stripe redirects to this URL if user cancels payment
+     */
+    public function handleCheckoutCancel(Request $request): JsonResponse
+    {
+        $sessionId = $request->query('session_id');
+
+        Log::info('Checkout cancelled', [
+            'session_id' => $sessionId,
+        ]);
+
+        return response()->json([
+            'status' => 'cancelled',
+            'message' => 'Payment was cancelled. You can try again anytime.',
+            'session_id' => $sessionId,
+        ], 200);
+    }
 }

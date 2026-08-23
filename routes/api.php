@@ -43,6 +43,13 @@ Route::post('/leads', [LeadController::class, 'store']);
 Route::get('/plans', [PlanController::class, 'index']);
 
 /**
+ * Stripe Checkout Redirect Routes (Stripe redirects here after payment)
+ * No authentication required - session_id is passed as query parameter
+ */
+Route::get('/billing/checkout/success', [StripeController::class, 'handleCheckoutSuccess'])->name('checkout.success');
+Route::get('/billing/checkout/cancel', [StripeController::class, 'handleCheckoutCancel'])->name('checkout.cancel');
+
+/**
  * Public Referral Route
  * Validate referral code before signup
  */

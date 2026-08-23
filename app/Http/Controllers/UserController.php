@@ -1394,23 +1394,10 @@ class UserController extends Controller
             }
 
             // ========== PAID PLAN → Stripe Checkout ==========
-            // Safely extract URLs (nullable fields)
-            $successUrl = $validatedData['success_url'] ?? null;
-            $cancelUrl = $validatedData['cancel_url'] ?? null;
-
-            // Check if billing URLs are provided
-            if (!$successUrl || !$cancelUrl) {
-                return response()->json([
-                    'status' => 'error',
-                    'error' => 'Billing URLs required for paid plans',
-                    'code' => 'BILLING_URLS_REQUIRED',
-                    'message' => "To subscribe to {$plan->name} (GBP {$plan->price_decimal}/month), please provide success and cancel URLs.",
-                    'required_fields' => [
-                        'success_url' => 'URL user returns to after successful payment',
-                        'cancel_url'  => 'URL user returns to if they cancel payment',
-                    ],
-                ], 422);
-            }
+            // Use API redirect routes by default, allow override via request
+            $baseUrl = config('app.url');
+            $successUrl = $validatedData['success_url'] ?? "{$baseUrl}/api/billing/checkout/success";
+            $cancelUrl = $validatedData['cancel_url'] ?? "{$baseUrl}/api/billing/checkout/cancel";
 
             // Ensure user has Stripe customer ID
             if (!$user->hasStripeId()) {
