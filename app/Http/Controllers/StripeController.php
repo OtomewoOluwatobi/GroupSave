@@ -244,14 +244,15 @@ class StripeController extends Controller
      * Handle successful Stripe checkout
      * Stripe redirects to this URL after successful payment
      */
-    public function handleCheckoutSuccess(Request $request): JsonResponse
+    public function handleCheckoutSuccess(Request $request)
     {
         $sessionId = $request->query('session_id');
 
         if (!$sessionId) {
-            return response()->json([
+            return response()->view('payment-status', [
                 'status' => 'error',
-                'message' => 'Missing session ID',
+                'title' => 'Payment Error',
+                'message' => 'Missing session ID. Please contact support.',
             ], 400);
         }
 
@@ -265,9 +266,11 @@ class StripeController extends Controller
                 'payment_status' => $session->payment_status,
             ]);
 
-            return response()->json([
+            // Return HTML page (browser is open, not mobile app)
+            return response()->view('payment-status', [
                 'status' => 'success',
-                'message' => 'Payment successful! Your plan has been activated.',
+                'title' => 'Payment Successful',
+                'message' => 'Your payment was successful! Your plan is being activated. You can close this window and return to the app.',
                 'session_id' => $sessionId,
             ]);
         } catch (Throwable $e) {
@@ -276,9 +279,10 @@ class StripeController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json([
+            return response()->view('payment-status', [
                 'status' => 'error',
-                'message' => 'Failed to retrieve payment status.',
+                'title' => 'Payment Error',
+                'message' => 'Failed to retrieve payment status. Please try again or contact support.',
             ], 400);
         }
     }
@@ -286,8 +290,9 @@ class StripeController extends Controller
     /**
      * Handle cancelled Stripe checkout
      * Stripe redirects to this URL if user cancels payment
+     * Returns HTML page (browser is open, not mobile app)
      */
-    public function handleCheckoutCancel(Request $request): JsonResponse
+    public function handleCheckoutCancel(Request $request)
     {
         $sessionId = $request->query('session_id');
 
@@ -295,11 +300,12 @@ class StripeController extends Controller
             'session_id' => $sessionId,
         ]);
 
-        return response()->json([
+        return response()->view('payment-status', [
             'status' => 'cancelled',
-            'message' => 'Payment was cancelled. You can try again anytime.',
+            'title' => 'Payment Cancelled',
+            'message' => 'Payment was cancelled. You can close this window and return to the app to try again.',
             'session_id' => $sessionId,
-        ], 200);
+        ]);
     }
 
     /**
