@@ -249,42 +249,184 @@ class StripeController extends Controller
         $sessionId = $request->query('session_id');
 
         if (!$sessionId) {
-            return response()->view('payment-status', [
-                'status' => 'error',
-                'title' => 'Payment Error',
-                'message' => 'Missing session ID. Please contact support.',
-            ], 400);
+            return $this->renderPaymentStatus('error', 'Payment Error', 'Missing session ID. Please contact support.');
         }
 
         try {
             // Retrieve session from Stripe to confirm payment
             $session = \Stripe\Checkout\Session::retrieve($sessionId);
 
-            // Payment successful - Stripe webhook will handle subscription activation
             Log::info('Checkout success - session retrieved', [
                 'session_id' => $sessionId,
                 'payment_status' => $session->payment_status,
             ]);
 
-            // Return HTML page (browser is open, not mobile app)
-            return response()->view('payment-status', [
-                'status' => 'success',
-                'title' => 'Payment Successful',
-                'message' => 'Your payment was successful! Your plan is being activated. You can close this window and return to the app.',
-                'session_id' => $sessionId,
-            ]);
+            return $this->renderPaymentStatus(
+                'success',
+                'Payment Successful',
+                'Your payment was successful! Your plan is being activated. You can close this window and return to the app.',
+                $sessionId
+            );
         } catch (Throwable $e) {
             Log::error('Checkout success handler error', [
                 'session_id' => $sessionId,
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->view('payment-status', [
-                'status' => 'error',
-                'title' => 'Payment Error',
-                'message' => 'Failed to retrieve payment status. Please try again or contact support.',
-            ], 400);
+            return $this->renderPaymentStatus('error', 'Payment Error', 'Failed to retrieve payment status. Please try again or contact support.');
         }
+    }
+
+    /**
+     * Render payment status as HTML
+     */
+    private function renderPaymentStatus($status, $title, $message, $sessionId = null)
+    {
+        $html = <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>$title</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            max-width: 400px;
+            width: 100%;
+            padding: 40px;
+            text-align: center;
+        }
+        .icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+        .success .icon::before { content: '✓'; color: #10b981; }
+        .error .icon::before { content: '✕'; color: #ef4444; }
+        .cancelled .icon::before { content: '○'; color: #f59e0b; }
+        h1 {
+            font-size: 24px;
+            margin-bottom: 10px;
+            color: #1f2937;
+        }
+        .status-message {
+            font-size: 14px;
+            color: #6b7280;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .success .status-badge { background: #d1fae5; color: #059669; }
+        .error .status-badge { background: #fee2e2; color: #dc2626; }
+        .cancelled .status-badge { background: #fef3c7; color: #b45309; }
+        .session-info {
+            background: #f3f4f6;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 12px;
+            color: #4b5563;
+            word-break: break-all;
+        }
+        .session-label { font-weight: 600; color: #1f2937; display: block; margin-bottom: 4px; }
+        .instructions {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px;
+            text-align: left;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #1e40af;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        .success .instructions { background: #ecfdf5; border-left-color: #10b981; color: #065f46; }
+        .error .instructions { background: #fef2f2; border-left-color: #ef4444; color: #7f1d1d; }
+        .button { padding: 12px 24px; border-radius: 6px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; background: #667eea; color: white; transition: all 0.3s ease; }
+        .button:hover { background: #5a67d8; }
+    </style>
+</head>
+<body>
+    <div class="container $status">
+        <div class="icon"></div>
+        <h1>$title</h1>
+        <div class="status-badge">{$status}</div>
+        <div class="status-message">$message</div>
+HTML;
+
+        if ($status === 'success') {
+            $html .= <<<HTML
+        <div class="instructions">
+            ✓ Your payment was processed successfully<br>
+            ✓ Your new plan is being activated<br>
+            ✓ You can close this window now
+        </div>
+HTML;
+        } elseif ($status === 'cancelled') {
+            $html .= <<<HTML
+        <div class="instructions">
+            ○ Payment was cancelled<br>
+            ○ No charge was made<br>
+            ○ You can try again from the app
+        </div>
+HTML;
+        } else {
+            $html .= <<<HTML
+        <div class="instructions">
+            ✕ Payment could not be completed<br>
+            ✕ Please verify your payment details<br>
+            ✕ Contact support if issue persists
+        </div>
+HTML;
+        }
+
+        if ($sessionId) {
+            $html .= <<<HTML
+        <div class="session-info">
+            <span class="session-label">Session ID:</span>
+            $sessionId
+        </div>
+HTML;
+        }
+
+        $html .= <<<HTML
+        <button class="button" onclick="window.close()">Close Window</button>
+    </div>
+    <script>
+        if ('{$status}' !== 'error') {
+            setTimeout(() => { window.close(); }, 5000);
+        }
+    </script>
+</body>
+</html>
+HTML;
+
+        return response($html)->header('Content-Type', 'text/html; charset=UTF-8');
     }
 
     /**
@@ -300,12 +442,12 @@ class StripeController extends Controller
             'session_id' => $sessionId,
         ]);
 
-        return response()->view('payment-status', [
-            'status' => 'cancelled',
-            'title' => 'Payment Cancelled',
-            'message' => 'Payment was cancelled. You can close this window and return to the app to try again.',
-            'session_id' => $sessionId,
-        ]);
+        return $this->renderPaymentStatus(
+            'cancelled',
+            'Payment Cancelled',
+            'Payment was cancelled. You can close this window and return to the app to try again.',
+            $sessionId
+        );
     }
 
     /**
